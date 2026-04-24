@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Portfolio Dashboard · April 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111827;color:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;padding:24px}
+h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.subtitle{color:#9ca3af;font-size:12px;margin-bottom:20px}
+.tabs{display:flex;gap:8px;margin-bottom:24px}
+.tab{padding:8px 18px;border-radius:8px;border:1px solid #374151;cursor:pointer;font-size:13px;font-weight:500;background:#1f2937;color:#9ca3af;transition:all .15s}
+.tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.tab:hover:not(.active){color:#fff;background:#374151}
+.section{display:none}.section.active{display:block}
+.grid{display:grid;gap:12px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:1fr 1fr}
+.g1{grid-template-columns:1fr}
+@media(max-width:900px){.g6{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
+.card{background:#1f2937;border:1px solid #374151;border-radius:10px;padding:14px 16px}
+.card-label{color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.card-value{font-weight:700;font-size:20px}
+.card-value.sm{font-size:16px}
+.card-sub{color:#6b7280;font-size:10px;margin-top:2px}
+.chart-title{font-size:12px;font-weight:600;color:#d1d5db;margin-bottom:4px}
+.chart-sub{font-size:10px;color:#6b7280;margin-bottom:10px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#9ca3af}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:7px 10px;color:#9ca3af;font-weight:500;text-align:right;border-bottom:2px solid #374151;white-space:nowrap}
+th.left{text-align:left}
+td{padding:6px 10px;border-bottom:1px solid #374151;text-align:right;font-variant-numeric:tabular-nums}
+td.left{text-align:left;font-weight:600;color:#fff}
+tr:nth-child(even) td{background:#2a3441}
+tr.total td{background:#374151;font-weight:700;border-top:2px solid #6b7280}
+.note{color:#fbbf24;font-size:10px;margin-top:4px}
+.footnotes{color:#6b7280;font-size:10px;line-height:1.8;border-top:1px solid #374151;padding-top:12px;margin-top:4px}
+.footnotes b{color:#9ca3af}
+.prop-btn{padding:8px 14px;border-radius:8px;border:1px solid #374151;cursor:pointer;font-size:12px;font-weight:500;background:#1f2937;color:#9ca3af;transition:all .15s}
+.prop-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.prop-btn:hover:not(.active){color:#fff;background:#374151}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.detail-grid{grid-template-columns:1fr}}
+.detail-table td{padding:7px 12px}
+.mini-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.mini-kpi{background:#374151;border-radius:8px;padding:10px;text-align:center}
+.mini-kpi-label{color:#9ca3af;font-size:9px;text-transform:uppercase;letter-spacing:.04em}
+.mini-kpi-value{font-weight:700;font-size:14px;margin-top:2px}
+.annual-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;margin-top:6px}
+.annual-row{display:flex;justify-content:space-between;font-size:11px}
+.annual-label{color:#9ca3af}
+.annual-val{font-family:monospace;font-weight:600}
+svg text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.tooltip-box{position:absolute;background:#1f2937;border:1px solid #374151;border-radius:6px;padding:8px 12px;font-size:11px;pointer-events:none;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.5);display:none;white-space:nowrap}
+.chart-wrap{position:relative}
+</style>
+</head>
+<body>
+<h1>Portfolio Dashboard</h1>
+<p class="subtitle">5 properties · April 2026 · Based on actual payments · All figures EUR/month</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview')">Portfolio Overview</button>
+  <button class="tab" onclick="showTab('detail')">Property Detail</button>
+  <button class="tab" onclick="showTab('mortgages')">Mortgages</button>
+  <button class="tab" onclick="showTab('market-value')">Market Value</button>
+</div>
+
+<div id="overview" class="section active"></div>
+<div id="detail" class="section"></div>
+<div id="mortgages" class="section"></div>
+<div id="market-value" class="section"></div>
+
+<div class="tooltip-box" id="tooltip"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const RAW = [
+  { id:'berlin', name:'Berlin', addr:'Prenzlauer Prom. 162b', pp:314000, bj:1962, tn:3,
+    km:1510.00, nk:140.00, hg:212.00, gs:15.37, ox:3.00, zi:973.52, ti:531.38,
+    knk:22597.40, knkConfirmed:22597.40, knkPartial:false,
+    // ALL CONFIRMED: Notar (Svend Christensen 17.07.2024) €3,097.40 + GB (Amtsgericht Mitte 03.12.2024) €660 + GrESt (Finanzamt Spandau 19.08.2024) €18,840. Makler: none.
+    note:'Mathis Neuhoff excl. (moved out ~Jul 2025)',
+    size:56,     // m²
+    tenants:[
+      {name:'Dorothea Menke',  km:500.00, nk:50.00},
+      {name:'Quoc Dat Nguyen', km:475.00, nk:35.00},
+      {name:'Till Buchberger', km:535.00, nk:55.00},
+    ],
+    opexDetail:[
+      {label:'DKB Kontoführung', value:3.00, hint:'Quarterly ÷ 3'},
+    ],
+  },
+  { id:'eschweiler', name:'Eschweiler', addr:'Gartenstraße', pp:86000, bj:1995, tn:1,
+    km:419.18, nk:130.82, hg:184.00, gs:22.66, ox:3.50, zi:125.29, ti:270.19, note:'',
+    knk:12373.29, knkConfirmed:12373.29, knkPartial:false,
+    // ALL CONFIRMED: Notar (Förl & Winnen 05.02.2021) €1,369.09 + GrESt (FA Aachen-Kreis 12.01.2021) €5,494 + GB1 (AG Eschweiler 21.01.2021) €389 + GB2 (AG Eschweiler 16.03.2021) €291 + Makler (phi Immobilien 08.02.2021) €3,070.20 + Beratung immostanding (Rech.Nr. 2094 28.12.2020) €1,760.
+    size:41,     // m² per immostanding Exposé
+    tenants:[
+      {name:'Pascal Speer', km:419.18, nk:130.82},
+    ],
+    opexDetail:[
+      {label:'DKB Kontoführung', value:3.50, hint:'Quarterly ÷ 3'},
+    ],
+    loans:[
+      {name:'Volksbank Köln Bonn', type:'Immobiliar',  amount:89000, rate:'1.62%', zi:107.21, ti:161.27, fixed:'30.12.2035'},
+      {name:'DSL Bank',            type:'Privatkredit', amount:13000, rate:'3.24%', zi:18.08,  ti:108.92, maturity:'Dez 2030'},
+    ],
+  },
+  { id:'huegelstr', name:'Hügelstr.', addr:'Hügelstr. 162, Frankfurt', pp:420000, bj:1959, tn:5,
+    km:2387.70, nk:570.00, hg:590.00, gs:27.06, ox:57.49, zi:1307.16, ti:803.34,
+    knk:44082.98, knkConfirmed:44082.98, knkPartial:false,
+    // ALL CONFIRMED: Notar (Gemmer 22.05.2023) €4,162.46 + GrESt (FA Alsfeld 04.07.2023) €25,200 + GB1 (AG Frankfurt 25.05.2023) €1,267.50 + GB2 (AG Frankfurt 20.07.2023) €948.50 + GB Auszug (Gemmer 12.07.2024) €9.52 + Makler (Dornbusch 17.05.2023) €12,495.
+    note:'Landlord pays Mansarde Strom & Internet directly',
+    size:112,    // 94m² EG rechts + 18m² Mansarde
+    tenants:[
+      {name:'Franziska Trinkl',  km:520.00, nk:110.00, note:'New, Kaution Feb 2026'},
+      {name:'Maren Stephan',     km:557.00, nk:115.00},
+      {name:'Chuyihang Wang',    km:408.00, nk:150.00},
+      {name:'Yohana Reda',       km:428.40, nk:90.00},
+      {name:'Dominik Zacharias', km:474.30, nk:105.00},
+    ],
+    opexDetail:[
+      {label:'Mansarde Strom',    value:24.00, hint:'Stadtwerke Flensburg'},
+      {label:'Mansarde Internet', value:29.99, hint:'Freenet'},
+      {label:'DKB Kontoführung',  value:3.50,  hint:'Quarterly ÷ 3'},
+    ],
+  },
+  { id:'ohmstr', name:'Ohmstr.', addr:'Ohmstraße 20, Frankfurt', pp:400000, bj:null, tn:3,
+    km:1734.91, nk:219.08, hg:291.95, gs:21.37, ox:3.17, zi:1354.15, ti:739.19,
+    knk:29633.61, knkConfirmed:29633.61, knkPartial:false,
+    // ALL CONFIRMED: Notar (Bögner Hensel 11.09.2023) €3,497.61 + GrESt (FA Alsfeld 18.10.2023) €24,000 + GB1 (AG Frankfurt 21.09.2023) €1,242.50 + GB2 (AG Frankfurt 06.12.2023) €893.50. Makler: none (PN Residential AG developer sale).
+    note:'Nina Kretzer moving in May 2026 (Kaution received Apr 2026). Joint purchase with Stuti Ranjan Gadodia (50/50), MEA 497/10.000.',
+    size:75,     // m²
+    tenants:[
+      {name:'Layla Garbers', km:596.70, nk:86.43},
+      {name:'Emma Martin',   km:556.05, nk:58.95, note:'Pays rounded total'},
+      {name:'Jan Fedrau',    km:582.16, nk:73.70, note:'Pays rounded total'},
+    ],
+    opexDetail:[
+      {label:'DKB Kontoführung', value:3.17, hint:'Quarterly ÷ 3'},
+    ],
+  },
+  { id:'leipzig', name:'Leipzig', addr:'Magdeburger Str. 7', pp:130000, bj:1910, tn:3,
+    km:823.10, nk:240.00, hg:353.00, gs:9.94, ox:6.33, zi:406.70, ti:226.75,
+    knk:9795.25, knkConfirmed:9795.25, knkPartial:false,
+    // ALL CONFIRMED: Notar (Pichler Finke Michelsburg 24.07.2023) €1,824.75 + GrESt (FA Leipzig I 26.09.2023) €7,150 (5.5%×€65k×2) + GB1 (LJK Chemnitz 12.09.2023) €468.50 + GB2 (LJK Chemnitz 25.01.2024) €352. Makler: none.
+    note:'Kenan Suleman moved out 31.03.2026',
+    size:56.5,   // m² per Exposé/Kaufvertrag
+    tenants:[
+      {name:'Mohrez Albarshini', km:323.00, nk:110.00, note:'New, Kaution Apr 2026'},
+      {name:'Youshaa Sarheel',   km:189.00, nk:45.00,  note:'New, Kaution Jan 2026'},
+      {name:'Minh Hieu Bui',     km:311.10, nk:85.00},
+    ],
+    opexDetail:[
+      {label:'DKB Kontoführung', value:6.33, hint:'2 accounts, Quarterly ÷ 3'},
+    ],
+  },
+];
+
+function derive(p) {
+  const tot  = p.km + p.nk;
+  const opex = p.hg + p.gs + p.ox;
+  const mort = p.zi + p.ti;
+  const gp   = tot - opex;    // Warmmiete minus operating costs (pre-financing surplus)
+  const np   = gp - mort;     // = tot - opex - mort = cf
+  const cf   = tot - opex - mort;
+  const tr   = cf + p.ti;
+  return { ...p, tot, opex, mort, gp, np, cf, tr,
+    gmPct: gp/tot*100,   // gross margin on total income (Warmmiete)
+    nmPct: np/tot*100,   // net margin on total income
+    yield: p.pp ? p.km*12/p.pp*100 : null,
+    dscr:  gp/mort,      // NOI (gp) / debt service — standard RE DSCR
+    ptr:   p.pp ? p.pp/(p.km*12) : null,
+    ppSqm: (p.pp && p.size) ? Math.round(p.pp / p.size) : null,
+    kmSqm: p.size ? +(p.km / p.size).toFixed(2) : null };
+}
+const D = RAW.map(derive);
+
+// Portfolio totals
+const P = ['tot','km','nk','opex','mort','gp','np','cf','tr','zi','ti','tn']
+  .reduce((o,k) => { o[k]=D.reduce((s,d)=>s+d[k],0); return o; }, {});
+P.gmPct = P.gp/P.tot*100; P.nmPct = P.np/P.tot*100;
+
+// ─── SUPPLEMENTAL DATA ──────────────────────────────────────────────────────
+// Repair & maintenance costs (€/year) per property. null = not yet extracted from Buchhaltung.
+// Includes: Reparaturen, Instandhaltung, Küche/Geräte, Einrichtung (furnished rooms).
+const REPAIRS = {
+  // Source: invoice PDFs (invoices on file). Totals = sum of REPAIRS_DETAIL for that year.
+  // Eschweiler 2020/2021: from Buchhaltung CSV (full invoice set not in folder for those years).
+  berlin:     [{y:2024,amt:5955.79},{y:2025,amt:726.46},{y:2026,amt:166.60}],
+  eschweiler: [{y:2021,amt:3779.34},{y:2022,amt:0},{y:2023,amt:0},{y:2024,amt:0},{y:2025,amt:0}],
+  huegelstr:  [{y:2023,amt:26327.36},{y:2024,amt:0},{y:2025,amt:124.95}],
+  ohmstr:     [{y:2023,amt:5000.00},{y:2024,amt:0},{y:2025,amt:0}],
+  leipzig:    [{y:2023,amt:4905.15},{y:2024,amt:0},{y:2025,amt:0},{y:2026,amt:168.39}],
+};
+// Per-invoice repair/maintenance breakdown for hover tooltips. Source: invoice PDFs.
+const REPAIRS_DETAIL = {
+  berlin: [
+    {desc:'Einbauküche (ORDER 262/1/2)',                             party:'Kitchennette Marcel Peter',        date:'17.08.2024', amount:4800.00},
+    {desc:'Kühlschrank Hanseatic HKGK17954DWDI',                    party:'OTTO',                             date:'11.09.2024', amount:372.95},
+    {desc:'Reparatur Boiler / Vorrangumschaltventil',                party:'Carsten Seelig',                   date:'28.10.2024', amount:484.63},
+    {desc:'WE-Übernahme, Besichtigungen, Übergabe, Küchenanlieferung (R-138-09-2024)', party:'DLX Sandra Matschuck', date:'19.09.2024', amount:298.21},
+    {desc:'Küchenmontage (K2025-2)',                                 party:'Kitchennette Marcel Peter',        date:'22.02.2025', amount:350.00},
+    {desc:'Notöffnung + Einstecktschloss + Zylinder (R00016263)',   party:'HASA Sicherungstechnik GmbH',     date:'01.10.2025', amount:376.46},
+    {desc:'Schornsteinfeger Luftverbund Küchentür',                  party:'Christian Werner',                 date:'03.02.2026', amount:166.60},
+  ],
+  huegelstr: [
+    {desc:'Einbauküche EG (Bestellung 571299)',                        party:'Möbelland Hochtaunus GmbH',        date:'27.05.2023', amount:4000.00},
+    {desc:'Gorenje Kühlschrank RB39FPW4 84cm',                      party:'OTTO',                             date:'23.06.2023', amount:199.00},
+    {desc:'Gorenje Waschmaschine WNHPI74SCPS/DE + Versand',         party:'OTTO',                             date:'23.06.2023', amount:353.95},
+    {desc:'Gorenje Kühl-/Gefrierkombination RK4182PS4 180cm',       party:'OTTO',                             date:'30.06.2023', amount:359.00},
+    {desc:'Miniküche Mansarde OPTIkompakt Oslo214 100cm',            party:'Hornbach',                         date:'30.06.2023', amount:358.00},
+    {desc:'Router TP-Link TL-MR6400 4G LTE Mansarde',               party:'Amazon',                           date:'23.06.2023', amount:64.90},
+    {desc:'Mikrowelle + Backofen Mansarde (MD 15501)',               party:'Medion',                           date:'24.06.2023', amount:149.99},
+    {desc:'Handwerkerarbeiten EG — Renovierung, Wandbau, Tapeten, Sockelleisten, Türen, Bad (Rech. 546)', party:'J.-A. Nosek', date:'12.07.2023', amount:12316.50},
+    {desc:'Handwerkerarbeiten OG — Renovierung, Toilette Vorwand, Fliesen, Laminat (Rech. 547)',           party:'J.-A. Nosek', date:'12.07.2023', amount:6227.27},
+    {desc:'Einbau Waschmaschine Service',                            party:'OTTO',                             date:'04.07.2023', amount:15.00},
+    {desc:'Erstausstattung Mansarde — Möbel, Bett, Kleiderschrank, Schreibtisch (IKEA)',                   party:'IKEA Deutschland', date:'16.07.2023', amount:846.13},
+    {desc:'Ausstattung Mansarde — Wasserkocher GOURMETmaxx',         party:'Brand Chain GmbH',                 date:'17.07.2023', amount:17.99},
+    {desc:'Ausstattung Mansarde — Geschirrset 16-tlg. (Amazon Basics)', party:'Amazon',                       date:'18.07.2023', amount:44.42},
+    {desc:'Ausstattung Mansarde — Messer-Set 3-tlg.',                party:'Amazon',                           date:'19.07.2023', amount:10.99},
+    {desc:'Ausstattung Mansarde — Salatschüsseln 5er-Set',           party:'Amazon',                           date:'19.07.2023', amount:19.99},
+    {desc:'Ausstattung Mansarde — Geschirrtücher 4er-Set',           party:'Amazon',                           date:'19.07.2023', amount:8.99},
+    {desc:'Küche + Bad Mansarde — Herd/Spülbecken, Armatur, Siphon, Acrylwand, Absperrventile (Rech. 556)', party:'J.-A. Nosek', date:'10.08.2023', amount:1047.20},
+    {desc:'Ausstattung Mansarde — Wandspiegel SoBuy FRG129',         party:'OTTO / SoBuy',                     date:'01.08.2023', amount:29.95},
+    {desc:'Reparatur Waschmaschinenanschluss',                       party:'Ing. R. Gruner GmbH',              date:'02.08.2023', amount:258.09},
+    {desc:'Verkabelungsüberprüfung Hügelstr. 162 (Rech. 1901112025)', party:'Elektro Jacob e.K.',             date:'19.01.2025', amount:124.95},
+  ],
+  ohmstr: [
+    {desc:'Einbauküche Nobilia EBK + Geräte (202300173)',            party:'Mira Küchen GmbH',                 date:'27.11.2023', amount:4200.00},
+    {desc:'Duschabtrennung, Spiegel LED, Toilettenhalter (Rech. 574A)', party:'J.-A. Nosek',                  date:'28.11.2023', amount:800.00},
+  ],
+  leipzig: [
+    {desc:'Einbauküche (Kaufvertrag 173556)',                          party:'Ratiomat Einbauküchen GmbH',       date:'17.07.2023', amount:4388.00},
+    {desc:'Organisation Küchenmontage (INV-84391)',                  party:'Homewise GmbH',                    date:'27.11.2023', amount:89.25},
+    {desc:'Anschluss Waschmaschine (R231081)',                       party:'Homewise GmbH',                    date:'01.12.2023', amount:63.07},
+    {desc:'Koordination Anschluss Waschmaschine (INV-84422)',        party:'Homewise GmbH',                    date:'01.12.2023', amount:59.50},
+    {desc:'Organisation Elektroarbeiten Küche (INV-84423)',          party:'Homewise GmbH',                    date:'02.12.2023', amount:89.25},
+    {desc:'Kombi-Eckventil + Monteur Bad (R230898)',                 party:'Fa. Reich / Homewise',             date:'10.11.2023', amount:133.95},
+    {desc:'Reparatur defekte Herddose (Rech. 20233073)',             party:'Fischer Haustechnik GmbH',         date:'20.11.2023', amount:82.13},
+    {desc:'Rohrreinigung Verstopfung Spüle (GR202641101274)',        party:'Onyx Rohr- und Kanal-Service (Veolia)', date:'12.02.2026', amount:168.39},
+  ],
+  eschweiler: [
+    {desc:'Einbauküche (Anschaffung)',                                                            party:'(unbekannt)',              date:'08.07.2021', amount:2248.00},
+    {desc:'Malerarbeiten, Laminatboden, Duschtasse + Armaturen, Fliesenarbeiten (Rech. 201346)', party:'Johnen Haustechnik GmbH',  date:'11.12.2021', amount:1531.34},
+  ],
+};
+// Tenant move-outs per property. since = earliest year with accounting data.
+// slots = rentable rooms. * = inferred from successor move-in, not directly confirmed.
+const TURNOVER = {
+  // since = first year with accounting data. slots = total rentable rooms.
+  // Dates are approx. move-out months derived from last payment in Buchhaltung CSV.
+  berlin:    {since:2024, slots:3, moveOuts:[
+    {name:'Mathis Neuhoff',         date:'2025-08'},
+  ]},
+  eschweiler:{since:2021, slots:1, moveOuts:[]},
+  huegelstr: {since:2023, slots:5, moveOuts:[
+    {name:'Nastasia Schmitt',        date:'2024-01'},
+    {name:'Delong Li',               date:'2025-11'},
+    {name:'Noah Hoepfner',           date:'2025-07'},
+    {name:'Tessa Klein',             date:'2026-03'},
+  ]},
+  ohmstr:    {since:2023, slots:3, moveOuts:[
+    {name:'Mathilde Lagadu-Cleyn',   date:'2025-02'},
+    {name:'Franziska Iseke',         date:'2025-08'},
+  ]},
+  leipzig:   {since:2023, slots:3, moveOuts:[
+    {name:'Nadya Sadaat',            date:'2024-05'},
+    {name:'Shimaa Abu Elola',        date:'2024-05'},
+    {name:'Mirzokhid Ganiev',        date:'2024-10'},
+    {name:'Ali Hamoud',              date:'2026-02'},
+    {name:'Kenan Suleman',           date:'2026-03'},
+  ]},
+};
+
+// Original loan amounts (from Kreditauszahlung entries in DKB CSVs) and cumulative Tilgung paid to Apr 2026.
+const MORTGAGE_DATA = {
+  berlin:    {loanAmt:298000, tilgungPaid:11045.59,  purchaseDate:'2024-07-12'},
+  eschweiler:{loanAmt:89000,  tilgungPaid:9585,       purchaseDate:'2021-01-01',
+              zi:107.21,      ti:161.27},
+              // Volksbank Immobiliar only. zi/ti/tilgungPaid used for mortgage tab and KNK break-even (DSL private loan excluded).
+              // Remaining balance: 89k − 9,585 = €79,415 (derived from Zinsen 107.21 / 0.135% monthly rate).
+  huegelstr: {loanAmt:420000, tilgungPaid:25238.59,  purchaseDate:'2023-06-30'},
+  ohmstr:    {loanAmt:400000, tilgungPaid:20369.06,  purchaseDate:'2023-09-08'},
+  leipzig:   {loanAmt:123000, tilgungPaid:6033.66,   purchaseDate:'2023-11-01'},
+};
+
+// Per-transaction KNK breakdown for hover tooltips.
+// Format: {category, party, date, amount}
+const KNK_DETAIL = {
+  berlin: [
+    {category:'Notar Kaufvertrag UVZ 244',             party:'Svend Christensen',      date:'17.07.2024', amount:2308.99},
+    {category:'Notar Grundschuld UVZ 245',             party:'Svend Christensen',      date:'17.07.2024', amount:788.41},
+    {category:'Grundbucheintrag Eigentumsumschr.',     party:'Amtsgericht Berlin-Mitte',date:'03.12.2024', amount:635.00},
+    {category:'Grundbucheintrag Löschung Vormerkung',  party:'Amtsgericht Berlin-Mitte',date:'03.12.2024', amount:25.00},
+    {category:'Grunderwerbsteuer Brendelberger (1/2)', party:'Finanzamt Spandau',      date:'19.08.2024', amount:9420.00},
+    {category:'Grunderwerbsteuer Gadodia (2/2)',       party:'Finanzamt Spandau',      date:'19.08.2024', amount:9420.00},
+  ],
+  eschweiler: [
+    {category:'Notar Kaufvertrag + Grundschuld',                    party:'Notare Förl & Winnen',     date:'05.02.2021', amount:1369.09},
+    {category:'Grunderwerbsteuer',                                  party:'Finanzamt Aachen-Kreis',   date:'12.01.2021', amount:5494.00},
+    {category:'Grundbucheintrag Auflassungsvormekg. + Grundpfandr.',party:'Amtsgericht Eschweiler',   date:'21.01.2021', amount:389.00},
+    {category:'Grundbucheintrag Eigentumsumschr. + Löschung',       party:'Amtsgericht Eschweiler',   date:'16.03.2021', amount:291.00},
+    {category:'Maklercourtage',                                     party:'phi Immobilien GmbH',      date:'08.02.2021', amount:3070.20},
+    {category:'Beratung Besichtigung + Kaufabwicklung (Rech. 2094)',party:'immostanding Martin Wildt', date:'28.12.2020', amount:1760.00},
+  ],
+  huegelstr: [
+    {category:'Notar Kaufvertrag UVZ 321',                         party:'Stephan Gemmer',            date:'22.05.2023', amount:3137.83},
+    {category:'Notar Grundschuld UVZ 322',                         party:'Stephan Gemmer',            date:'22.05.2023', amount:1024.63},
+    {category:'Grunderwerbsteuer Brendelberger (1/2)',             party:'Finanzamt Alsfeld-Lauterbach',date:'04.07.2023', amount:12600.00},
+    {category:'Grunderwerbsteuer Gadodia (2/2)',                   party:'Finanzamt Alsfeld-Lauterbach',date:'04.07.2023', amount:12600.00},
+    {category:'Grundbucheintrag Auflassungsvormekg. + Grundpfandr.',party:'Amtsgericht Frankfurt',   date:'25.05.2023', amount:1267.50},
+    {category:'Grundbucheintrag Eigentumsumschreibung',            party:'Amtsgericht Frankfurt',     date:'20.07.2023', amount:948.50},
+    {category:'Grundbuch Auszug',                                  party:'Stephan Gemmer',            date:'12.07.2024', amount:9.52},
+    {category:'Maklercourtage',                                    party:'Dornbusch Immobilien',      date:'17.05.2023', amount:12495.00},
+  ],
+  ohmstr: [
+    {category:'Notar Kaufvertrag UVZ 809',                         party:'Bögner Hensel & Partner',   date:'11.09.2023', amount:2532.66},
+    {category:'Notar Grundschuld UVZ 810',                         party:'Bögner Hensel & Partner',   date:'11.09.2023', amount:964.95},
+    {category:'Grunderwerbsteuer Brendelberger (1/2)',             party:'Finanzamt Alsfeld-Lauterbach',date:'18.10.2023', amount:12000.00},
+    {category:'Grunderwerbsteuer Gadodia (2/2)',                   party:'Finanzamt Alsfeld-Lauterbach',date:'18.10.2023', amount:12000.00},
+    {category:'Grundbucheintrag Grundschuld + Auflassungsvormekg.',party:'Amtsgericht Frankfurt',     date:'21.09.2023', amount:1242.50},
+    {category:'Grundbucheintrag Eigentumsumschreibung',            party:'Amtsgericht Frankfurt',     date:'06.12.2023', amount:893.50},
+  ],
+  leipzig: [
+    {category:'Notar Kaufvertrag UVZ 357 (netto)',    party:'Pichler Finke Michelsburg', date:'24.07.2023', amount:973.30},
+    {category:'Notar Grundschuld UVZ 358 (netto)',    party:'Pichler Finke Michelsburg', date:'24.07.2023', amount:560.10},
+    {category:'Notar MwSt 19%',                       party:'Pichler Finke Michelsburg', date:'24.07.2023', amount:291.35},
+    {category:'Grunderwerbsteuer Brendelberger (1/2)',party:'Finanzamt Leipzig I',        date:'26.09.2023', amount:3575.00},
+    {category:'Grunderwerbsteuer Gadodia (2/2)',      party:'Finanzamt Leipzig I',        date:'26.09.2023', amount:3575.00},
+    {category:'Grundbucheintrag Auflassungsvormekg. + Grundschuld',party:'Landesjustizkasse Chemnitz',date:'12.09.2023', amount:468.50},
+    {category:'Grundbucheintrag Eigentumsumschr. + Löschung',      party:'Landesjustizkasse Chemnitz',date:'25.01.2024', amount:352.00},
+  ],
+};
+
+// Annual appreciation rate assumptions for market value projections. NOT appraisals.
+const MARKET_DATA = {
+  berlin:    {annualPct:1.0, note:'Berlin: flat post-2024 correction'},
+  eschweiler:{annualPct:0.5, note:'Small city, stable'},
+  huegelstr: {annualPct:1.5, note:'Frankfurt: stabilizing'},
+  ohmstr:    {annualPct:1.5, note:'Frankfurt: stabilizing'},
+  leipzig:   {annualPct:2.0, note:'Leipzig: moderate growth'},
+};
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+const f  = (v,d=0) => v===null||v===undefined ? '—'
+  : new Intl.NumberFormat('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
+const fe = (v,d=0) => v===null ? '—' : '€\u202f'+f(v,d);
+const fp = (v,d=1) => v===null ? '—' : f(v,d)+'\u202f%';
+const fs = (v) => {  // short for axes
+  const av = Math.abs(v);
+  if (av >= 1000) return (v/1000).toFixed(1)+'k';
+  return Math.round(v).toString();
+};
+const vc = (v) => v===null ? '#9ca3af' : v>=0 ? '#34d399' : '#f87171';
+const bc = (v) => v>=0 ? '#34d399' : '#f87171';
+
+// ─── SVG CHART ENGINE ───────────────────────────────────────────────────────
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs={}, text) {
+  const e = document.createElementNS(NS, tag);
+  Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k, v));
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function makeChart({ data, W=480, H=210, ml=56, mr=14, mt=16, mb=36, unit='€', label='' }) {
+  // data: [{name, bars:[{label,value,color}]}]
+  const iW = W-ml-mr, iH = H-mt-mb;
+
+  // Find value range
+  const allVals = data.flatMap(d =>
+    [ d.bars.filter(b=>b.value>0).reduce((s,b)=>s+b.value,0),
+      d.bars.filter(b=>b.value<0).reduce((s,b)=>s+b.value,0) ]);
+  const maxV = Math.max(0,...allVals);
+  const minV = Math.min(0,...allVals);
+  const range = maxV - minV || 1;
+
+  const yPx = v => mt + (1-(v-minV)/range)*iH;
+  const zeroY = yPx(0);
+  const groupW = iW / data.length;
+  const barW = Math.min(groupW*0.62, 56);
+
+  const svg = el('svg', {viewBox:`0 0 ${W} ${H}`, width:'100%', style:'overflow:visible;display:block'});
+
+  // Grid lines + y-axis labels
+  const ticks = 5;
+  for (let i=0; i<=ticks; i++) {
+    const v = minV + (range/ticks)*i;
+    const y = yPx(v);
+    svg.appendChild(el('line', {x1:ml,y1:y,x2:W-mr,y2:y,stroke:'#374151','stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text', {x:ml-5,y:y+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'}, fs(v)));
+  }
+
+  // Zero line
+  svg.appendChild(el('line', {x1:ml,y1:zeroY,x2:W-mr,y2:zeroY,stroke:'#6b7280','stroke-width':'1.5'}));
+
+  // Bars
+  data.forEach((d, i) => {
+    const cx = ml + groupW*(i+0.5);
+    let posTop = zeroY, negBot = zeroY;
+
+    d.bars.forEach(b => {
+      if (b.value === 0) return;
+      const h = Math.abs(b.value/range*iH);
+      const y = b.value>=0 ? posTop-h : negBot;
+      const rect = el('rect', {x:cx-barW/2, y, width:barW, height:h, fill:b.color, rx:'2'});
+      const title = document.createElementNS(NS,'title');
+      title.textContent = `${b.label||d.name}: ${unit}${f(b.value)}`;
+      rect.appendChild(title);
+      // Hover tooltip
+      rect.addEventListener('mouseenter', function(e) {
+        showTooltip(e, `<b>${d.name}</b><br/>${b.label}: ${unit}${f(b.value)}`);
+      });
+      rect.addEventListener('mousemove', moveTooltip);
+      rect.addEventListener('mouseleave', hideTooltip);
+      svg.appendChild(rect);
+      if (b.value>=0) posTop-=h; else negBot+=h;
+    });
+
+    // X label
+    svg.appendChild(el('text', {x:cx, y:H-mb+14,'text-anchor':'middle',fill:'#9ca3af','font-size':'10'}, d.name));
+  });
+
+  // Y-axis label
+  if (label) {
+    const t = el('text', {x:8, y:mt+iH/2, 'text-anchor':'middle', fill:'#6b7280','font-size':'9',
+      transform:`rotate(-90,8,${mt+iH/2})`}, label);
+    svg.appendChild(t);
+  }
+
+  return svg;
+}
+
+// Grouped bar chart (multiple bars side by side per group)
+function makeGroupedChart({ data, keys, colors, colorFns, W=480, H=210, ml=56, mr=14, mt=16, mb=36, unit='' }) {
+  const iW = W-ml-mr, iH = H-mt-mb;
+  const allVals = data.flatMap(d => keys.map(k => d[k]||0));
+  const maxV = Math.max(0,...allVals);
+  const minV = Math.min(0,...allVals);
+  const range = maxV - minV || 1;
+  const yPx = v => mt + (1-(v-minV)/range)*iH;
+  const zeroY = yPx(0);
+  const groupW = iW / data.length;
+  const bw = Math.min(groupW*0.75/keys.length, 40);
+  const gap = bw*0.25;
+
+  const svg = el('svg', {viewBox:`0 0 ${W} ${H}`, width:'100%', style:'overflow:visible;display:block'});
+
+  // Grid + labels
+  for (let i=0; i<=5; i++) {
+    const v = minV + (range/5)*i;
+    const y = yPx(v);
+    svg.appendChild(el('line', {x1:ml,y1:y,x2:W-mr,y2:y,stroke:'#374151','stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text', {x:ml-5,y:y+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'}, fs(v)+(unit?unit:'')));
+  }
+  svg.appendChild(el('line', {x1:ml,y1:zeroY,x2:W-mr,y2:zeroY,stroke:'#6b7280','stroke-width':'1.5'}));
+
+  // Reference line DSCR=1
+  if (unit==='x') {
+    const ry = yPx(1);
+    svg.appendChild(el('line', {x1:ml,y1:ry,x2:W-mr,y2:ry,stroke:'#fbbf24','stroke-width':'1',
+      'stroke-dasharray':'5,3'}));
+    svg.appendChild(el('text', {x:W-mr+2,y:ry+3,fill:'#fbbf24','font-size':'8'}, '1.0'));
+  }
+
+  data.forEach((d, i) => {
+    const cx = ml + groupW*(i+0.5) - (keys.length-1)*(bw+gap)/2;
+    keys.forEach((k, ki) => {
+      const v = d[k] !== undefined ? d[k] : 0;
+      if (v===0) return;
+      const h = Math.abs(v/range*iH);
+      const y = v>=0 ? zeroY-h : zeroY;
+      const x = cx + ki*(bw+gap) - bw/2;
+      // colorFns[ki] allows per-value color (e.g. green/red by sign); falls back to colors[ki]
+      const fill = (colorFns && colorFns[ki]) ? colorFns[ki](v) : (colors[ki]||'#60a5fa');
+      const rect = el('rect', {x, y, width:bw, height:h, fill, rx:'2'});
+      rect.addEventListener('mouseenter', e => showTooltip(e, `<b>${d.name}</b><br/>${k}: ${f(v,2)}${unit}`));
+      rect.addEventListener('mousemove', moveTooltip);
+      rect.addEventListener('mouseleave', hideTooltip);
+      svg.appendChild(rect);
+    });
+    svg.appendChild(el('text', {x:ml+groupW*(i+0.5),y:H-mb+14,'text-anchor':'middle',fill:'#9ca3af','font-size':'10'}, d.name));
+  });
+  return svg;
+}
+
+// Line chart for time-series data (market value development)
+function makeLineChart({ series, W=900, H=260, ml=72, mr=130, mt=20, mb=36, unit='€' }) {
+  const iW = W-ml-mr, iH = H-mt-mb;
+  const allX = series.flatMap(s => s.points.map(p => p.x));
+  const allY = series.flatMap(s => s.points.map(p => p.y));
+  const minX = Math.min(...allX), maxX = Math.max(...allX);
+  const minY = 0, maxY = Math.max(...allY) * 1.05;
+  const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
+  const xPx = x => ml + (x - minX) / rangeX * iW;
+  const yPx = y => mt + (1 - (y - minY) / rangeY) * iH;
+
+  const svg = el('svg', {viewBox:`0 0 ${W} ${H}`, width:'100%', style:'overflow:visible;display:block'});
+
+  // Grid + Y labels
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = minY + (maxY - minY) / ticks * i;
+    const py = yPx(v);
+    svg.appendChild(el('line', {x1:ml,y1:py,x2:W-mr,y2:py,stroke:'#374151','stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text', {x:ml-5,y:py+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'}, fs(v)));
+  }
+
+  // Vertical year lines + X labels
+  for (let x = minX; x <= maxX; x++) {
+    const px = xPx(x);
+    svg.appendChild(el('line', {x1:px,y1:mt,x2:px,y2:H-mb,stroke:'#374151','stroke-dasharray':'2,4'}));
+    svg.appendChild(el('text', {x:px,y:H-mb+12,'text-anchor':'middle',fill:'#9ca3af','font-size':'9'}, x));
+  }
+
+  // "Now" marker (April 2026)
+  const NOW_X = 2026 + 3/12;
+  const nowPx = xPx(NOW_X);
+  svg.appendChild(el('line', {x1:nowPx,y1:mt,x2:nowPx,y2:H-mb,stroke:'#fbbf24','stroke-width':'1.5','stroke-dasharray':'5,3'}));
+  svg.appendChild(el('text', {x:nowPx+3,y:mt+9,fill:'#fbbf24','font-size':'8'}, 'Apr 2026'));
+
+  // Draw each series
+  series.forEach(s => {
+    const pts = s.points;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p1 = pts[i], p2 = pts[i+1];
+      const attrs = {
+        x1: xPx(p1.x), y1: yPx(p1.y), x2: xPx(p2.x), y2: yPx(p2.y),
+        stroke: s.color, 'stroke-width': s.thick ? '2.5' : '1.5',
+      };
+      if (p2.projected) attrs['stroke-dasharray'] = '6,3';
+      svg.appendChild(el('line', attrs));
+    }
+    // Dots
+    pts.forEach(p => {
+      const c = el('circle', {cx:xPx(p.x), cy:yPx(p.y), r: s.thick?'4':'3',
+        fill:s.color, opacity:p.projected?'0.7':'1'});
+      c.addEventListener('mouseenter', e => showTooltip(e,
+        `<b>${s.name}</b><br/>${p.x}: ${unit}${f(p.y)}${p.projected?' <span style="color:#fbbf24">(projected)</span>':''}`));
+      c.addEventListener('mousemove', moveTooltip);
+      c.addEventListener('mouseleave', hideTooltip);
+      svg.appendChild(c);
+    });
+    // End label
+    if (pts.length > 0) {
+      const last = pts[pts.length-1];
+      svg.appendChild(el('text', {x:xPx(last.x)+5, y:yPx(last.y)+3,
+        fill:s.color, 'font-size': s.thick?'10':'9', 'font-weight': s.thick?'700':'400'}, s.name));
+    }
+  });
+
+  return svg;
+}
+
+// Waterfall / bridge chart — each bar floats from running total of previous bars
+function makeWaterfallChart({ steps, W=420, H=280, ml=64, mr=14, mt=20, mb=68 }) {
+  const iW=W-ml-mr, iH=H-mt-mb;
+  // Build bars with start/end positions
+  let run=0;
+  const bars=steps.map(s=>{
+    const s0=s.isTotal?0:run;
+    const s1=s.isTotal?s.value:run+s.value;
+    if(!s.isTotal) run+=s.value;
+    return{...s,s0,s1};
+  });
+  const allV=bars.flatMap(b=>[b.s0,b.s1]);
+  const rawMax=Math.max(0,...allV), rawMin=Math.min(0,...allV);
+  const pad=(rawMax-rawMin)*0.14;
+  const maxV=rawMax+pad, minV=rawMin-pad;
+  const range=maxV-minV||1;
+  const yPx=v=>mt+(1-(v-minV)/range)*iH;
+  const z=yPx(0);
+  const gW=iW/bars.length, bW=Math.min(gW*0.62,44);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:'overflow:visible;display:block'});
+  // Grid
+  for(let i=0;i<=5;i++){
+    const v=minV+(range/5)*i, y=yPx(v);
+    svg.appendChild(el('line',{x1:ml,y1:y,x2:W-mr,y2:y,stroke:'#374151','stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text',{x:ml-5,y:y+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'},fs(v)));
+  }
+  if(minV<0&&maxV>0) svg.appendChild(el('line',{x1:ml,y1:z,x2:W-mr,y2:z,stroke:'#6b7280','stroke-width':'1.5'}));
+  bars.forEach((b,i)=>{
+    const cx=ml+gW*(i+0.5), x=cx-bW/2;
+    const top=yPx(Math.max(b.s0,b.s1)), bot=yPx(Math.min(b.s0,b.s1)), h=Math.max(2,bot-top);
+    const fill=b.isTotal?(b.value>=0?'#34d399':'#f87171'):(b.color||(b.value>=0?'#34d399':'#dc2626'));
+    // Connector line to next bar
+    if(i<bars.length-1){
+      const nCx=ml+gW*(i+1.5);
+      svg.appendChild(el('line',{x1:cx+bW/2,y1:yPx(b.s1),x2:nCx-bW/2,y2:yPx(b.s1),
+        stroke:'#4b5563','stroke-width':'1','stroke-dasharray':'3,2'}));
+    }
+    const rect=el('rect',{x,y:top,width:bW,height:h,fill,rx:'2',opacity:'0.9'});
+    rect.addEventListener('mouseenter',e=>showTooltip(e,`<b>${b.label}</b><br/>€${f(b.value)}`));
+    rect.addEventListener('mousemove',moveTooltip);
+    rect.addEventListener('mouseleave',hideTooltip);
+    svg.appendChild(rect);
+    // Value label above/below bar
+    const lv=b.value>=0?top-3:bot+10;
+    svg.appendChild(el('text',{x:cx,y:lv,'text-anchor':'middle',fill:fill,
+      'font-size':'9','font-weight':'600'},fs(b.value)));
+    // Rotated x-axis label
+    svg.appendChild(el('text',{x:cx,y:H-mb+12,'text-anchor':'end',fill:'#9ca3af','font-size':'9',
+      transform:`rotate(-40,${cx},${H-mb+12})`},b.label));
+  });
+  return svg;
+}
+
+// Helper: decimal year fraction → "Mon YYYY"
+function formatFrac(frac) {
+  const yr = Math.floor(frac);
+  const mo = Math.round((frac - yr) * 12) + 1;
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.min(mo-1,11)]+' '+yr;
+}
+
+// KNK break-even timeline chart
+// Line starts at y = −KNK at purchase date, rises (cumTR − KNK), crosses y=0 at break-even.
+// items: [{name, color, purchaseFrac, knk, knkPartial, cumTRnow, trPerMonth, breakevenFrac, pct}]
+function makeKNKTimeline({ items, W=900, H=340, ml=72, mr=148, mt=24, mb=38 }) {
+  const iW=W-ml-mr, iH=H-mt-mb;
+  const nowFrac = 2026 + 3/12;
+
+  // X range: earliest purchase year to latest break-even
+  const minX = Math.floor(Math.min(...items.map(it=>it.purchaseFrac)));
+  const validBE = items.filter(it=>it.breakevenFrac < 2060).map(it=>it.breakevenFrac);
+  const maxX = Math.ceil(Math.max(validBE.length ? Math.max(...validBE) : nowFrac, nowFrac) + 1.5);
+
+  // Y range: negative (start = −KNK) up through zero (break-even) and a bit above
+  const minKNK = Math.min(...items.map(it=>it.knk));
+  const maxKNK = Math.max(...items.map(it=>it.knk));
+  const maxCurPos = Math.max(0, ...items.map(it=>it.cumTRnow - it.knk));
+  const minY = -maxKNK * 1.08;
+  const maxY = Math.max(maxCurPos * 1.15, maxKNK * 0.12, 2000);
+  const rangeY = maxY - minY;
+
+  const xPx = x => ml + (x - minX) / (maxX - minX) * iW;
+  const yPx = y => mt + (1 - (y - minY) / rangeY) * iH;
+  const zeroY = yPx(0);
+
+  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:'overflow:visible;display:block'});
+
+  // Y grid lines + labels
+  const yStep = Math.ceil(maxKNK / 4 / 5000) * 5000; // round to nearest 5k
+  for(let v = Math.ceil(minY/yStep)*yStep; v <= maxY + yStep/2; v += yStep){
+    const py = yPx(v);
+    if(py < mt-2 || py > H-mb+2) continue;
+    svg.appendChild(el('line',{x1:ml,y1:py,x2:W-mr,y2:py,stroke:'#374151','stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text',{x:ml-5,y:py+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'},fs(v)));
+  }
+
+  // Break-even zero line (prominent green)
+  svg.appendChild(el('line',{x1:ml,y1:zeroY,x2:W-mr,y2:zeroY,stroke:'#34d399','stroke-width':'1.5'}));
+  svg.appendChild(el('text',{x:ml-5,y:zeroY-4,'text-anchor':'end',fill:'#34d399','font-size':'8','font-weight':'600'},'Break-even'));
+
+  // X year ticks
+  const span = maxX - minX;
+  for(let yr=minX; yr<=maxX; yr++){
+    const px = xPx(yr);
+    svg.appendChild(el('line',{x1:px,y1:mt,x2:px,y2:H-mb,stroke:'#374151','stroke-dasharray':'2,4'}));
+    if(span <= 12 || yr % 2 === 0){
+      svg.appendChild(el('text',{x:px,y:H-mb+13,'text-anchor':'middle',fill:'#9ca3af','font-size':'9'},yr));
+    }
+  }
+
+  // "Now" vertical marker
+  const nowPx = xPx(nowFrac);
+  svg.appendChild(el('line',{x1:nowPx,y1:mt,x2:nowPx,y2:H-mb,stroke:'#fbbf24','stroke-width':'1.5','stroke-dasharray':'5,3'}));
+  svg.appendChild(el('text',{x:nowPx+3,y:mt+9,fill:'#fbbf24','font-size':'8'},'Apr 2026'));
+
+  // Per-property lines
+  items.forEach((it, idx) => {
+    const {color, purchaseFrac, knk, knkPartial, cumTRnow, breakevenFrac, name} = it;
+    const pX   = xPx(purchaseFrac);
+    const startY = yPx(-knk);              // purchase date: y = −KNK
+    // Place the now-dot on the straight purchase→break-even line so both segments stay collinear.
+    // Direct use of cumTRnow causes a kink because actual tilgungPaid ≠ currentMonthlyTilgung×months.
+    const nowY = (breakevenFrac > nowFrac && breakevenFrac > purchaseFrac)
+      ? yPx(-knk * (breakevenFrac - nowFrac) / (breakevenFrac - purchaseFrac))
+      : yPx(cumTRnow - knk);
+    const beInRange = breakevenFrac < 2060 && breakevenFrac <= maxX + 0.5;
+    const beX = beInRange ? xPx(Math.min(breakevenFrac, maxX)) : null;
+
+    // Historical solid line: purchase → now
+    svg.appendChild(el('line',{x1:pX,y1:startY,x2:nowPx,y2:nowY,
+      stroke:color,'stroke-width':'2.5'}));
+
+    // Projected dashed line: now → break-even (y=0)
+    if(beX && breakevenFrac > nowFrac){
+      svg.appendChild(el('line',{x1:nowPx,y1:nowY,x2:beX,y2:zeroY,
+        stroke:color,'stroke-width':'1.5','stroke-dasharray':'6,3'}));
+      // Break-even dot at y=0 crossing
+      const beDot = el('circle',{cx:beX,cy:zeroY,r:'5',fill:color,stroke:'#111827','stroke-width':'1.5'});
+      beDot.addEventListener('mouseenter',e=>showTooltip(e,
+        `<b>${name}</b><br/>Break-even: <b>${formatFrac(breakevenFrac)}</b><br/>KNK: ${fe(Math.round(knk))}${knkPartial?' ⚠':' ✓'}`));
+      beDot.addEventListener('mousemove',moveTooltip);
+      beDot.addEventListener('mouseleave',hideTooltip);
+      svg.appendChild(beDot);
+    } else if(breakevenFrac <= nowFrac && beInRange){
+      // Already broken even — place dot at geometric intersection of drawn line with zeroY
+      const t = (zeroY - startY) / (nowY - startY);
+      const beXIntersect = pX + t * (nowPx - pX);
+      const beDot = el('circle',{cx:beXIntersect,cy:zeroY,r:'5',fill:color,stroke:'#111827','stroke-width':'1.5'});
+      beDot.addEventListener('mouseenter',e=>showTooltip(e,
+        `<b>${name}</b><br/>Broke even: <b>${formatFrac(breakevenFrac)}</b> ✓<br/>KNK: ${fe(Math.round(knk))}`));
+      beDot.addEventListener('mousemove',moveTooltip);
+      beDot.addEventListener('mouseleave',hideTooltip);
+      svg.appendChild(beDot);
+    }
+
+    // Current position dot (Apr 2026)
+    // For properties that have already broken even, tooltip is on the break-even dot — not here.
+    const nowDot = el('circle',{cx:nowPx,cy:nowY,r:'3.5',fill:color,stroke:'#111827','stroke-width':'1.2'});
+    if(breakevenFrac > nowFrac){
+      const relPos = cumTRnow - knk;
+      nowDot.addEventListener('mouseenter',e=>showTooltip(e,
+        `<b>${name}</b><br/>Apr 2026: ${relPos>=0?'+':''}${fe(Math.round(relPos))} vs. KNK<br/>Cum. TR: ${fe(Math.round(cumTRnow))}<br/>KNK: ${fe(Math.round(knk))}${knkPartial?' ⚠':' ✓'}<br/>Progress: ${it.pct.toFixed(0)}%`));
+      nowDot.addEventListener('mousemove',moveTooltip);
+      nowDot.addEventListener('mouseleave',hideTooltip);
+    }
+    svg.appendChild(nowDot);
+
+    // Small start dot at purchase date
+    svg.appendChild(el('circle',{cx:pX,cy:startY,r:'3',fill:color,stroke:'#111827','stroke-width':'1',opacity:'0.7'}));
+
+    // Legend entry (right margin)
+    const legY = mt + 20 + idx * 26;
+    svg.appendChild(el('rect',{x:W-mr+10,y:legY-9,width:14,height:10,fill:color,rx:'2'}));
+    const ln1 = el('text',{x:W-mr+28,y:legY,fill:'#d1d5db','font-size':'10'});
+    ln1.textContent = name + (knkPartial ? ' ⚠' : ' ✓');
+    svg.appendChild(ln1);
+    const ln2 = el('text',{x:W-mr+28,y:legY+11,fill:'#6b7280','font-size':'9'});
+    ln2.textContent = breakevenFrac <= nowFrac ? 'Done ✓ '+formatFrac(breakevenFrac)
+      : (beX ? formatFrac(breakevenFrac) : '>'+maxX);
+    svg.appendChild(ln2);
+  });
+
+  return svg;
+}
+
+// ─── TOOLTIP ────────────────────────────────────────────────────────────────
+const TT = document.getElementById('tooltip');
+function showTooltip(e, html) { TT.innerHTML=html; TT.style.display='block'; moveTooltip(e); }
+function moveTooltip(e) {
+  const r = document.body.getBoundingClientRect();
+  TT.style.left = (e.clientX - r.left + 12)+'px';
+  TT.style.top  = (e.clientY - r.top  - 8)+'px';
+}
+function hideTooltip() { TT.style.display='none'; }
+function showKNKDetailTooltip(e, id) {
+  const items = KNK_DETAIL[id] || [];
+  const rows = items.map(t => `${t.category} (${t.party}), ${t.date}: <b>${fe(t.amount,2)}</b>`).join('<br/>');
+  const total = items.reduce((s,t)=>s+t.amount,0);
+  showTooltip(e, `<b>KNK — ${id.charAt(0).toUpperCase()+id.slice(1)} Breakdown</b><br/>${rows}<br/><hr style="border-color:#374151;margin:4px 0"/><b>Total: ${fe(total,2)}</b>`);
+}
+function showRepairDetailTooltip(e, id, year) {
+  const all = REPAIRS_DETAIL[id] || [];
+  const items = year ? all.filter(t => parseInt(t.date.slice(-4)) === year) : all;
+  if (!items.length) return;
+  const rows = items.map(t => `${t.desc} (${t.party}), ${t.date}: <b>${fe(t.amount,2)}</b>`).join('<br/>');
+  const total = items.reduce((s,t)=>s+t.amount,0);
+  const name = id.charAt(0).toUpperCase()+id.slice(1);
+  const hdr = year ? `${name} ${year}` : name;
+  showTooltip(e, `<b>Repair &amp; Maintenance — ${hdr} (invoices on file)</b><br/>${rows}<br/><hr style="border-color:#374151;margin:4px 0"/><b>Total invoiced: ${fe(total,2)}</b><br/><span style="color:#6b7280;font-size:10px">CSV accounting total may differ</span>`);
+}
+
+// ─── RENDER FUNCTIONS ────────────────────────────────────────────────────────
+function kpiCard(label, value, sub, color='#f9fafb', sm=false) {
+  return `<div class="card">
+    <div class="card-label">${label}</div>
+    <div class="card-value${sm?' sm':''}" style="color:${color}">${value}</div>
+    ${sub ? `<div class="card-sub">${sub}</div>` : ''}
+  </div>`;
+}
+
+function renderOverview() {
+  const sec = document.getElementById('overview');
+
+  // KPI row 1
+  const r1 = document.createElement('div');
+  r1.className='grid'; r1.style.cssText='grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:12px';
+  r1.innerHTML = [
+    kpiCard('Monthly Kaltmiete',   fe(P.km),  `€\u202f${f(P.km*12)} / year`),
+    kpiCard('Pre-Financing CF',    fe(P.gp),  'Warmmiete − Opex (before mortgage)', vc(P.gp), true),
+    kpiCard('Gross Margin',        fp(P.gmPct), 'On total income (Warmmiete)', vc(P.gmPct)),
+    kpiCard('Net Margin',          fp(P.nmPct), 'After all mortgage costs', vc(P.nmPct)),
+    kpiCard('Monthly Cashflow',    fe(P.cf),  'All income minus all costs', vc(P.cf)),
+    kpiCard('Total Return / mo',   fe(P.tr),  `Cashflow + €\u202f${f(P.ti)} equity`, vc(P.tr)),
+    kpiCard('Active Tenants',      P.tn,      '5 properties'),
+  ].join('');
+  sec.appendChild(r1);
+
+  // KPI row 2 — costs
+  const r2 = document.createElement('div');
+  r2.className='grid g4'; r2.style.marginBottom='20px';
+  r2.innerHTML = [
+    kpiCard('Total Opex / mo',     fe(P.opex), 'Hausgeld + Grundsteuer + misc', '#fb923c', true),
+    kpiCard('Total Zinsen / mo',   fe(P.zi),   'Interest payments',            '#f87171', true),
+    kpiCard('Total Tilgung / mo',  fe(P.ti),   'Principal → equity',           '#c084fc', true),
+    kpiCard('Total Mortgage / mo', fe(P.mort), 'Zinsen + Tilgung',             '#fca5a5', true),
+  ].join('');
+  sec.appendChild(r2);
+
+  // Chart row 1: Margins + Cashflow
+  const cr1 = document.createElement('div');
+  cr1.className = 'grid g2'; cr1.style.marginBottom='16px';
+
+  // Margin chart
+  const mc = document.createElement('div');
+  mc.className='card chart-wrap';
+  mc.innerHTML='<div class="chart-title">Gross &amp; Net Margin by Property</div>'
+    +'<div class="chart-sub">Green = gross (before financing), Red = net (after mortgage)</div>';
+  const marginData = D.map(d=>({
+    name:          d.name,
+    'Gross Margin %': +d.gmPct.toFixed(1),
+    'Net Margin %':   +d.nmPct.toFixed(1),
+  }));
+  mc.appendChild(makeGroupedChart({data:marginData, keys:['Gross Margin %','Net Margin %'],
+    colors:['#34d399','#f87171'], unit:'%'}));
+  { const leg=document.createElement('div'); leg.className='legend';
+    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Gross Margin %</div>'
+      +'<div class="leg-item"><div class="leg-dot" style="background:#f87171"></div>Net Margin %</div>';
+    mc.appendChild(leg); }
+  cr1.appendChild(mc);
+
+  // Cashflow chart
+  const cc = document.createElement('div');
+  cc.className='card chart-wrap';
+  cc.innerHTML='<div class="chart-title">Monthly Cashflow &amp; Total Return (€)</div>'
+    +'<div class="chart-sub">Total Return = Cashflow + Tilgung (equity building). Hover bars for values.</div>';
+  const cfData = D.map(d=>({
+    name:           d.name,
+    'Cashflow':     +d.cf.toFixed(0),
+    'Total Return': +d.tr.toFixed(0),
+  }));
+  cc.appendChild(makeGroupedChart({
+    data:     cfData,
+    keys:     ['Cashflow','Total Return'],
+    colors:   ['#34d399','#818cf8'],
+    colorFns: [v => v>=0 ? '#34d399' : '#f87171', null],
+  }));
+  { const leg=document.createElement('div'); leg.className='legend';
+    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Cashflow (green/red by sign)</div>'
+      +'<div class="leg-item"><div class="leg-dot" style="background:#818cf8"></div>Total Return</div>';
+    cc.appendChild(leg); }
+  cr1.appendChild(cc);
+  sec.appendChild(cr1);
+
+  // Chart row 2: Income/Costs stack + Yield/DSCR
+  const cr2 = document.createElement('div');
+  cr2.className='grid g2'; cr2.style.marginBottom='16px';
+
+  // Stacked income vs costs
+  const sc = document.createElement('div');
+  sc.className='card chart-wrap';
+  sc.innerHTML='<div class="chart-title">Income vs Costs Breakdown (€/mo)</div>'
+    +'<div class="chart-sub">Income stacks up (green). Costs stack down. Hover bars for values.</div>';
+  const stackData = D.map(d=>({name:d.name, bars:[
+    {label:'Kaltmiete', value:+d.km.toFixed(0),    color:'#34d399'},
+    {label:'NK Income', value:+d.nk.toFixed(0),    color:'#6ee7b7'},
+    {label:'Opex',      value:-Math.round(d.opex), color:'#f97316'},
+    {label:'Zinsen',    value:-Math.round(d.zi),   color:'#dc2626'},
+    {label:'Tilgung',   value:-Math.round(d.ti),   color:'#c084fc'},
+  ]}));
+  sc.appendChild(makeChart({data:stackData, unit:'€'}));
+  { const leg=document.createElement('div'); leg.className='legend';
+    leg.innerHTML=['#34d399,Kaltmiete','#6ee7b7,NK Income','#f97316,Opex','#dc2626,Zinsen','#c084fc,Tilgung']
+      .map(s=>{ const[c,l]=s.split(','); return `<div class="leg-item"><div class="leg-dot" style="background:${c}"></div>${l}</div>`; }).join('');
+    sc.appendChild(leg); }
+  cr2.appendChild(sc);
+
+  // Yield + DSCR grouped
+  const yc = document.createElement('div');
+  yc.className='card chart-wrap';
+  yc.innerHTML='<div class="chart-title">Gross Rental Yield (%) &amp; DSCR (×)</div>'
+    +'<div class="chart-sub">Dashed yellow line = DSCR 1.0. Yield based on purchase price.</div>';
+  const yieldData = D.map(d=>({
+    name:d.name,
+    'Gross Yield %': d.yield ? +d.yield.toFixed(2) : 0,
+    'DSCR': +d.dscr.toFixed(2),
+  }));
+  yc.appendChild(makeGroupedChart({data:yieldData,
+    keys:['Gross Yield %','DSCR'], colors:['#60a5fa','#a78bfa'], unit:'x'}));
+  { const leg=document.createElement('div'); leg.className='legend';
+    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#60a5fa"></div>Gross Yield %</div>'
+      +'<div class="leg-item"><div class="leg-dot" style="background:#a78bfa"></div>DSCR ×</div>'
+      +'<div class="leg-item"><div class="leg-dot" style="background:#fbbf24"></div>DSCR = 1.0 threshold</div>';
+    yc.appendChild(leg); }
+  cr2.appendChild(yc);
+  sec.appendChild(cr2);
+
+  // Summary table
+  const tCard = document.createElement('div');
+  tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
+  tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Full KPI Summary</div>';
+  const cols = ['Property','Kaltmiete','Opex','Op. Surplus','Gross Margin','Mortgage','Cashflow','Net Margin','Total Return','Yield','DSCR'];
+  let html = '<table><thead><tr>'
+    + cols.map((c,i)=>`<th${i===0?' class="left"':''}>${c}</th>`).join('')
+    + '</tr></thead><tbody>';
+  D.forEach(d => {
+    html += `<tr>
+      <td class="left">${d.name}<br><span style="font-weight:400;color:#9ca3af;font-size:10px">${d.addr}</span></td>
+      <td>${fe(d.km)}</td>
+      <td style="color:#fb923c">${fe(d.opex)}</td>
+      <td style="color:${vc(d.gp)};font-weight:600">${fe(d.gp)}</td>
+      <td style="color:${vc(d.gmPct)};font-weight:600">${fp(d.gmPct)}</td>
+      <td style="color:#f87171">${fe(d.mort)}</td>
+      <td style="color:${vc(d.np)};font-weight:600">${fe(d.np)}</td>
+      <td style="color:${vc(d.nmPct)};font-weight:600">${fp(d.nmPct)}</td>
+      <td style="color:${vc(d.tr)};font-weight:600">${fe(d.tr)}</td>
+      <td style="color:#60a5fa">${fp(d.yield)}</td>
+      <td style="color:${d.dscr>=1?'#34d399':'#f87171'};font-weight:600">${d.dscr.toFixed(2)}×</td>
+    </tr>`;
+    if (d.note) html += `<tr><td colspan="11" style="background:#1c2535;padding:4px 10px">
+      <span style="color:#fbbf24;font-size:10px">⚠ ${d.note}</span></td></tr>`;
+  });
+  html += `<tr class="total">
+    <td class="left">PORTFOLIO</td>
+    <td>${fe(P.km)}</td>
+    <td style="color:#fb923c">${fe(P.opex)}</td>
+    <td style="color:${vc(P.gp)}">${fe(P.gp)}</td>
+    <td style="color:${vc(P.gmPct)}">${fp(P.gmPct)}</td>
+    <td style="color:#f87171">${fe(P.mort)}</td>
+    <td style="color:${vc(P.np)}">${fe(P.np)}</td>
+    <td style="color:${vc(P.nmPct)}">${fp(P.nmPct)}</td>
+    <td style="color:${vc(P.tr)}">${fe(P.tr)}</td>
+    <td style="color:#9ca3af">—</td>
+    <td style="color:#9ca3af">—</td>
+  </tr></tbody></table>`;
+  tCard.innerHTML += html;
+  sec.appendChild(tCard);
+
+  // ── Analytics row 1: €/m² charts ──────────────────────────────────────────
+  const sqmRow = document.createElement('div');
+  sqmRow.className='grid g2'; sqmRow.style.marginBottom='16px';
+
+  const sqmPCard = document.createElement('div');
+  sqmPCard.className='card chart-wrap';
+  sqmPCard.innerHTML='<div class="chart-title">Purchase Price €/m²</div>'
+    +'<div class="chart-sub">Based on purchase price ÷ total rentable m²</div>';
+  const sqmPData = D.filter(d=>d.ppSqm!==null).map(d=>({name:d.name,'€/m²':d.ppSqm}));
+  sqmPCard.appendChild(makeGroupedChart({data:sqmPData, keys:['€/m²'], colors:['#60a5fa'], unit:''}));
+  {const leg=document.createElement('div');leg.className='legend';
+   leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#60a5fa"></div>€/m² purchase</div>';
+   sqmPCard.appendChild(leg);}
+  sqmRow.appendChild(sqmPCard);
+
+  const sqmRCard = document.createElement('div');
+  sqmRCard.className='card chart-wrap';
+  sqmRCard.innerHTML='<div class="chart-title">Monthly Kaltmiete €/m²</div>'
+    +'<div class="chart-sub">Kaltmiete divided by total rentable m² per property</div>';
+  const sqmRData = D.filter(d=>d.kmSqm!==null).map(d=>({name:d.name,'€/m²':d.kmSqm}));
+  sqmRCard.appendChild(makeGroupedChart({data:sqmRData, keys:['€/m²'], colors:['#34d399'], unit:''}));
+  {const leg=document.createElement('div');leg.className='legend';
+   leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>€/m² / month</div>';
+   sqmRCard.appendChild(leg);}
+  sqmRow.appendChild(sqmRCard);
+  sec.appendChild(sqmRow);
+
+  // ── Kaufnebenkosten break-even ─────────────────────────────────────────────
+  const knkCard = document.createElement('div');
+  knkCard.className='card chart-wrap'; knkCard.style.marginBottom='16px';
+  knkCard.innerHTML='<div class="chart-title">Kaufnebenkosten Break-Even — Timeline</div>'
+    +'<div class="chart-sub">Each line starts at y = −KNK (the acquisition cost at purchase date) and rises as Total Return (Cashflow + Tilgung) accumulates. '
+    +'Crossing y = 0 (green line) = break-even. Solid = historical, dashed = projected. '
+    +'Filled circle = projected break-even date. '
+    +'Eschweiler: mortgage only (Volksbank; DSL private loan excluded). '
+    +'Hover KNK total in table below for per-invoice breakdown. ⚠ = contains estimates. ✓ = fully confirmed.</div>';
+
+  const NOW_FRAC2 = 2026 + 3/12;
+  const PROP_COLORS = {
+    berlin:'#60a5fa', eschweiler:'#34d399', huegelstr:'#f59e0b', ohmstr:'#f87171', leipzig:'#a78bfa'
+  };
+
+  const knkItems = D.map(d => {
+    const md = MORTGAGE_DATA[d.id];
+    const py = parseInt(md.purchaseDate.substring(0,4));
+    const pm = parseInt(md.purchaseDate.substring(5,7));
+    const purchaseFrac = py + (pm-1)/12;
+    const months = Math.max(0, (NOW_FRAC2 - purchaseFrac)*12);
+    // For Eschweiler: use mortgage-only zi/ti (exclude DSL private loan)
+    const mZi = md.zi !== undefined ? md.zi : d.zi;
+    const mTi = md.ti !== undefined ? md.ti : d.ti;
+    const cfForKnk  = d.tot - d.opex - mZi - mTi;
+    const trPerMonth = cfForKnk + mTi;
+    const tilgungForKnk = md.tilgungPaid;
+    const cumCF = cfForKnk * months;
+    const cumTRnow = cumCF + tilgungForKnk;
+    const knk    = d.knk || 0;
+    const remain = knk - cumTRnow;
+    const breakevenFrac = remain <= 0 ? NOW_FRAC2
+      : (trPerMonth <= 0 ? 9999 : NOW_FRAC2 + (remain / trPerMonth) / 12);
+    const pct = knk > 0 ? Math.min(100, cumTRnow/knk*100) : 0;
+    return { ...d, color:PROP_COLORS[d.id], purchaseFrac, months, mZi, mTi,
+             cfForKnk, trPerMonth, tilgungForKnk, cumCF, cumTRnow, remain, breakevenFrac, pct };
+  });
+
+  knkCard.appendChild(makeKNKTimeline({items:knkItems, W:900}));
+
+  // Detail table
+  const knkTableWrap = document.createElement('div');
+  knkTableWrap.style.overflowX = 'auto';
+  let knkHtml = '<table style="margin-top:8px"><thead><tr>'
+    +'<th class="left">Property</th>'
+    +'<th>KNK Total</th><th>Confirmed</th><th>Months</th>'
+    +'<th>Cum. CF (mortg.)</th><th>Tilgung Paid</th><th>Cum. TR</th>'
+    +'<th>Progress</th><th>Break-Even</th>'
+    +'</tr></thead><tbody>';
+  knkItems.forEach(d => {
+    const barPct = Math.min(100, Math.max(0, d.pct));
+    const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">
+      <div style="background:${d.pct>=100?'#34d399':'#60a5fa'};width:${barPct.toFixed(0)}%;height:8px;border-radius:4px"></div>
+    </div><span style="font-size:9px;color:#9ca3af">${d.pct.toFixed(0)}%</span>`;
+    const beStr = d.remain <= 0
+      ? `<span style="color:#34d399">Reached ✓</span>`
+      : `<span style="color:#9ca3af">${formatFrac(d.breakevenFrac)}</span>`;
+    const partBadge = d.knkPartial
+      ? `<span title="Includes calculated GrESt; some invoices missing" style="color:#f59e0b;cursor:help"> ⚠</span>`
+      : `<span style="color:#34d399"> ✓</span>`;
+    knkHtml += `<tr>
+      <td class="left" style="color:${d.color}">${d.name}</td>
+      <td style="color:#f59e0b;cursor:help"
+          onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
+          onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(d.knk,2)}${partBadge}</td>
+      <td style="color:#9ca3af">${fe(d.knkConfirmed,2)}</td>
+      <td style="color:#9ca3af">${Math.round(d.months)}</td>
+      <td style="color:${vc(d.cumCF)}">${fe(Math.round(d.cumCF))}</td>
+      <td style="color:#c084fc">${fe(Math.round(d.tilgungForKnk))}</td>
+      <td style="color:${vc(d.cumTRnow)};font-weight:600">${fe(Math.round(d.cumTRnow))}</td>
+      <td style="min-width:100px">${progBar}</td>
+      <td>${beStr}</td>
+    </tr>`;
+  });
+  const totKNK    = knkItems.reduce((s,d)=>s+d.knk,0);
+  const totConf   = knkItems.reduce((s,d)=>s+d.knkConfirmed,0);
+  const totCumTR  = knkItems.reduce((s,d)=>s+d.cumTRnow,0);
+  const totRemain = knkItems.reduce((s,d)=>s+Math.max(0,d.remain),0);
+  const totPct    = totKNK>0 ? Math.min(100,totCumTR/totKNK*100) : 0;
+  const totBar    = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">
+    <div style="background:${totPct>=100?'#34d399':'#60a5fa'};width:${totPct.toFixed(0)}%;height:8px;border-radius:4px"></div>
+  </div><span style="font-size:9px;color:#9ca3af">${totPct.toFixed(0)}%</span>`;
+  knkHtml += `<tr class="total">
+    <td class="left">PORTFOLIO</td>
+    <td style="color:#f59e0b">${fe(Math.round(totKNK))} ⚠</td>
+    <td style="color:#9ca3af">${fe(Math.round(totConf))}</td>
+    <td>—</td><td>—</td><td>—</td>
+    <td style="color:${vc(totCumTR)};font-weight:600">${fe(Math.round(totCumTR))}</td>
+    <td style="min-width:100px">${totBar}</td>
+    <td style="color:#9ca3af">${fe(Math.round(totRemain))} to go</td>
+  </tr></tbody></table>`;
+  knkTableWrap.innerHTML = knkHtml;
+  knkCard.appendChild(knkTableWrap);
+
+  // Missing documents note
+  const knkMissing = document.createElement('div');
+  knkMissing.className='note'; knkMissing.style.marginTop='8px';
+  knkMissing.innerHTML='<b>Status per property:</b> '
+    +'<span style="color:#34d399">Berlin ✓</span> all confirmed (Notar + GB + GrESt; no Makler). &nbsp;'
+    +'<span style="color:#34d399">Eschweiler ✓</span> all confirmed (Notar + GB1 + GB2 + GrESt + Makler). &nbsp;'
+    +'<span style="color:#34d399">Hügelstr. ✓</span> all confirmed (Notar + GB1 + GB2 + GrESt + Makler). &nbsp;'
+    +'<span style="color:#34d399">Ohmstr. ✓</span> all confirmed (Notar + GB1 + GB2 €893.50 + GrESt; no Makler). &nbsp;'
+    +'<span style="color:#34d399">Leipzig ✓</span> all confirmed (Notar + GB1 + GB2 + GrESt 5.5%; no Makler).';
+  knkCard.appendChild(knkMissing);
+
+  sec.appendChild(knkCard);
+
+  // ── Analytics row 2: Repairs + Turnover ────────────────────────────────────
+  const atRow = document.createElement('div');
+  atRow.className='grid g2'; atRow.style.marginBottom='16px';
+
+  // Repair / maintenance costs
+  const repCard = document.createElement('div');
+  repCard.className='card'; repCard.style.overflowX='auto';
+  const repYears = [...new Set(Object.values(REPAIRS).flatMap(r=>r.map(x=>x.y)))].sort();
+  // Per-year portfolio totals
+  const portRepByY = {};
+  repYears.forEach(y => {
+    let ytot = 0, hasAny = false;
+    D.forEach(d => {
+      const byY2 = {}; (REPAIRS[d.id]||[]).forEach(r=>{ byY2[r.y]=r.amt; });
+      if (byY2[y]!==undefined && byY2[y]!==null) { ytot += byY2[y]; hasAny = true; }
+    });
+    portRepByY[y] = hasAny ? ytot : null;
+  });
+  let repH = '<div class="chart-title" style="margin-bottom:4px">Repair &amp; Maintenance Costs (€/year)</div>'
+    +'<div class="chart-sub" style="margin-bottom:10px">Extracted from Buchhaltung CSV. Includes Reparaturen, Instandhaltung, Küche/Geräte, Einrichtung. 0 = no spend recorded.</div>'
+    +'<table><thead><tr><th class="left">Property</th>'
+    +repYears.map(y=>`<th>${y}</th>`).join('')
+    +'<th>Total</th><th>Avg/yr</th><th>Rooms</th><th>€/room/yr</th><th>€/m²/yr</th>'
+    +'</tr></thead><tbody>';
+  let portRepTotal = 0;
+  D.forEach(d => {
+    const byY = {}; (REPAIRS[d.id]||[]).forEach(r=>{ byY[r.y]=r.amt; });
+    const known = (REPAIRS[d.id]||[]).filter(r=>r.amt!==null).map(r=>r.amt);
+    const tot = known.length ? known.reduce((s,v)=>s+v,0) : null;
+    const yrsWithData = known.length;
+    const avg = yrsWithData ? tot/yrsWithData : null;
+    if (tot!==null) portRepTotal += tot;
+    const rooms = TURNOVER[d.id].slots;
+    const epr = (avg!==null && rooms) ? avg/rooms : null;
+    const epm = (avg!==null && d.size) ? avg/d.size : null;
+    repH += `<tr><td class="left">${d.name}</td>`
+      +repYears.map(y => {
+          const hasDetail = (REPAIRS_DETAIL[d.id]||[]).some(t => parseInt(t.date.slice(-4)) === y);
+          const hover = `onmouseenter="showRepairDetailTooltip(event,'${d.id}',${y})" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
+          if (byY[y]===undefined) return '<td style="color:#374151;font-size:9px">n/a</td>';
+          if (byY[y]===null)      return '<td style="color:#6b7280">—</td>';
+          if (byY[y]===0)         return hasDetail
+            ? `<td style="color:#4b5563;cursor:help" ${hover}>€ 0</td>`
+            : '<td style="color:#4b5563">€ 0</td>';
+          return hasDetail
+            ? `<td style="color:#f9fafb;cursor:help" ${hover}>${fe(byY[y],0)}</td>`
+            : `<td style="color:#f9fafb">${fe(byY[y],0)}</td>`;
+        }).join('')
+      +`<td style="color:${tot!==null?'#f9fafb':'#6b7280'};font-weight:600">${tot!==null?fe(tot,0):'—'}</td>`
+      +`<td style="color:${avg!==null?'#f9fafb':'#6b7280'}">${avg!==null?fe(avg,0):'—'}</td>`
+      +`<td style="color:#9ca3af">${rooms}</td>`
+      +`<td style="color:#60a5fa">${epr!==null?fe(epr,0):'—'}</td>`
+      +`<td style="color:#34d399">${epm!==null?fe(epm,1):'—'}</td>`
+      +'</tr>';
+  });
+  // Portfolio totals row
+  const portTotRepKnown = repYears.map(y=>portRepByY[y]).filter(v=>v!==null);
+  const portAvgRep = portTotRepKnown.length ? portRepTotal/portTotRepKnown.length : null;
+  const portRooms = D.reduce((s,d)=>s+TURNOVER[d.id].slots,0);
+  const portSize  = D.reduce((s,d)=>s+(d.size||0),0);
+  repH += '<tr class="total"><td class="left">PORTFOLIO</td>'
+    +repYears.map(y=>portRepByY[y]!==null&&portRepByY[y]!==undefined
+      ? `<td>${portRepByY[y]>0?fe(portRepByY[y],0):'€ 0'}</td>`
+      : '<td style="color:#6b7280">—</td>').join('')
+    +`<td>${portRepTotal?fe(portRepTotal,0):'—'}</td>`
+    +`<td>${portAvgRep!==null?fe(portAvgRep,0):'—'}</td>`
+    +`<td>${portRooms}</td>`
+    +`<td style="color:#60a5fa">${portAvgRep?fe(portAvgRep/portRooms,0):'—'}</td>`
+    +`<td style="color:#34d399">${portAvgRep?fe(portAvgRep/portSize,1):'—'}</td>`
+    +'</tr></tbody></table>';
+  repCard.innerHTML = repH;
+  atRow.appendChild(repCard);
+
+  // Tenant turnover
+  const tvCard = document.createElement('div');
+  tvCard.className='card'; tvCard.style.overflowX='auto';
+  const NOW_YR = 2026 + 3/12; // April 2026
+  let tvH = '<div class="chart-title" style="margin-bottom:4px">Tenant Turnover</div>'
+    +'<div class="chart-sub" style="margin-bottom:10px">Confirmed or inferred move-outs. * = inferred from successor move-in date. Rate = move-outs ÷ years tracked.</div>'
+    +'<table><thead><tr><th class="left">Property</th><th>Since</th><th>Slots</th>'
+    +'<th class="left">Move-outs</th><th>Rate/yr</th></tr></thead><tbody>';
+  let portOuts=0, portSlots=0;
+  D.forEach(d => {
+    const tv = TURNOVER[d.id];
+    const yrs = NOW_YR - tv.since;
+    const outs = tv.moveOuts.length;
+    portOuts += outs; portSlots += tv.slots;
+    const rate = yrs>0 ? (outs/yrs).toFixed(1) : '—';
+    const outStr = outs ? tv.moveOuts.map(m=>`<span title="${m.note||m.date}" style="cursor:help;border-bottom:1px dotted #6b7280">${m.name}</span>`).join(', ')
+      : '<span style="color:#6b7280">—</span>';
+    tvH += `<tr><td class="left">${d.name}</td><td>${tv.since}</td><td>${tv.slots}</td>`
+      +`<td class="left" style="font-size:10px">${outStr}</td>`
+      +`<td style="color:${outs>0?'#fbbf24':'#6b7280'}">${rate}</td></tr>`;
+  });
+  tvH += `<tr class="total"><td class="left">PORTFOLIO</td><td>—</td><td>${portSlots}</td>`
+    +`<td class="left">${portOuts} known</td><td>—</td></tr></tbody></table>`;
+  tvCard.innerHTML = tvH;
+  atRow.appendChild(tvCard);
+  sec.appendChild(atRow);
+
+  // Footnotes
+  const fn = document.createElement('div');
+  fn.className='footnotes';
+  fn.innerHTML = `
+    <b>Pre-Financing CF</b> = Warmmiete (Kaltmiete + NK) − Opex. Operating surplus before any bank payment.<br>
+    <b>Gross Margin</b> = Pre-Financing CF / Warmmiete. Based on total income including Nebenkosten.<br>
+    <b>Net Margin / Cashflow</b> = (Warmmiete − Opex − Mortgage) / Warmmiete. Both figures are identical; Cashflow = Net Profit after financing.<br>
+    <b>Total Return</b> = Cashflow + Tilgung. Monthly cashflow is <i>constant</i> for a fixed-rate annuity loan (total payment fixed). However Total Return <i>increases</i> each year as Zinsen shrink and Tilgung grows — the equity-building component rises automatically.<br>
+    <b>DSCR</b> = Pre-Financing CF (NOI) / Total Mortgage. Standard RE definition. &gt; 1.0 means operating income covers debt service.<br>
+    <b>Gross Yield</b> = (Kaltmiete × 12) / Purchase Price.<br>
+    <b>KNK break-even</b>: Chart starts at y = −KNK at purchase date; rises to cross y = 0 (break-even). Eschweiler uses Volksbank mortgage only (DSL private loan excluded). All 5 properties fully confirmed from invoices. Hover KNK total in table for per-invoice breakdown.<br>
+    Grundsteuer &amp; DKB fees are quarterly amounts ÷ 3. Tax effects (AfA, Werbungskosten) not reflected here.`;
+  sec.appendChild(fn);
+}
+
+function renderDetail() {
+  const sec = document.getElementById('detail');
+
+  // Property selector buttons
+  const btns = document.createElement('div');
+  btns.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px';
+  btns.id='prop-btns';
+  D.forEach((d,i) => {
+    const b = document.createElement('button');
+    b.className='prop-btn'+(i===0?' active':'');
+    b.textContent = d.name;
+    b.onclick = () => {
+      document.querySelectorAll('.prop-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      renderPropDetail(d.id);
+    };
+    btns.appendChild(b);
+  });
+  sec.appendChild(btns);
+
+  const container = document.createElement('div');
+  container.id='prop-detail';
+  sec.appendChild(container);
+
+  renderPropDetail(D[0].id);
+}
+
+function renderPropDetail(id) {
+  const d = D.find(x=>x.id===id);
+  const c = document.getElementById('prop-detail');
+  c.innerHTML='';
+
+  const grid = document.createElement('div');
+  grid.className='detail-grid';
+
+  // Left: detail table
+  // Section header helper
+  const S = (label) => ['__SECTION__', label, '', ''];
+
+  // Per-loan rows — include subtotal when multiple loans exist
+  const mortRows = d.loans
+    ? [
+        ...d.loans.flatMap(l => [
+          [`  └ ${l.name} Zinsen`,  fe(-l.zi,2),  `${l.rate} · €\u202f${f(l.amount)} ${l.type}`,        '#f87171'],
+          [`  └ ${l.name} Tilgung`, fe(-l.ti,2),  l.fixed ? `fixed until ${l.fixed}` : `matures ${l.maturity}`, '#c084fc'],
+        ]),
+        ['Total Zinsen',  fe(-d.zi,2), 'Combined interest',  '#f87171'],
+        ['Total Tilgung', fe(-d.ti,2), 'Combined principal', '#c084fc'],
+        ['Total Mortgage',fe(-d.mort,2),'Zinsen + Tilgung',  '#fca5a5'],
+      ]
+    : [
+        ['— Zinsen',  fe(-d.zi,2), 'Interest',           '#f87171'],
+        ['— Tilgung', fe(-d.ti,2), 'Principal → equity', '#c084fc'],
+        ['— Total',   fe(-d.mort,2),'Zinsen + Tilgung',  '#fca5a5'],
+      ];
+
+  // Per-tenant rows — Kaltmiete and NK each as their own value row
+  const tenantRows = d.tenants ? d.tenants.flatMap(t => [
+    [`  ${t.name}`, fe(t.km,2), `Kaltmiete${t.note ? ' · '+t.note : ''}`, '#d1d5db'],
+    [`  └ Nebenkosten`, fe(t.nk,2), '', '#9ca3af'],
+  ]) : [];
+
+  // OpEx rows — Hausgeld + Grundsteuer + each named line item
+  const opexRows = [
+    ['— Hausgeld',    fe(-d.hg),   '',              '#fb923c'],
+    ['— Grundsteuer', fe(-d.gs,2), 'Quarterly ÷ 3', '#fb923c'],
+    ...(d.opexDetail||[]).map(o => [`— ${o.label}`, fe(-o.value,2), o.hint||'', '#fb923c']),
+  ];
+
+  const rows = [
+    ...(d.tenants ? [S('Tenants — Rental Income'), ...tenantRows] : []),
+    S('Income Summary'),
+    ['Kaltmiete / mo',    fe(d.km),  '',             '#f9fafb'],
+    ['NK collected / mo', fe(d.nk),  'Pass-through', '#f9fafb'],
+    ['Total income / mo', fe(d.tot), '',             '#f9fafb'],
+    S('Operating Costs'),
+    ...opexRows,
+    ['= Op. Surplus',     fe(d.gp),  'Warmmiete − Opex (pre-financing)', vc(d.gp)],
+    S('Financing'),
+    ...mortRows,
+    ['= Cashflow',        fe(d.np),  'Op. surplus − mortgage',           vc(d.np)],
+    S('Returns & KPIs'),
+    ['Property Size',     d.size ? f(d.size,1)+' m²' : '—',         d.size ? '' : 'Size not on file',                '#9ca3af'],
+    ['€/m² Purchase',     d.ppSqm ? fe(d.ppSqm) : '—',              d.size ? f(d.size,1)+'m² · '+fe(d.pp)+' pp' : 'Size unknown', '#60a5fa'],
+    ['€/m² Kaltmiete/mo', d.kmSqm ? fe(d.kmSqm,2) : '—',           d.size ? f(d.size,1)+'m²' : 'Size unknown',     '#34d399'],
+    ['Monthly Cashflow',      fe(d.cf),              'Incl. NK income',                vc(d.cf)],
+    ['Total Economic Return', fe(d.tr),              'Cashflow + Tilgung',             vc(d.tr)],
+    ['Gross Margin',          fp(d.gmPct),           '',                               vc(d.gmPct)],
+    ['Net Margin',            fp(d.nmPct),           '',                               vc(d.nmPct)],
+    ['Gross Rental Yield',    fp(d.yield),           d.pp?`on €\u202f${f(d.pp)} purchase`:'Price unknown','#60a5fa'],
+    ['DSCR',                  d.dscr.toFixed(2)+'×', '> 1.0 = rent covers mortgage',  d.dscr>=1?'#34d399':'#f87171'],
+    ['Price / Rent Ratio',    d.ptr?d.ptr.toFixed(1)+' yrs':'—','Years of rent = purchase price','#9ca3af'],
+  ];
+
+  const leftCard = document.createElement('div');
+  leftCard.className='card';
+  leftCard.innerHTML=`<div style="font-weight:700;font-size:17px;color:white;margin-bottom:2px">${d.name}</div>
+    <div style="color:#9ca3af;font-size:12px;margin-bottom:${d.note?'4':'10'}px">${d.addr}${d.pp?` · €\u202f${f(d.pp)} purchase`:''}</div>
+    ${d.note?`<div class="note" style="margin-bottom:10px">⚠ ${d.note}</div>`:''}`;
+  let th2='<table class="detail-table"><tbody>';
+  let rowIdx=0;
+  rows.forEach(([lbl,val,hint,col])=>{
+    if (lbl==='__SECTION__') {
+      th2+=`<tr><td colspan="3" style="background:#374151;padding:5px 10px 4px;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em">${val}</td></tr>`;
+      return;
+    }
+    th2+=`<tr style="background:${rowIdx%2===0?'#1f2937':'#2a3441'}">
+      <td class="left" style="font-weight:400;color:#d1d5db">${lbl}</td>
+      <td style="color:${col};font-family:monospace;font-weight:600;text-align:right">${val}</td>
+      <td style="color:#6b7280;font-size:10px">${hint}</td>
+    </tr>`;
+    rowIdx++;
+  });
+  th2+='</tbody></table>';
+  leftCard.innerHTML+=th2;
+  grid.appendChild(leftCard);
+
+  // Right: waterfall chart + mini kpis + annual
+  const rightCard = document.createElement('div');
+  rightCard.className='card chart-wrap';
+  rightCard.innerHTML='<div class="chart-title">Monthly P&amp;L Breakdown — Waterfall (€)</div>'
+    +'<div class="chart-sub" style="margin-bottom:4px">Each bar starts where the previous ends. Final bar = Cashflow.</div>';
+
+  const wfSteps = [
+    {label:'Kaltmiete',  value:+d.km.toFixed(0),    color:'#34d399'},
+    {label:'NK Income',  value:+d.nk.toFixed(0),    color:'#6ee7b7'},
+    {label:'Hausgeld',   value:-Math.round(d.hg),   color:'#f97316'},
+    {label:'Grundst.',   value:-Math.round(d.gs),   color:'#fb923c'},
+    {label:'Other Opex', value:-Math.round(d.ox),   color:'#fdba74'},
+    {label:'Zinsen',     value:-Math.round(d.zi),   color:'#dc2626'},
+    {label:'Tilgung',    value:-Math.round(d.ti),   color:'#c084fc'},
+    {label:'Cashflow',   value:+Math.round(d.cf), isTotal:true},
+  ];
+  rightCard.appendChild(makeWaterfallChart({steps:wfSteps, W:420}));
+
+  // Use createElement to avoid innerHTML += destroying the SVG above
+  const miniKpis = document.createElement('div');
+  miniKpis.className='mini-kpis';
+  miniKpis.innerHTML=`
+    <div class="mini-kpi"><div class="mini-kpi-label">Gross Margin</div><div class="mini-kpi-value" style="color:${vc(d.gmPct)}">${fp(d.gmPct)}</div></div>
+    <div class="mini-kpi"><div class="mini-kpi-label">Cashflow</div><div class="mini-kpi-value" style="color:${vc(d.cf)}">${fe(d.cf)}</div></div>
+    <div class="mini-kpi"><div class="mini-kpi-label">Total Return</div><div class="mini-kpi-value" style="color:${vc(d.tr)}">${fe(d.tr)}</div></div>`;
+  rightCard.appendChild(miniKpis);
+
+  const annualBox = document.createElement('div');
+  annualBox.style.cssText='background:#374151;border-radius:8px;padding:12px;margin-top:10px';
+  annualBox.innerHTML=`
+    <div style="color:#9ca3af;font-size:9px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Annual View</div>
+    <div class="annual-grid">
+      ${[['Annual Kaltmiete',d.km*12],['Annual Total Income',d.tot*12],
+         ['Annual Opex',-d.opex*12],['Annual Mortgage',-d.mort*12],
+         ['Annual Cashflow',d.cf*12],['Annual Total Return',d.tr*12]]
+        .map(([l,v])=>`<div class="annual-row"><span class="annual-label">${l}</span><span class="annual-val" style="color:${vc(v)}">${fe(v)}</span></div>`)
+        .join('')}
+    </div>`;
+  rightCard.appendChild(annualBox);
+
+  grid.appendChild(rightCard);
+  c.appendChild(grid);
+}
+
+// ─── MORTGAGES TAB ───────────────────────────────────────────────────────────
+function renderMortgages() {
+  const sec = document.getElementById('mortgages');
+
+  const mortKpis = D.map(d => {
+    const md = MORTGAGE_DATA[d.id];
+    const remaining = md.loanAmt - md.tilgungPaid;
+    const equity    = d.pp - remaining;
+    const equityPct = d.pp ? equity / d.pp * 100 : null;
+    const ltv       = d.pp ? remaining / d.pp * 100 : null;
+    // Use mortgage-only zi/ti if stored (e.g. Eschweiler Volksbank only, excl. DSL Privatkredit)
+    const mZi = md.zi !== undefined ? md.zi : d.zi;
+    const mTi = md.ti !== undefined ? md.ti : d.ti;
+    return { ...d, ...md, remaining, equity, equityPct, ltv, mZi, mTi, mMort: mZi+mTi };
+  });
+
+  const totalLoan       = mortKpis.reduce((s,m) => s + m.loanAmt, 0);
+  const totalTilgungPd  = mortKpis.reduce((s,m) => s + m.tilgungPaid, 0);
+  const totalRemaining  = mortKpis.reduce((s,m) => s + m.remaining, 0);
+  const totalPP         = D.reduce((s,d) => s + d.pp, 0);
+  const totalEquity     = totalPP - totalRemaining;
+  const portfolioLTV    = totalRemaining / totalPP * 100;
+
+  // KPI row
+  const r1 = document.createElement('div');
+  r1.className='grid g4'; r1.style.marginBottom='12px';
+  r1.innerHTML = [
+    kpiCard('Portfolio Cost Basis', fe(totalPP), 'Sum of purchase prices', '#f9fafb'),
+    kpiCard('Remaining Debt', fe(Math.round(totalRemaining)), fp(portfolioLTV,1)+' LTV', '#f87171', true),
+    kpiCard('Total Equity', fe(Math.round(totalEquity)), fp(100-portfolioLTV,1)+' of portfolio', '#34d399', true),
+    kpiCard('Portfolio LTV', fp(portfolioLTV,1), '< 80% conventional comfort zone', portfolioLTV<=80?'#34d399':portfolioLTV<=90?'#fbbf24':'#f87171', true),
+  ].join('');
+  sec.appendChild(r1);
+
+  // Stacked bar: equity vs remaining debt
+  const ebCard = document.createElement('div');
+  ebCard.className='card chart-wrap'; ebCard.style.marginBottom='16px';
+  ebCard.innerHTML='<div class="chart-title">Equity vs Remaining Debt per Property (€)</div>'
+    +'<div class="chart-sub">Green = equity (down payment + tilgung paid to date). Red = remaining loan balance.</div>';
+  const ebData = mortKpis.map(m => ({name:m.name, bars:[
+    {label:'Equity',         value: Math.round(m.equity),    color:'#34d399'},
+    {label:'Remaining Debt', value: Math.round(m.remaining), color:'#f87171'},
+  ]}));
+  ebCard.appendChild(makeChart({data:ebData, unit:'€', W:700}));
+  { const leg = document.createElement('div'); leg.className='legend';
+    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Equity (own)</div>'
+      +'<div class="leg-item"><div class="leg-dot" style="background:#f87171"></div>Remaining Debt</div>';
+    ebCard.appendChild(leg); }
+  sec.appendChild(ebCard);
+
+  // Mortgage detail table
+  const tCard = document.createElement('div');
+  tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
+  tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Mortgage Detail</div>';
+  let html = `<table><thead><tr>
+    <th class="left">Property</th>
+    <th>Purchase Date</th>
+    <th>Purchase Price</th>
+    <th>Original Loan</th>
+    <th>Tilgung Paid</th>
+    <th>Remaining Balance</th>
+    <th>Equity €</th>
+    <th>Equity %</th>
+    <th>LTV %</th>
+    <th>Zinsen/mo</th>
+    <th>Tilgung/mo</th>
+    <th>Mortgage/mo</th>
+  </tr></thead><tbody>`;
+
+  mortKpis.forEach(m => {
+    const ltvColor = m.ltv<=80?'#34d399':m.ltv<=90?'#fbbf24':'#f87171';
+    html += `<tr>
+      <td class="left">${m.name}<br><span style="font-weight:400;color:#9ca3af;font-size:10px">${m.addr}</span></td>
+      <td style="color:#9ca3af">${m.purchaseDate}</td>
+      <td>${fe(m.pp)}</td>
+      <td style="color:#a78bfa">${fe(m.loanAmt)}</td>
+      <td style="color:#c084fc">${fe(Math.round(m.tilgungPaid))}</td>
+      <td style="color:#f87171;font-weight:600">${fe(Math.round(m.remaining))}</td>
+      <td style="color:#34d399;font-weight:600">${fe(Math.round(m.equity))}</td>
+      <td style="color:${vc(m.equityPct)};font-weight:600">${fp(m.equityPct,1)}</td>
+      <td style="color:${ltvColor};font-weight:600">${fp(m.ltv,1)}</td>
+      <td style="color:#f87171">${fe(m.mZi,2)}</td>
+      <td style="color:#c084fc">${fe(m.mTi,2)}</td>
+      <td style="color:#fca5a5">${fe(m.mMort,2)}</td>
+    </tr>`;
+    if(m.id==='eschweiler'){
+      html+=`<tr><td colspan="12" style="background:#1c2535;padding:4px 10px">
+        <span style="color:#9ca3af;font-size:10px">DSL Bank Privatkredit (€13k, 3.24%, matures Dez 2030) excluded — not a property mortgage. Combined cashflow cost: Zinsen €125.29, Tilgung €270.19.</span></td></tr>`;
+    }
+  });
+
+  html += `<tr class="total">
+    <td class="left">PORTFOLIO</td>
+    <td style="color:#9ca3af">—</td>
+    <td>${fe(totalPP)}</td>
+    <td style="color:#a78bfa">${fe(totalLoan)}</td>
+    <td style="color:#c084fc">${fe(Math.round(totalTilgungPd))}</td>
+    <td style="color:#f87171;font-weight:600">${fe(Math.round(totalRemaining))}</td>
+    <td style="color:#34d399;font-weight:600">${fe(Math.round(totalEquity))}</td>
+    <td style="color:${vc(100-portfolioLTV)};font-weight:600">${fp(100-portfolioLTV,1)}</td>
+    <td style="color:${portfolioLTV<=80?'#34d399':portfolioLTV<=90?'#fbbf24':'#f87171'};font-weight:600">${fp(portfolioLTV,1)}</td>
+    <td style="color:#f87171">${fe(mortKpis.reduce((s,m)=>s+m.mZi,0),2)}</td>
+    <td style="color:#c084fc">${fe(mortKpis.reduce((s,m)=>s+m.mTi,0),2)}</td>
+    <td style="color:#fca5a5">${fe(mortKpis.reduce((s,m)=>s+m.mMort,0),2)}</td>
+  </tr></tbody></table>`;
+
+  tCard.innerHTML += html;
+  sec.appendChild(tCard);
+
+  const fn = document.createElement('div');
+  fn.className='footnotes';
+  fn.innerHTML = `
+    <b>Equity</b> = Purchase Price − Remaining Loan Balance. Remaining Balance = Original Loan − Cumulative Tilgung paid to April 2026.<br>
+    <b>LTV</b> (Loan-to-Value) = Remaining Balance / Purchase Price. Below 80% is conventional; below 60% is strong.<br>
+    <b>Tilgung Paid</b> is cumulative principal repaid from loan disbursement to April 2026, extracted from DKB transaction data.<br>
+    Eschweiler: Volksbank Immobiliar (€89k) only — the €3k above purchase price financed a kitchen. DSL Bank Privatkredit (€13k) is a personal loan, not a property mortgage, and is excluded from this tab. Combined monthly cost incl. DSL: Zinsen €125.29, Tilgung €270.19.<br>
+    Purchase price is used as property value proxy. Actual market value may differ — see Market Value tab for appreciation estimates.`;
+  sec.appendChild(fn);
+}
+
+// ─── MARKET VALUE TAB ────────────────────────────────────────────────────────
+function renderMarketValue() {
+  const sec = document.getElementById('market-value');
+
+  const NOW_FRAC = 2026 + 3/12; // April 2026
+
+  function getValueAtYear(d, year) {
+    const md = MORTGAGE_DATA[d.id];
+    const mv = MARKET_DATA[d.id];
+    const py = parseInt(md.purchaseDate.substring(0,4));
+    const pm = parseInt(md.purchaseDate.substring(5,7));
+    const purchaseFrac = py + (pm-1)/12;
+    if (year < purchaseFrac) return null;
+    return d.pp * Math.pow(1 + mv.annualPct/100, year - purchaseFrac);
+  }
+
+  const currentVals = D.map(d => {
+    const cv = getValueAtYear(d, NOW_FRAC);
+    return { ...d,
+      currentVal: cv,
+      gainAmt: cv - d.pp,
+      gainPct: (cv - d.pp) / d.pp * 100,
+      rate: MARKET_DATA[d.id].annualPct,
+      note: MARKET_DATA[d.id].note,
+    };
+  });
+
+  const totalPP         = D.reduce((s,d) => s + d.pp, 0);
+  const totalCurrentVal = currentVals.reduce((s,d) => s + d.currentVal, 0);
+  const totalGain       = totalCurrentVal - totalPP;
+  const totalRemaining  = D.reduce((s,d) => s + MORTGAGE_DATA[d.id].loanAmt - MORTGAGE_DATA[d.id].tilgungPaid, 0);
+
+  // KPI row
+  const r1 = document.createElement('div');
+  r1.className='grid g4'; r1.style.marginBottom='12px';
+  r1.innerHTML = [
+    kpiCard('Total Purchase Cost', fe(totalPP), 'Sum of all purchase prices', '#f9fafb'),
+    kpiCard('Est. Current Value', fe(Math.round(totalCurrentVal)), 'April 2026 (model)', '#60a5fa', true),
+    kpiCard('Est. Unrealised Gain', fe(Math.round(totalGain)), fp(totalGain/totalPP*100,1)+' vs cost', vc(totalGain), true),
+    kpiCard('Est. Real Equity', fe(Math.round(totalCurrentVal-totalRemaining)), 'Value − remaining debt', '#34d399', true),
+  ].join('');
+  sec.appendChild(r1);
+
+  // Assumptions banner
+  const assump = document.createElement('div');
+  assump.style.cssText='background:#1c2535;border:1px solid #fbbf24;border-radius:8px;padding:12px;margin-bottom:16px;font-size:11px;color:#d1d5db';
+  assump.innerHTML='<span style="color:#fbbf24;font-weight:700">⚠ Model projections — not appraisals.</span> '
+    +'Appreciation rates are assumptions based on market context. Actual values depend on market conditions, property condition, and local demand.<br>'
+    +'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:14px">'
+    +currentVals.map(d=>`<span><b style="color:#d1d5db">${d.name}</b>: <span style="color:#a78bfa">${d.rate}%/yr</span> — ${d.note}</span>`).join('')
+    +'</div>';
+  sec.appendChild(assump);
+
+  // Line chart
+  const lcCard = document.createElement('div');
+  lcCard.className='card chart-wrap'; lcCard.style.marginBottom='16px';
+  lcCard.innerHTML='<div class="chart-title">Property Value Development — Purchase to 2031 (€)</div>'
+    +'<div class="chart-sub">Solid = estimated historical appreciation. Dashed = projected. Yellow line = April 2026. Hover data points for values.</div>';
+
+  const YEAR_MIN = 2020, YEAR_MAX = 2031;
+  const propColors = ['#60a5fa','#34d399','#f97316','#a78bfa','#f87171'];
+
+  const series = D.map((d,i) => ({
+    name: d.name, color: propColors[i],
+    points: (() => {
+      const pts = [];
+      for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
+        const v = getValueAtYear(d, y);
+        if (v !== null) pts.push({x:y, y:Math.round(v), projected: y >= 2026});
+      }
+      return pts;
+    })(),
+  }));
+
+  // Portfolio total series
+  const portPoints = [];
+  for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
+    const tot = D.reduce((s,d) => { const v=getValueAtYear(d,y); return v!==null?s+v:s; }, 0);
+    if (tot > 0) portPoints.push({x:y, y:Math.round(tot), projected: y >= 2026});
+  }
+  series.push({name:'Portfolio', color:'#f9fafb', thick:true, points:portPoints});
+
+  lcCard.appendChild(makeLineChart({series, W:940, H:280, ml:72, mr:100}));
+  { const leg = document.createElement('div'); leg.className='legend';
+    [...D.map((d,i)=>({name:d.name,color:propColors[i]})), {name:'Portfolio',color:'#f9fafb'}]
+      .forEach(s => { const div=document.createElement('div'); div.className='leg-item';
+        div.innerHTML=`<div class="leg-dot" style="background:${s.color}"></div>${s.name}`;
+        leg.appendChild(div); });
+    lcCard.appendChild(leg); }
+  sec.appendChild(lcCard);
+
+  // Value table
+  const tCard = document.createElement('div');
+  tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
+  tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Market Value Estimates</div>';
+  let html = `<table><thead><tr>
+    <th class="left">Property</th>
+    <th>Purchase Date</th>
+    <th>Purchase Price</th>
+    <th>Rate/yr</th>
+    <th>Est. Value Apr 2026</th>
+    <th>Gain € (unrealised)</th>
+    <th>Gain %</th>
+    <th>Remaining Debt</th>
+    <th>Est. Real Equity</th>
+    <th>Est. Value 2031</th>
+    <th>2031 Gain €</th>
+  </tr></thead><tbody>`;
+
+  currentVals.forEach(d => {
+    const md = MORTGAGE_DATA[d.id];
+    const remaining  = md.loanAmt - md.tilgungPaid;
+    const realEquity = d.currentVal - remaining;
+    const val2031    = getValueAtYear(d, 2031);
+    const gain2031   = val2031 - d.pp;
+    html += `<tr>
+      <td class="left">${d.name}</td>
+      <td style="color:#9ca3af">${md.purchaseDate}</td>
+      <td>${fe(d.pp)}</td>
+      <td style="color:#a78bfa">${fp(d.rate,1)}</td>
+      <td style="color:#60a5fa;font-weight:600">${fe(Math.round(d.currentVal))}</td>
+      <td style="color:${vc(d.gainAmt)}">${fe(Math.round(d.gainAmt))}</td>
+      <td style="color:${vc(d.gainPct)};font-weight:600">${fp(d.gainPct,1)}</td>
+      <td style="color:#f87171">${fe(Math.round(remaining))}</td>
+      <td style="color:#34d399;font-weight:600">${fe(Math.round(realEquity))}</td>
+      <td style="color:#818cf8">${fe(Math.round(val2031))}</td>
+      <td style="color:${vc(gain2031)}">${fe(Math.round(gain2031))}</td>
+    </tr>`;
+  });
+
+  const totalRealEquity = totalCurrentVal - totalRemaining;
+  const totalVal2031    = D.reduce((s,d)=>s+getValueAtYear(d,2031),0);
+  const totalGain2031   = totalVal2031 - totalPP;
+  html += `<tr class="total">
+    <td class="left">PORTFOLIO</td>
+    <td style="color:#9ca3af">—</td>
+    <td>${fe(totalPP)}</td>
+    <td style="color:#9ca3af">—</td>
+    <td style="color:#60a5fa;font-weight:600">${fe(Math.round(totalCurrentVal))}</td>
+    <td style="color:${vc(totalGain)}">${fe(Math.round(totalGain))}</td>
+    <td style="color:${vc(totalGain/totalPP*100)};font-weight:600">${fp(totalGain/totalPP*100,1)}</td>
+    <td style="color:#f87171">${fe(Math.round(totalRemaining))}</td>
+    <td style="color:#34d399;font-weight:600">${fe(Math.round(totalRealEquity))}</td>
+    <td style="color:#818cf8">${fe(Math.round(totalVal2031))}</td>
+    <td style="color:${vc(totalGain2031)}">${fe(Math.round(totalGain2031))}</td>
+  </tr></tbody></table>`;
+  tCard.innerHTML += html;
+  sec.appendChild(tCard);
+
+  const fn = document.createElement('div');
+  fn.className='footnotes';
+  fn.innerHTML = `
+    <b>Est. Real Equity</b> = Estimated current value − remaining mortgage balance. Pre-tax estimate of what you'd net if you sold today (before transaction costs).<br>
+    <b>Appreciation Assumptions:</b> Berlin 1.0%/yr (post-2024 correction), Frankfurt 1.5%/yr (stabilizing), Eschweiler 0.5%/yr (stable small city), Leipzig 2.0%/yr (moderate growth).<br>
+    All projections use continuous compound growth from the purchase date at the assumed annual rate. They are illustrative — not market appraisals.`;
+  sec.appendChild(fn);
+}
+
+// ─── TAB SWITCHING ───────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`[onclick="showTab('${id}')"]`).classList.add('active');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderOverview();
+renderDetail();
+renderMortgages();
+renderMarketValue();
+</script>
+</body>
+</html>
