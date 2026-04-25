@@ -766,16 +766,16 @@ function beCumAtFrac(model, frac) {
 // Each line is the per-property cumulative position (Op CF excl. Tilgung minus KNK)
 // over time. Solid through end-2025 (historical), dashed from 2026 (projected).
 // items: [{id, name, color, model:{knk, be, pts}}]
-function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38 }) {
+function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, xMin=null, xMax=null }) {
   const iW=W-ml-mr, iH=H-mt-mb;
   const nowFrac = 2026 + 3/12;
   const histEndFrac = 2026; // end-of-2025 = historical/projected boundary
 
-  // X range
-  const minX = Math.floor(Math.min(...items.map(it => it.model.pts[0].y)));
+  // X range (caller may override for cross-chart alignment)
+  const minX = xMin !== null ? xMin : Math.floor(Math.min(...items.map(it => it.model.pts[0].y)));
   const validBE = items.filter(it => it.model.be != null && it.model.be < 2060).map(it => it.model.be);
   const maxBE = validBE.length ? Math.max(...validBE) : nowFrac;
-  const maxX = Math.ceil(Math.max(maxBE, nowFrac) + 1.5);
+  const maxX = xMax !== null ? xMax : Math.ceil(Math.max(maxBE, nowFrac) + 1.5);
 
   // Y range (per-property only — exclude portfolio, which we do not plot in main chart)
   const allCums = items.flatMap(it => it.model.pts.filter(p => p.y <= maxX).map(p => p.cum));
