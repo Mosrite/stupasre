@@ -797,10 +797,12 @@ function beCumAtFrac(model, frac) {
 // Each line is the per-property cumulative position (Op CF excl. Tilgung minus KNK)
 // over time. Solid through end-2025 (historical), dashed from 2026 (projected).
 // items: [{id, name, color, model:{knk, be, pts}}]
-function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, xMin=null, xMax=null }) {
+function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, xMin=null, xMax=null, showOppCost=false }) {
   const iW=W-ml-mr, iH=H-mt-mb;
   const nowFrac = 2026 + 3/12;
-  const histEndFrac = 2026; // end-of-2025 = historical/projected boundary
+  // Use end-of-2026 as the solid/dashed boundary: 2026 is the current year and its
+  // full-year projected value is used, so there are no gaps up to "now".
+  const histEndFrac = 2027;
 
   // X range (caller may override for cross-chart alignment)
   const minX = xMin !== null ? xMin : Math.floor(Math.min(...items.map(it => it.model.pts[0].y)));
@@ -813,14 +815,17 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
   const minKNK = Math.min(...items.map(it => it.model.knk));
   const maxKNK = Math.max(...items.map(it => it.model.knk));
   const minCum = Math.min(-maxKNK, ...allCums);
-  const maxCum = Math.max(...allCums, maxKNK * 0.15);
-  // Cap Y range at the value reached at maxBE+1 to keep the chart readable
+  // Cap Y range at the value reached at maxX to keep the chart readable
   const yCap = items.reduce((m,it) => {
     const v = beCumAtFrac(it.model, maxX);
     return Math.max(m, v);
   }, 0);
+  // Also include max opportunity-cost value at maxX so those lines stay in frame
+  const oppCapMax = showOppCost
+    ? items.reduce((m,it) => Math.max(m, it.model.knk * (Math.pow(1.07, maxX - it.model.pts[0].y) - 1)), 0)
+    : 0;
   const minY = minCum * 1.08;
-  const maxY = Math.max(yCap * 1.1, maxKNK * 0.2, 5000);
+  const maxY = Math.max(yCap * 1.1, oppCapMax * 1.05, maxKNK * 0.2, 5000);
   const rangeY = maxY - minY;
 
   const xPx = x => ml + (x - minX) / (maxX - minX) * iW;
