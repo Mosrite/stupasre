@@ -1036,60 +1036,58 @@ function renderOverview() {
   // ── Kaufnebenkosten break-even ─────────────────────────────────────────────
   const knkCard = document.createElement('div');
   knkCard.className='card chart-wrap'; knkCard.style.marginBottom='16px';
-  knkCard.innerHTML='<div class="chart-title">Kaufnebenkosten Break-Even — Timeline</div>'
-    +'<div class="chart-sub">Each line starts at y = −KNK (the acquisition cost at purchase date) and rises as Total Return (Cashflow + Tilgung) accumulates. '
-    +'Crossing y = 0 (green line) = break-even. Solid = historical, dashed = projected. '
-    +'Filled circle = projected break-even date. '
-    +'Eschweiler: mortgage only (Volksbank; DSL private loan excluded). '
-    +'Hover KNK total in table below for per-invoice breakdown. ⚠ = contains estimates. ✓ = fully confirmed.</div>';
+  knkCard.innerHTML='<div class="chart-title">Kaufnebenkosten Break-Even — Timeline (cash-flow accurate)</div>'
+    +'<div class="chart-sub">Each line shows the cumulative position: Σ(Op CF excl. Tilgung) − KNK. Crossing y = 0 (green line) = break-even. '
+    +'Solid = historical (CSV through 2025), dashed = projected from 2026 onwards. Filled circle = projected break-even date. '
+    +'Forward assumptions: rent +2%/yr, Hausgeld +2%/yr, refinancing at current rates, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr. '
+    +'Tilgung is treated as equity build (excluded from Op CF and from break-even tracking). '
+    +'Source: <code>/financial_model/model_output/forward_cashflow.json</code> (regenerable via <code>build_forward_model.py</code>). '
+    +'Hover KNK total in table below for per-invoice breakdown.</div>';
 
   const NOW_FRAC2 = 2026 + 3/12;
   const PROP_COLORS = {
     berlin:'#60a5fa', eschweiler:'#34d399', huegelstr:'#f59e0b', ohmstr:'#f87171', leipzig:'#a78bfa'
   };
 
-  const knkItems = D.map(d => {
-    const md = MORTGAGE_DATA[d.id];
-    const py = parseInt(md.purchaseDate.substring(0,4));
-    const pm = parseInt(md.purchaseDate.substring(5,7));
-    const purchaseFrac = py + (pm-1)/12;
-    const months = Math.max(0, (NOW_FRAC2 - purchaseFrac)*12);
-    // For Eschweiler: use mortgage-only zi/ti (exclude DSL private loan)
-    const mZi = md.zi !== undefined ? md.zi : d.zi;
-    const mTi = md.ti !== undefined ? md.ti : d.ti;
-    const cfForKnk  = d.tot - d.opex - mZi - mTi;
-    const trPerMonth = cfForKnk + mTi;
-    const tilgungForKnk = md.tilgungPaid;
-    const cumCF = cfForKnk * months;
-    const cumTRnow = cumCF + tilgungForKnk;
-    const knk    = d.knk || 0;
-    const remain = knk - cumTRnow;
-    const breakevenFrac = remain <= 0 ? NOW_FRAC2
-      : (trPerMonth <= 0 ? 9999 : NOW_FRAC2 + (remain / trPerMonth) / 12);
-    const pct = knk > 0 ? Math.min(100, cumTRnow/knk*100) : 0;
-    return { ...d, color:PROP_COLORS[d.id], purchaseFrac, months, mZi, mTi,
-             cfForKnk, trPerMonth, tilgungForKnk, cumCF, cumTRnow, remain, breakevenFrac, pct };
-  });
+  // Build chart items from the embedded BE_MODEL (forward cash-flow projection).
+  const beItems = D.map(d => ({
+    id: d.id,
+    name: d.name,
+    color: PROP_COLORS[d.id],
+    model: BE_MODEL[d.id],
+    knk: d.knk,
+    knkConfirmed: d.knkConfirmed,
+    knkPartial: d.knkPartial,
+  }));
 
-  knkCard.appendChild(makeKNKTimeline({items:knkItems, W:900}));
+  knkCard.appendChild(makeBreakEvenChart({items:beItems, W:900}));
 
-  // Detail table
+  // Detail table — model-driven
   const knkTableWrap = document.createElement('div');
   knkTableWrap.style.overflowX = 'auto';
   let knkHtml = '<table style="margin-top:8px"><thead><tr>'
     +'<th class="left">Property</th>'
-    +'<th>KNK Total</th><th>Confirmed</th><th>Months</th>'
-    +'<th>Cum. CF (mortg.)</th><th>Tilgung Paid</th><th>Cum. TR</th>'
-    +'<th>Progress</th><th>Break-Even</th>'
+    +'<th>KNK Total</th><th>Confirmed</th>'
+    +'<th>Cum. Op CF<br><span style="font-weight:400;color:#6b7280">end-2025</span></th>'
+    +'<th>Position<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
+    +'<th>Progress</th><th>Break-Even<br><span style="font-weight:400;color:#6b7280">(model)</span></th>'
     +'</tr></thead><tbody>';
-  knkItems.forEach(d => {
-    const barPct = Math.min(100, Math.max(0, d.pct));
+  beItems.forEach(d => {
+    const m = d.model;
+    // Cum Op CF at end-2025 (excludes KNK so it's just the operating accumulation)
+    const end2025 = m.pts.find(p => p.y === 2025);
+    const cumOpCFEnd2025 = end2025 ? end2025.cum + m.knk : null; // cum + knk = pure Op CF accumulation
+    // Position vs break-even at "now" (Apr 2026)
+    const posNow = beCumAtFrac(m, NOW_FRAC2);
+    const pct = m.knk > 0 ? Math.max(0, Math.min(100, 100 * (1 + posNow / m.knk))) : 0;
+    const barPct = pct.toFixed(0);
     const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">
-      <div style="background:${d.pct>=100?'#34d399':'#60a5fa'};width:${barPct.toFixed(0)}%;height:8px;border-radius:4px"></div>
-    </div><span style="font-size:9px;color:#9ca3af">${d.pct.toFixed(0)}%</span>`;
-    const beStr = d.remain <= 0
-      ? `<span style="color:#34d399">Reached ✓</span>`
-      : `<span style="color:#9ca3af">${formatFrac(d.breakevenFrac)}</span>`;
+      <div style="background:${pct>=100?'#34d399':'#60a5fa'};width:${barPct}%;height:8px;border-radius:4px"></div>
+    </div><span style="font-size:9px;color:#9ca3af">${barPct}%</span>`;
+    const beReached = m.be != null && m.be <= NOW_FRAC2;
+    const beStr = beReached
+      ? `<span style="color:#34d399">${formatFrac(m.be)} ✓</span>`
+      : (m.be != null ? `<span style="color:#9ca3af">${formatFrac(m.be)}</span>` : `<span style="color:#9ca3af">>2060</span>`);
     const partBadge = d.knkPartial
       ? `<span title="Includes calculated GrESt; some invoices missing" style="color:#f59e0b;cursor:help"> ⚠</span>`
       : `<span style="color:#34d399"> ✓</span>`;
@@ -1099,30 +1097,31 @@ function renderOverview() {
           onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
           onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(d.knk,2)}${partBadge}</td>
       <td style="color:#9ca3af">${fe(d.knkConfirmed,2)}</td>
-      <td style="color:#9ca3af">${Math.round(d.months)}</td>
-      <td style="color:${vc(d.cumCF)}">${fe(Math.round(d.cumCF))}</td>
-      <td style="color:#c084fc">${fe(Math.round(d.tilgungForKnk))}</td>
-      <td style="color:${vc(d.cumTRnow)};font-weight:600">${fe(Math.round(d.cumTRnow))}</td>
+      <td style="color:${cumOpCFEnd2025!=null?vc(cumOpCFEnd2025):'#6b7280'}">${cumOpCFEnd2025!=null?fe(Math.round(cumOpCFEnd2025)):'—'}</td>
+      <td style="color:${vc(posNow)};font-weight:600">${fe(Math.round(posNow))}</td>
       <td style="min-width:100px">${progBar}</td>
       <td>${beStr}</td>
     </tr>`;
   });
-  const totKNK    = knkItems.reduce((s,d)=>s+d.knk,0);
-  const totConf   = knkItems.reduce((s,d)=>s+d.knkConfirmed,0);
-  const totCumTR  = knkItems.reduce((s,d)=>s+d.cumTRnow,0);
-  const totRemain = knkItems.reduce((s,d)=>s+Math.max(0,d.remain),0);
-  const totPct    = totKNK>0 ? Math.min(100,totCumTR/totKNK*100) : 0;
+  // Portfolio totals from BE_MODEL._portfolio (authoritative — already incl. all properties)
+  const portfolioModel = BE_MODEL['_portfolio'];
+  const totKNK    = portfolioModel.knk;
+  const totConf   = beItems.reduce((s,d)=>s+d.knkConfirmed,0);
+  const totEnd2025 = (portfolioModel.pts.find(p=>p.y===2025)?.cum ?? 0) + totKNK;
+  const totPosNow  = beCumAtFrac(portfolioModel, NOW_FRAC2);
+  const totPct    = totKNK>0 ? Math.max(0, Math.min(100, 100*(1 + totPosNow/totKNK))) : 0;
   const totBar    = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">
     <div style="background:${totPct>=100?'#34d399':'#60a5fa'};width:${totPct.toFixed(0)}%;height:8px;border-radius:4px"></div>
   </div><span style="font-size:9px;color:#9ca3af">${totPct.toFixed(0)}%</span>`;
+  const totBE = portfolioModel.be != null ? formatFrac(portfolioModel.be) : '>2060';
   knkHtml += `<tr class="total">
     <td class="left">PORTFOLIO</td>
-    <td style="color:#f59e0b">${fe(Math.round(totKNK))} ⚠</td>
+    <td style="color:#f59e0b">${fe(Math.round(totKNK))}</td>
     <td style="color:#9ca3af">${fe(Math.round(totConf))}</td>
-    <td>—</td><td>—</td><td>—</td>
-    <td style="color:${vc(totCumTR)};font-weight:600">${fe(Math.round(totCumTR))}</td>
+    <td style="color:${vc(totEnd2025)}">${fe(Math.round(totEnd2025))}</td>
+    <td style="color:${vc(totPosNow)};font-weight:600">${fe(Math.round(totPosNow))}</td>
     <td style="min-width:100px">${totBar}</td>
-    <td style="color:#9ca3af">${fe(Math.round(totRemain))} to go</td>
+    <td style="color:#9ca3af">${totBE}</td>
   </tr></tbody></table>`;
   knkTableWrap.innerHTML = knkHtml;
   knkCard.appendChild(knkTableWrap);
