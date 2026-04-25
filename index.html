@@ -1794,7 +1794,7 @@ function renderBreakEven() {
     +'Solid = historical (CSV through 2025), dashed = projected from 2026. Filled circle = break-even date. '
     +'Forward assumptions: rent +2%/yr, Hausgeld +2%/yr, refi at current rates, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr.</div>';
   const beItems1 = makeBeItems(BE_TILT_MODEL);
-  c1.appendChild(makeBreakEvenChart({items:beItems1, W:900}));
+  c1.appendChild(makeBreakEvenChart({items:beItems1, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
   c1.appendChild(makeBeTable(beItems1, BE_TILT_MODEL));
   sec.appendChild(c1);
 
@@ -1808,7 +1808,7 @@ function renderBreakEven() {
     +'The chart starts at −(KNK + equity); Total Capital in the table adds cumulative repairs for a full accounting. '
     +'Solid = historical, dashed = projected. Filled circle = break-even date.</div>';
   const beItems2 = makeBeItems(BE_TOTAL_MODEL);
-  c2.appendChild(makeBreakEvenChart({items:beItems2, W:900}));
+  c2.appendChild(makeBreakEvenChart({items:beItems2, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
   c2.appendChild(makeBeTable(beItems2, BE_TOTAL_MODEL));
   sec.appendChild(c2);
 }
