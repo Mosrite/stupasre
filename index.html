@@ -1691,6 +1691,121 @@ function renderMarketValue() {
   sec.appendChild(fn);
 }
 
+function renderBreakEven() {
+  const sec = document.getElementById('break-even');
+  const NOW_FRAC = 2026 + 3/12;
+  const PROP_COLORS = {
+    berlin:'#60a5fa', eschweiler:'#34d399', huegelstr:'#f59e0b', ohmstr:'#f87171', leipzig:'#a78bfa'
+  };
+
+  function cumRepairsFor(id) {
+    if (id === '_portfolio') {
+      return Object.keys(REPAIRS).reduce((s,k) => s + (REPAIRS[k]||[]).reduce((s2,r) => s2+(r.amt||0), 0), 0);
+    }
+    return (REPAIRS[id]||[]).reduce((s,r) => s+(r.amt||0), 0);
+  }
+
+  function makeBeItems(model) {
+    return D.map(d => ({ id:d.id, name:d.name, color:PROP_COLORS[d.id], model:model[d.id] }));
+  }
+
+  function makeBeTable(beItems, model) {
+    const wrap = document.createElement('div');
+    wrap.style.overflowX = 'auto';
+    let html = '<table style="margin-top:8px"><thead><tr>'
+      +'<th class="left">Property</th>'
+      +'<th>Break-Even</th>'
+      +'<th>KNK</th>'
+      +'<th>Repair &amp; Maint.</th>'
+      +'<th>Equity Paid In</th>'
+      +'<th>Total Capital</th>'
+      +'<th>Return<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
+      +'<th>Progress</th>'
+      +'</tr></thead><tbody>';
+
+    beItems.forEach(d => {
+      const m = model[d.id];
+      const cr = cumRepairsFor(d.id);
+      const eq = EQUITY_PAID[d.id] || 0;
+      const tc = BE_MODEL[d.id].knk + cr + eq;
+      const posNow = beCumAtFrac(m, NOW_FRAC);
+      const pct = tc > 0 ? Math.max(0, Math.min(100, 100 * (1 + posNow / tc))) : 0;
+      const barPct = pct.toFixed(0);
+      const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
+        +`<div style="background:${pct>=100?'#34d399':'#60a5fa'};width:${barPct}%;height:8px;border-radius:4px"></div>`
+        +`</div><span style="font-size:9px;color:#9ca3af">${barPct}%</span>`;
+      const beStr = m.be != null
+        ? `<span style="color:${m.be<=NOW_FRAC?'#34d399':'#9ca3af'}">${formatFrac(m.be)}${m.be<=NOW_FRAC?' ✓':''}</span>`
+        : `<span style="color:#9ca3af">&gt;2060</span>`;
+      html += `<tr>
+        <td class="left" style="color:${PROP_COLORS[d.id]}">${d.name}</td>
+        <td>${beStr}</td>
+        <td style="color:#f59e0b;cursor:help"
+            onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
+            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(BE_MODEL[d.id].knk,2)}</td>
+        <td style="cursor:help" onmouseenter="showRepairDetailTooltip(event,'${d.id}',null)"
+            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(cr,2)}</td>
+        <td style="color:#9ca3af">${eq>0?fe(eq):'—'}</td>
+        <td style="color:#fbbf24;font-weight:600">${fe(Math.round(tc))}</td>
+        <td style="color:${vc(posNow)};font-weight:600">${fe(Math.round(posNow))}</td>
+        <td style="min-width:100px">${progBar}</td>
+      </tr>`;
+    });
+
+    // Portfolio row
+    const pm = model['_portfolio'];
+    const portCR = cumRepairsFor('_portfolio');
+    const portEq = EQUITY_PAID['_portfolio'] || 0;
+    const portKNK = BE_MODEL['_portfolio'].knk;
+    const portTC = portKNK + portCR + portEq;
+    const portPos = beCumAtFrac(pm, NOW_FRAC);
+    const portPct = portTC > 0 ? Math.max(0, Math.min(100, 100*(1+portPos/portTC))) : 0;
+    const portBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
+      +`<div style="background:${portPct>=100?'#34d399':'#60a5fa'};width:${portPct.toFixed(0)}%;height:8px;border-radius:4px"></div>`
+      +`</div><span style="font-size:9px;color:#9ca3af">${portPct.toFixed(0)}%</span>`;
+    const portBEStr = pm.be != null ? formatFrac(pm.be) : '>2060';
+    html += `<tr class="total">
+      <td class="left">PORTFOLIO</td>
+      <td style="color:#9ca3af">${portBEStr}</td>
+      <td style="color:#f59e0b">${fe(Math.round(portKNK))}</td>
+      <td style="color:#9ca3af">${fe(Math.round(portCR))}</td>
+      <td style="color:#9ca3af">${fe(portEq)}</td>
+      <td style="color:#fbbf24;font-weight:600">${fe(Math.round(portTC))}</td>
+      <td style="color:${vc(portPos)};font-weight:600">${fe(Math.round(portPos))}</td>
+      <td style="min-width:100px">${portBar}</td>
+    </tr></tbody></table>`;
+    wrap.innerHTML = html;
+    return wrap;
+  }
+
+  // ── Chart 1: BE_TILT_MODEL — KNK vs. CF + Tilgung ──────────────────────────
+  const c1 = document.createElement('div');
+  c1.className = 'card chart-wrap'; c1.style.marginBottom = '16px';
+  c1.innerHTML = '<div class="chart-title">Break-Even: KNK vs. CF + Tilgung</div>'
+    +'<div class="chart-sub">Each line shows cumulative return (Op CF + Tilgung as equity) minus Kaufnebenkosten. '
+    +'Tilgung counts as return — it is equity you own. Crossing y = 0 (green line) = break-even. '
+    +'Solid = historical (CSV through 2025), dashed = projected from 2026. Filled circle = break-even date. '
+    +'Forward assumptions: rent +2%/yr, Hausgeld +2%/yr, refi at current rates, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr.</div>';
+  const beItems1 = makeBeItems(BE_TILT_MODEL);
+  c1.appendChild(makeBreakEvenChart({items:beItems1, W:900}));
+  c1.appendChild(makeBeTable(beItems1, BE_TILT_MODEL));
+  sec.appendChild(c1);
+
+  // ── Chart 2: BE_TOTAL_MODEL — CF + Tilgung vs. Total Capital Employed ───────
+  const c2 = document.createElement('div');
+  c2.className = 'card chart-wrap'; c2.style.marginBottom = '16px';
+  c2.innerHTML = '<div class="chart-title">Break-Even: CF + Tilgung vs. Total Capital Employed</div>'
+    +'<div class="chart-sub">Each line shows cumulative return (Op CF + Tilgung) minus all capital invested: '
+    +'Kaufnebenkosten + repair/maintenance costs + initial equity payments. '
+    +'Repairs flow through Op CF (already reducing the cumulative); equity is additional own capital deployed at purchase. '
+    +'The chart starts at −(KNK + equity); Total Capital in the table adds cumulative repairs for a full accounting. '
+    +'Solid = historical, dashed = projected. Filled circle = break-even date.</div>';
+  const beItems2 = makeBeItems(BE_TOTAL_MODEL);
+  c2.appendChild(makeBreakEvenChart({items:beItems2, W:900}));
+  c2.appendChild(makeBeTable(beItems2, BE_TOTAL_MODEL));
+  sec.appendChild(c2);
+}
+
 // ─── TAB SWITCHING ───────────────────────────────────────────────────────────
 function showTab(id) {
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
