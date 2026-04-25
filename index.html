@@ -1873,7 +1873,7 @@ function renderBreakEven() {
     +'The chart starts at −(KNK + equity); Total Capital in the table adds cumulative repairs for a full accounting. '
     +'Solid = historical, dashed = projected. Filled circle = break-even date.</div>';
   const beItems2 = makeBeItems(BE_TOTAL_MODEL);
-  c2.appendChild(makeBreakEvenChart({items:beItems2, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
+  c2.appendChild(makeBreakEvenChart({items:beItems2, W:900, xMin:sharedMinX, xMax:sharedMaxX, showOppCost:true}));
   c2.appendChild(makeBeTable(beItems2, BE_TOTAL_MODEL));
   sec.appendChild(c2);
 }
