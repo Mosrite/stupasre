@@ -693,6 +693,10 @@ const TILGUNG_BY_YEAR = {
 // Equity paid in at purchase (purchasePrice − loanAmt, floored at 0)
 const EQUITY_PAID = {berlin:16000,eschweiler:0,huegelstr:0,ohmstr:0,leipzig:7000,'_portfolio':23000};
 
+// Overfinancing: loan exceeded purchase price; the surplus cash offsets first-year repair costs.
+// Eschweiler: loan 89,000 − purchase 86,000 = 3,000 received back → reduces effective repairs.
+const OVERFINANCING = {eschweiler:3000};
+
 // Recompute break-even year from adjusted pts array and baseline (used as initial deficit)
 function recomputeBE(pts, knk) {
   let prevFrac = pts[0].y, prevCum = -knk;
