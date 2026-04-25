@@ -1791,7 +1791,9 @@ function renderBreakEven() {
     return D.map(d => ({ id:d.id, name:d.name, color:PROP_COLORS[d.id], model:model[d.id] }));
   }
 
-  function makeBeTable(beItems, model) {
+  // progressVsKNK=true → progress bar denominator is KNK (Chart 1)
+  // progressVsKNK=false → progress bar denominator is totalCapital (Chart 2)
+  function makeBeTable(beItems, model, progressVsKNK) {
     const wrap = document.createElement('div');
     wrap.style.overflowX = 'auto';
     let html = '<table style="margin-top:8px"><thead><tr>'
@@ -1801,17 +1803,23 @@ function renderBreakEven() {
       +'<th>Repair &amp; Maint.</th>'
       +'<th>Equity Paid In</th>'
       +'<th>Total Capital</th>'
-      +'<th>Return<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
+      +'<th>Return (CF+Tilg.)<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
       +'<th>Progress</th>'
       +'</tr></thead><tbody>';
 
     beItems.forEach(d => {
       const m = model[d.id];
-      const cr = cumRepairsFor(d.id);
       const eq = EQUITY_PAID[d.id] || 0;
-      const tc = BE_MODEL[d.id].knk + cr + eq;
-      const posNow = beCumAtFrac(m, NOW_FRAC);
-      const pct = tc > 0 ? Math.max(0, Math.min(100, 100 * (1 + posNow / tc))) : 0;
+      const knk = BE_MODEL[d.id].knk;
+      // Use BE_TOTAL_MODEL for all capital figures — already overfinancing-adjusted
+      const tc = BE_TOTAL_MODEL[d.id].totalCapital;
+      const netRepairs = tc - knk - eq;
+      const ovf = OVERFINANCING[d.id] || 0;
+      // grossReturn: absolute cumulative (CF + Tilgung) received so far
+      // = position in BE_TILT_MODEL (which starts at −KNK) shifted up by KNK
+      const grossReturn = beCumAtFrac(BE_TILT_MODEL[d.id], NOW_FRAC) + knk;
+      const progressBase = progressVsKNK ? knk : tc;
+      const pct = progressBase > 0 ? Math.max(0, Math.min(100, 100 * grossReturn / progressBase)) : 0;
       const barPct = pct.toFixed(0);
       const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
         +`<div style="background:${pct>=100?'#34d399':'#60a5fa'};width:${barPct}%;height:8px;border-radius:4px"></div>`
@@ -1819,29 +1827,33 @@ function renderBreakEven() {
       const beStr = m.be != null
         ? `<span style="color:${m.be<=NOW_FRAC?'#34d399':'#9ca3af'}">${formatFrac(m.be)}${m.be<=NOW_FRAC?' ✓':''}</span>`
         : `<span style="color:#9ca3af">&gt;2060</span>`;
+      const ovfBadge = ovf > 0
+        ? ` <span style="font-size:9px;color:#34d399">(−€${(ovf/1000).toFixed(0)}k OVF)</span>`
+        : '';
       html += `<tr>
         <td class="left" style="color:${PROP_COLORS[d.id]}">${d.name}</td>
         <td>${beStr}</td>
         <td style="color:#f59e0b;cursor:help"
             onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
-            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(BE_MODEL[d.id].knk,2)}</td>
-        <td style="cursor:help" onmouseenter="showRepairDetailTooltip(event,'${d.id}',null)"
-            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(cr,2)}</td>
+            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(knk,2)}</td>
+        <td style="cursor:help" onmouseenter="showBERepairTooltip(event,'${d.id}',${ovf})"
+            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(netRepairs,2)}${ovfBadge}</td>
         <td style="color:#9ca3af">${eq>0?fe(eq):'—'}</td>
         <td style="color:#fbbf24;font-weight:600">${fe(Math.round(tc))}</td>
-        <td style="color:${vc(posNow)};font-weight:600">${fe(Math.round(posNow))}</td>
+        <td style="color:${grossReturn>=0?'#34d399':'#f87171'};font-weight:600">${fe(Math.round(grossReturn))}</td>
         <td style="min-width:100px">${progBar}</td>
       </tr>`;
     });
 
     // Portfolio row
     const pm = model['_portfolio'];
-    const portCR = cumRepairsFor('_portfolio');
     const portEq = EQUITY_PAID['_portfolio'] || 0;
     const portKNK = BE_MODEL['_portfolio'].knk;
-    const portTC = portKNK + portCR + portEq;
-    const portPos = beCumAtFrac(pm, NOW_FRAC);
-    const portPct = portTC > 0 ? Math.max(0, Math.min(100, 100*(1+portPos/portTC))) : 0;
+    const portTC = BE_TOTAL_MODEL['_portfolio'].totalCapital;
+    const portNetRepairs = portTC - portKNK - portEq;
+    const portGrossReturn = beCumAtFrac(BE_TILT_MODEL['_portfolio'], NOW_FRAC) + portKNK;
+    const portProgressBase = progressVsKNK ? portKNK : portTC;
+    const portPct = portProgressBase > 0 ? Math.max(0, Math.min(100, 100 * portGrossReturn / portProgressBase)) : 0;
     const portBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
       +`<div style="background:${portPct>=100?'#34d399':'#60a5fa'};width:${portPct.toFixed(0)}%;height:8px;border-radius:4px"></div>`
       +`</div><span style="font-size:9px;color:#9ca3af">${portPct.toFixed(0)}%</span>`;
@@ -1850,10 +1862,10 @@ function renderBreakEven() {
       <td class="left">PORTFOLIO</td>
       <td style="color:#9ca3af">${portBEStr}</td>
       <td style="color:#f59e0b">${fe(Math.round(portKNK))}</td>
-      <td style="color:#9ca3af">${fe(Math.round(portCR))}</td>
+      <td style="color:#9ca3af">${fe(Math.round(portNetRepairs))}</td>
       <td style="color:#9ca3af">${fe(portEq)}</td>
       <td style="color:#fbbf24;font-weight:600">${fe(Math.round(portTC))}</td>
-      <td style="color:${vc(portPos)};font-weight:600">${fe(Math.round(portPos))}</td>
+      <td style="color:${portGrossReturn>=0?'#34d399':'#f87171'};font-weight:600">${fe(Math.round(portGrossReturn))}</td>
       <td style="min-width:100px">${portBar}</td>
     </tr></tbody></table>`;
     wrap.innerHTML = html;
