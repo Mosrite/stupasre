@@ -729,12 +729,28 @@ const BE_TOTAL_MODEL = (() => {
   ['berlin','eschweiler','huegelstr','ohmstr','leipzig','_portfolio'].forEach(id => {
     const tilt = BE_TILT_MODEL[id];
     const eq = EQUITY_PAID[id] || 0;
-    const pts = tilt.pts.map(p => ({y:p.y, cum:p.cum-eq}));
-    const knk = tilt.knk + eq;
-    const cr = id==='_portfolio'
-      ? Object.keys(REPAIRS).reduce((s,k)=>(s+(REPAIRS[k]||[]).reduce((s2,r)=>s2+(r.amt||0),0)),0)
-      : (REPAIRS[id]||[]).reduce((s,r)=>s+(r.amt||0),0);
-    out[id] = {knk, totalCapital:tilt.knk+cr+eq, be:recomputeBE(pts,knk), pts};
+
+    // Build repair-by-year lookup (repairs flow through as capital deployed, not just total)
+    const repByY = {};
+    if (id === '_portfolio') {
+      Object.values(REPAIRS).forEach(arr => arr.forEach(r => {
+        if (r.amt) repByY[r.y] = (repByY[r.y]||0) + r.amt;
+      }));
+    } else {
+      (REPAIRS[id]||[]).forEach(r => { if (r.amt) repByY[r.y] = (repByY[r.y]||0) + r.amt; });
+    }
+
+    // Subtract cumulative repairs year-by-year: repairs both reduce op_cf returns
+    // AND increase the capital target, so the break-even shifts out proportionally.
+    let cumRep = 0;
+    const pts = tilt.pts.map(p => {
+      cumRep += (repByY[p.y]||0);
+      return {y:p.y, cum:p.cum - cumRep - eq};
+    });
+
+    const knk = tilt.knk + eq;  // chart start point = −(KNK + equity)
+    const totalCR = Object.values(repByY).reduce((s,v)=>s+v, 0);
+    out[id] = {knk, totalCapital:tilt.knk+totalCR+eq, be:recomputeBE(pts,knk), pts};
   });
   return out;
 })();
