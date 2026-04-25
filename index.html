@@ -743,6 +743,17 @@ const BE_TOTAL_MODEL = (() => {
     } else {
       (REPAIRS[id]||[]).forEach(r => { if (r.amt) repByY[r.y] = (repByY[r.y]||0) + r.amt; });
     }
+    // Apply overfinancing credit (surplus loan cash reduces effective first-year repair cost)
+    {
+      let credit = id === '_portfolio'
+        ? Object.values(OVERFINANCING).reduce((s,v)=>s+v,0)
+        : (OVERFINANCING[id]||0);
+      for (const y of Object.keys(repByY).sort((a,b)=>a-b)) {
+        if (credit <= 0) break;
+        const applied = Math.min(repByY[y], credit);
+        repByY[y] -= applied; credit -= applied;
+      }
+    }
 
     // Subtract cumulative repairs year-by-year: repairs both reduce op_cf returns
     // AND increase the capital target, so the break-even shifts out proportionally.
