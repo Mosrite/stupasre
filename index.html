@@ -1778,6 +1778,13 @@ function renderBreakEven() {
     return wrap;
   }
 
+  // Compute shared X range across both models so the charts are directly comparable
+  const allItems = [...makeBeItems(BE_TILT_MODEL), ...makeBeItems(BE_TOTAL_MODEL)];
+  const sharedMinX = Math.floor(Math.min(...allItems.map(it => it.model.pts[0].y)));
+  const allBE = allItems.filter(it => it.model.be != null && it.model.be < 2060).map(it => it.model.be);
+  const sharedMaxBE = allBE.length ? Math.max(...allBE) : NOW_FRAC;
+  const sharedMaxX = Math.ceil(Math.max(sharedMaxBE, NOW_FRAC) + 1.5);
+
   // ── Chart 1: BE_TILT_MODEL — KNK vs. CF + Tilgung ──────────────────────────
   const c1 = document.createElement('div');
   c1.className = 'card chart-wrap'; c1.style.marginBottom = '16px';
