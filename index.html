@@ -619,34 +619,84 @@ function formatFrac(frac) {
   return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.min(mo-1,11)]+' '+yr;
 }
 
-// KNK break-even timeline chart
-// Line starts at y = −KNK at purchase date, rises (cumTR − KNK), crosses y=0 at break-even.
-// items: [{name, color, purchaseFrac, knk, knkPartial, cumTRnow, trPerMonth, breakevenFrac, pct}]
-function makeKNKTimeline({ items, W=900, H=340, ml=72, mr=148, mt=24, mb=38 }) {
+// ── Break-Even Forward Model ─────────────────────────────────────────────────
+// Source: /financial_model/model_output/forward_cashflow.json
+// Definition: cumulative = Σ(Op CF excl. Tilgung) − KNK. Crossing y=0 = break-even.
+// Tilgung is treated as equity build (excluded from Op CF and from break-even tracking).
+// Forward assumptions (from project_breakeven_assumptions.md, confirmed 2026-04-24):
+//   rent +2%/yr, Hausgeld +2%/yr, refi=current rate, vacancy 3% Eschweiler / 0% rest,
+//   Rücklage 10 EUR/m²/yr.
+const BE_MODEL = {
+  berlin: {knk:22597.4, be:2029.36, pts:[{y:2024,cum:-29232.01},{y:2025,cum:-24751.23},{y:2026,cum:-20892.71},{y:2027,cum:-15456.21},{y:2028,cum:-9391.54},{y:2029,cum:-2680.18},{y:2030,cum:4697.0},{y:2031,cum:12759.76},{y:2032,cum:21528.53},{y:2033,cum:31024.44},{y:2034,cum:41269.31},{y:2035,cum:52285.71},{y:2036,cum:64096.97},{y:2037,cum:76727.23},{y:2038,cum:90201.44},{y:2039,cum:104545.41},{y:2040,cum:119785.83},{y:2041,cum:135950.32},{y:2042,cum:153067.45},{y:2043,cum:171166.77},{y:2044,cum:190278.88},{y:2045,cum:210435.42},{y:2046,cum:231669.15},{y:2047,cum:254013.97},{y:2048,cum:277504.98},{y:2049,cum:302178.51},{y:2050,cum:328072.18},{y:2051,cum:355224.93},{y:2052,cum:383296.75},{y:2053,cum:411944.9},{y:2054,cum:441180.9},{y:2055,cum:471016.51},{y:2056,cum:501463.72},{y:2057,cum:532534.76},{y:2058,cum:564242.11},{y:2059,cum:596598.49},{y:2060,cum:629616.89}]},
+  eschweiler: {knk:12373.29, be:2029.04, pts:[{y:2020,cum:-15050.99},{y:2021,cum:-18347.97},{y:2022,cum:-16298.53},{y:2023,cum:-13999.99},{y:2024,cum:-10998.56},{y:2025,cum:-9105.21},{y:2026,cum:-6998.15},{y:2027,cum:-4863.6},{y:2028,cum:-2566.85},{y:2029,cum:-104.15},{y:2030,cum:2528.32},{y:2031,cum:5311.46},{y:2032,cum:8220.6},{y:2033,cum:11258.13},{y:2034,cum:14426.5},{y:2035,cum:17728.19},{y:2036,cum:21165.73},{y:2037,cum:24741.71},{y:2038,cum:28458.75},{y:2039,cum:32319.54},{y:2040,cum:36326.82},{y:2041,cum:40483.37},{y:2042,cum:44792.03},{y:2043,cum:49255.69},{y:2044,cum:53877.3},{y:2045,cum:58659.87},{y:2046,cum:63606.46},{y:2047,cum:68720.19},{y:2048,cum:74004.25},{y:2049,cum:79461.87},{y:2050,cum:85096.37},{y:2051,cum:90911.11},{y:2052,cum:96909.52},{y:2053,cum:103095.11},{y:2054,cum:109471.44},{y:2055,cum:116042.14},{y:2056,cum:122810.92},{y:2057,cum:129781.05},{y:2058,cum:136923.74},{y:2059,cum:144222.92},{y:2060,cum:151681.73}]},
+  huegelstr: {knk:44082.98, be:2029.14, pts:[{y:2023,cum:-68163.85},{y:2024,cum:-58059.0},{y:2025,cum:-48715.62},{y:2026,cum:-39698.75},{y:2027,cum:-28111.8},{y:2028,cum:-15551.37},{y:2029,cum:-1989.65},{y:2030,cum:12602.07},{y:2031,cum:28253.44},{y:2032,cum:44995.05},{y:2033,cum:62858.49},{y:2034,cum:81876.38},{y:2035,cum:102082.4},{y:2036,cum:123511.33},{y:2037,cum:146199.1},{y:2038,cum:170182.82},{y:2039,cum:195500.82},{y:2040,cum:222192.71},{y:2041,cum:250299.4},{y:2042,cum:279863.17},{y:2043,cum:310927.71},{y:2044,cum:343538.18},{y:2045,cum:377741.24},{y:2046,cum:413585.14},{y:2047,cum:451119.74},{y:2048,cum:490396.59},{y:2049,cum:531469.01},{y:2050,cum:574353.97},{y:2051,cum:618390.98},{y:2052,cum:663337.63},{y:2053,cum:709212.1},{y:2054,cum:756032.96},{y:2055,cum:803819.13},{y:2056,cum:852589.92},{y:2057,cum:902365.02},{y:2058,cum:953164.51},{y:2059,cum:1005008.89},{y:2060,cum:1057919.05}]},
+  ohmstr: {knk:29633.61, be:2031.33, pts:[{y:2023,cum:-36097.47},{y:2024,cum:-33040.06},{y:2025,cum:-31470.29},{y:2026,cum:-28363.68},{y:2027,cum:-24877.85},{y:2028,cum:-20579.6},{y:2029,cum:-15443.08},{y:2030,cum:-9441.49},{y:2031,cum:-2547.06},{y:2032,cum:5268.99},{y:2033,cum:14036.5},{y:2034,cum:23786.39},{y:2035,cum:34550.73},{y:2036,cum:46362.78},{y:2037,cum:59257.02},{y:2038,cum:73269.2},{y:2039,cum:88436.43},{y:2040,cum:104797.18},{y:2041,cum:122391.37},{y:2042,cum:141260.42},{y:2043,cum:161447.31},{y:2044,cum:182996.63},{y:2045,cum:205954.68},{y:2046,cum:230369.51},{y:2047,cum:256290.99},{y:2048,cum:283770.89},{y:2049,cum:312862.98},{y:2050,cum:343586.03},{y:2051,cum:375238.21},{y:2052,cum:407543.57},{y:2053,cum:440515.16},{y:2054,cum:474166.31},{y:2055,cum:508510.62},{y:2056,cum:543561.94},{y:2057,cum:579334.42},{y:2058,cum:615842.47},{y:2059,cum:653100.81},{y:2060,cum:691124.45}]},
+  leipzig: {knk:9795.25, be:2027.87, pts:[{y:2023,cum:-14715.61},{y:2024,cum:-11805.63},{y:2025,cum:-9063.24},{y:2026,cum:-6216.27},{y:2027,cum:-3036.06},{y:2028,cum:437.72},{y:2029,cum:4213.68},{y:2030,cum:8300.71},{y:2031,cum:12708.0},{y:2032,cum:17445.06},{y:2033,cum:22521.7},{y:2034,cum:27948.09},{y:2035,cum:33734.73},{y:2036,cum:39892.48},{y:2037,cum:46432.58},{y:2038,cum:53366.65},{y:2039,cum:60706.72},{y:2040,cum:68465.22},{y:2041,cum:76655.03},{y:2042,cum:85289.48},{y:2043,cum:94382.35},{y:2044,cum:103947.91},{y:2045,cum:114000.94},{y:2046,cum:124556.74},{y:2047,cum:135631.15},{y:2048,cum:147240.57},{y:2049,cum:159401.99},{y:2050,cum:172133.0},{y:2051,cum:185304.03},{y:2052,cum:198752.17},{y:2053,cum:212482.96},{y:2054,cum:226502.05},{y:2055,cum:240815.2},{y:2056,cum:255428.3},{y:2057,cum:270347.35},{y:2058,cum:285578.47},{y:2059,cum:301127.9},{y:2060,cum:317002.0}]},
+  '_portfolio': {knk:118482.53, be:2029.46, pts:[{y:2020,cum:-121160.23},{y:2021,cum:-124457.21},{y:2022,cum:-122407.77},{y:2023,cum:-155574.32},{y:2024,cum:-143135.26},{y:2025,cum:-123105.59},{y:2026,cum:-102169.56},{y:2027,cum:-76345.52},{y:2028,cum:-47651.64},{y:2029,cum:-16003.38},{y:2030,cum:18686.61},{y:2031,cum:56485.6},{y:2032,cum:97458.23},{y:2033,cum:141699.26},{y:2034,cum:189306.67},{y:2035,cum:240381.76},{y:2036,cum:295029.29},{y:2037,cum:353357.64},{y:2038,cum:415478.86},{y:2039,cum:481508.92},{y:2040,cum:551567.76},{y:2041,cum:625779.49},{y:2042,cum:704272.55},{y:2043,cum:787179.83},{y:2044,cum:874638.9},{y:2045,cum:966792.15},{y:2046,cum:1063787.0},{y:2047,cum:1165776.04},{y:2048,cum:1272917.28},{y:2049,cum:1385374.36},{y:2050,cum:1503241.55},{y:2051,cum:1625069.26},{y:2052,cum:1749839.64},{y:2053,cum:1877250.23},{y:2054,cum:2007353.66},{y:2055,cum:2140203.6},{y:2056,cum:2275854.8},{y:2057,cum:2414362.6},{y:2058,cum:2555751.3},{y:2059,cum:2700059.01},{y:2060,cum:2847344.12}]},
+};
+
+// Decimal-year fraction → linearly interpolated cumulative (between year-end points).
+// Each pts[k] represents end-of-year-y_k. We treat (y_k+1, cum_k) as an anchor in time.
+function beCumAtFrac(model, frac) {
+  const pts = model.pts;
+  if (!pts.length) return null;
+  // Anchor: at start-of-first-year (frac = pts[0].y), cumulative = -KNK (before any Op CF).
+  // At end-of-year y_k (frac = y_k + 1), cumulative = pts[k].cum.
+  const startFrac = pts[0].y;
+  if (frac <= startFrac) return -model.knk;
+  // Build piecewise list of (frac, cum)
+  let prevFrac = startFrac, prevCum = -model.knk;
+  for (const p of pts) {
+    const endFrac = p.y + 1;
+    if (frac <= endFrac) {
+      const t = (frac - prevFrac) / (endFrac - prevFrac);
+      return prevCum + t * (p.cum - prevCum);
+    }
+    prevFrac = endFrac;
+    prevCum = p.cum;
+  }
+  return prevCum; // beyond last point
+}
+
+// Cash-flow-aware break-even timeline chart.
+// Each line is the per-property cumulative position (Op CF excl. Tilgung minus KNK)
+// over time. Solid through end-2025 (historical), dashed from 2026 (projected).
+// items: [{id, name, color, model:{knk, be, pts}}]
+function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38 }) {
   const iW=W-ml-mr, iH=H-mt-mb;
   const nowFrac = 2026 + 3/12;
+  const histEndFrac = 2026; // end-of-2025 = historical/projected boundary
 
-  // X range: earliest purchase year to latest break-even
-  const minX = Math.floor(Math.min(...items.map(it=>it.purchaseFrac)));
-  const validBE = items.filter(it=>it.breakevenFrac < 2060).map(it=>it.breakevenFrac);
-  const maxX = Math.ceil(Math.max(validBE.length ? Math.max(...validBE) : nowFrac, nowFrac) + 1.5);
+  // X range
+  const minX = Math.floor(Math.min(...items.map(it => it.model.pts[0].y)));
+  const validBE = items.filter(it => it.model.be != null && it.model.be < 2060).map(it => it.model.be);
+  const maxBE = validBE.length ? Math.max(...validBE) : nowFrac;
+  const maxX = Math.ceil(Math.max(maxBE, nowFrac) + 1.5);
 
-  // Y range: negative (start = −KNK) up through zero (break-even) and a bit above
-  const minKNK = Math.min(...items.map(it=>it.knk));
-  const maxKNK = Math.max(...items.map(it=>it.knk));
-  const maxCurPos = Math.max(0, ...items.map(it=>it.cumTRnow - it.knk));
-  const minY = -maxKNK * 1.08;
-  const maxY = Math.max(maxCurPos * 1.15, maxKNK * 0.12, 2000);
+  // Y range (per-property only — exclude portfolio, which we do not plot in main chart)
+  const allCums = items.flatMap(it => it.model.pts.filter(p => p.y <= maxX).map(p => p.cum));
+  const minKNK = Math.min(...items.map(it => it.model.knk));
+  const maxKNK = Math.max(...items.map(it => it.model.knk));
+  const minCum = Math.min(-maxKNK, ...allCums);
+  const maxCum = Math.max(...allCums, maxKNK * 0.15);
+  // Cap Y range at the value reached at maxBE+1 to keep the chart readable
+  const yCap = items.reduce((m,it) => {
+    const v = beCumAtFrac(it.model, maxX);
+    return Math.max(m, v);
+  }, 0);
+  const minY = minCum * 1.08;
+  const maxY = Math.max(yCap * 1.1, maxKNK * 0.2, 5000);
   const rangeY = maxY - minY;
 
   const xPx = x => ml + (x - minX) / (maxX - minX) * iW;
   const yPx = y => mt + (1 - (y - minY) / rangeY) * iH;
   const zeroY = yPx(0);
+  const histPx = xPx(histEndFrac);
 
   const svg = el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:'overflow:visible;display:block'});
 
-  // Y grid lines + labels
-  const yStep = Math.ceil(maxKNK / 4 / 5000) * 5000; // round to nearest 5k
+  // Y grid
+  const yStep = Math.ceil(maxKNK / 4 / 5000) * 5000 || 5000;
   for(let v = Math.ceil(minY/yStep)*yStep; v <= maxY + yStep/2; v += yStep){
     const py = yPx(v);
     if(py < mt-2 || py > H-mb+2) continue;
@@ -654,7 +704,7 @@ function makeKNKTimeline({ items, W=900, H=340, ml=72, mr=148, mt=24, mb=38 }) {
     svg.appendChild(el('text',{x:ml-5,y:py+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'},fs(v)));
   }
 
-  // Break-even zero line (prominent green)
+  // Break-even (y=0) line
   svg.appendChild(el('line',{x1:ml,y1:zeroY,x2:W-mr,y2:zeroY,stroke:'#34d399','stroke-width':'1.5'}));
   svg.appendChild(el('text',{x:ml-5,y:zeroY-4,'text-anchor':'end',fill:'#34d399','font-size':'8','font-weight':'600'},'Break-even'));
 
@@ -668,75 +718,96 @@ function makeKNKTimeline({ items, W=900, H=340, ml=72, mr=148, mt=24, mb=38 }) {
     }
   }
 
-  // "Now" vertical marker
+  // Historical/forecast boundary marker (end of 2025)
+  if (histPx >= ml && histPx <= W-mr) {
+    svg.appendChild(el('line',{x1:histPx,y1:mt,x2:histPx,y2:H-mb,stroke:'#6b7280','stroke-width':'1','stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text',{x:histPx-3,y:mt+9,'text-anchor':'end',fill:'#9ca3af','font-size':'8'},'Hist.'));
+    svg.appendChild(el('text',{x:histPx+3,y:mt+9,fill:'#9ca3af','font-size':'8'},'Forecast'));
+  }
+
+  // "Now" vertical marker (Apr 2026)
   const nowPx = xPx(nowFrac);
   svg.appendChild(el('line',{x1:nowPx,y1:mt,x2:nowPx,y2:H-mb,stroke:'#fbbf24','stroke-width':'1.5','stroke-dasharray':'5,3'}));
-  svg.appendChild(el('text',{x:nowPx+3,y:mt+9,fill:'#fbbf24','font-size':'8'},'Apr 2026'));
+  svg.appendChild(el('text',{x:nowPx+3,y:mt+19,fill:'#fbbf24','font-size':'8'},'Apr 2026'));
 
-  // Per-property lines
+  // Per-property piecewise-linear curves
   items.forEach((it, idx) => {
-    const {color, purchaseFrac, knk, knkPartial, cumTRnow, breakevenFrac, name} = it;
-    const pX   = xPx(purchaseFrac);
-    const startY = yPx(-knk);              // purchase date: y = −KNK
-    // Place the now-dot on the straight purchase→break-even line so both segments stay collinear.
-    // Direct use of cumTRnow causes a kink because actual tilgungPaid ≠ currentMonthlyTilgung×months.
-    const nowY = (breakevenFrac > nowFrac && breakevenFrac > purchaseFrac)
-      ? yPx(-knk * (breakevenFrac - nowFrac) / (breakevenFrac - purchaseFrac))
-      : yPx(cumTRnow - knk);
-    const beInRange = breakevenFrac < 2060 && breakevenFrac <= maxX + 0.5;
-    const beX = beInRange ? xPx(Math.min(breakevenFrac, maxX)) : null;
+    const { color, name, model } = it;
+    // Build polyline points in time-order: start at (firstPt.y, -knk), then each (y+1, cum)
+    const polyPts = [];
+    polyPts.push({ frac: model.pts[0].y, cum: -model.knk });
+    model.pts.forEach(p => {
+      if (p.y + 1 <= maxX + 0.01) polyPts.push({ frac: p.y + 1, cum: p.cum });
+    });
 
-    // Historical solid line: purchase → now
-    svg.appendChild(el('line',{x1:pX,y1:startY,x2:nowPx,y2:nowY,
-      stroke:color,'stroke-width':'2.5'}));
+    // Split into solid (≤ histEndFrac) and dashed (> histEndFrac) at the boundary.
+    const solidPts = [], dashedPts = [];
+    for (let i = 0; i < polyPts.length; i++) {
+      const p = polyPts[i];
+      if (p.frac <= histEndFrac + 1e-6) {
+        solidPts.push(p);
+      } else {
+        dashedPts.push(p);
+      }
+    }
+    // If we have a solid run that ends before the boundary AND a dashed run starting after, splice in the boundary point.
+    if (solidPts.length && dashedPts.length) {
+      const last = solidPts[solidPts.length - 1];
+      const next = dashedPts[0];
+      if (last.frac < histEndFrac && next.frac > histEndFrac) {
+        const t = (histEndFrac - last.frac) / (next.frac - last.frac);
+        const boundaryCum = last.cum + t * (next.cum - last.cum);
+        const boundaryPt = { frac: histEndFrac, cum: boundaryCum };
+        solidPts.push(boundaryPt);
+        dashedPts.unshift(boundaryPt);
+      }
+    }
 
-    // Projected dashed line: now → break-even (y=0)
-    if(beX && breakevenFrac > nowFrac){
-      svg.appendChild(el('line',{x1:nowPx,y1:nowY,x2:beX,y2:zeroY,
-        stroke:color,'stroke-width':'1.5','stroke-dasharray':'6,3'}));
-      // Break-even dot at y=0 crossing
+    const toPath = pts => pts.map((p,i) => (i===0?'M':'L')+xPx(p.frac).toFixed(2)+','+yPx(p.cum).toFixed(2)).join(' ');
+
+    if (solidPts.length >= 2) {
+      svg.appendChild(el('path',{d:toPath(solidPts), stroke:color, 'stroke-width':'2.5', fill:'none'}));
+    }
+    if (dashedPts.length >= 2) {
+      svg.appendChild(el('path',{d:toPath(dashedPts), stroke:color, 'stroke-width':'1.8', 'stroke-dasharray':'6,3', fill:'none'}));
+    }
+
+    // Break-even crossing dot
+    if (model.be != null && model.be <= maxX + 0.5) {
+      const beX = xPx(model.be);
       const beDot = el('circle',{cx:beX,cy:zeroY,r:'5',fill:color,stroke:'#111827','stroke-width':'1.5'});
+      const beLabel = model.be <= histEndFrac ? `Broke even: <b>${formatFrac(model.be)}</b> ✓` : `Break-even: <b>${formatFrac(model.be)}</b>`;
       beDot.addEventListener('mouseenter',e=>showTooltip(e,
-        `<b>${name}</b><br/>Break-even: <b>${formatFrac(breakevenFrac)}</b><br/>KNK: ${fe(Math.round(knk))}${knkPartial?' ⚠':' ✓'}`));
-      beDot.addEventListener('mousemove',moveTooltip);
-      beDot.addEventListener('mouseleave',hideTooltip);
-      svg.appendChild(beDot);
-    } else if(breakevenFrac <= nowFrac && beInRange){
-      // Already broken even — place dot at geometric intersection of drawn line with zeroY
-      const t = (zeroY - startY) / (nowY - startY);
-      const beXIntersect = pX + t * (nowPx - pX);
-      const beDot = el('circle',{cx:beXIntersect,cy:zeroY,r:'5',fill:color,stroke:'#111827','stroke-width':'1.5'});
-      beDot.addEventListener('mouseenter',e=>showTooltip(e,
-        `<b>${name}</b><br/>Broke even: <b>${formatFrac(breakevenFrac)}</b> ✓<br/>KNK: ${fe(Math.round(knk))}`));
+        `<b>${name}</b><br/>${beLabel}<br/>KNK: ${fe(Math.round(model.knk))}`));
       beDot.addEventListener('mousemove',moveTooltip);
       beDot.addEventListener('mouseleave',hideTooltip);
       svg.appendChild(beDot);
     }
 
-    // Current position dot (Apr 2026)
-    // For properties that have already broken even, tooltip is on the break-even dot — not here.
+    // Now-position dot (Apr 2026) on actual curve
+    const nowCum = beCumAtFrac(model, nowFrac);
+    const nowY = yPx(nowCum);
     const nowDot = el('circle',{cx:nowPx,cy:nowY,r:'3.5',fill:color,stroke:'#111827','stroke-width':'1.2'});
-    if(breakevenFrac > nowFrac){
-      const relPos = cumTRnow - knk;
-      nowDot.addEventListener('mouseenter',e=>showTooltip(e,
-        `<b>${name}</b><br/>Apr 2026: ${relPos>=0?'+':''}${fe(Math.round(relPos))} vs. KNK<br/>Cum. TR: ${fe(Math.round(cumTRnow))}<br/>KNK: ${fe(Math.round(knk))}${knkPartial?' ⚠':' ✓'}<br/>Progress: ${it.pct.toFixed(0)}%`));
-      nowDot.addEventListener('mousemove',moveTooltip);
-      nowDot.addEventListener('mouseleave',hideTooltip);
-    }
+    const relPos = nowCum;
+    const pct = Math.max(0, Math.min(100, 100 * (1 + nowCum / model.knk)));
+    nowDot.addEventListener('mouseenter',e=>showTooltip(e,
+      `<b>${name}</b><br/>Apr 2026: ${relPos>=0?'+':''}${fe(Math.round(relPos))} vs. break-even<br/>KNK: ${fe(Math.round(model.knk))}<br/>Progress: ${pct.toFixed(0)}%`));
+    nowDot.addEventListener('mousemove',moveTooltip);
+    nowDot.addEventListener('mouseleave',hideTooltip);
     svg.appendChild(nowDot);
 
-    // Small start dot at purchase date
-    svg.appendChild(el('circle',{cx:pX,cy:startY,r:'3',fill:color,stroke:'#111827','stroke-width':'1',opacity:'0.7'}));
+    // Start dot at purchase year (-KNK)
+    svg.appendChild(el('circle',{cx:xPx(model.pts[0].y),cy:yPx(-model.knk),r:'3',fill:color,stroke:'#111827','stroke-width':'1',opacity:'0.7'}));
 
-    // Legend entry (right margin)
+    // Legend
     const legY = mt + 20 + idx * 26;
     svg.appendChild(el('rect',{x:W-mr+10,y:legY-9,width:14,height:10,fill:color,rx:'2'}));
     const ln1 = el('text',{x:W-mr+28,y:legY,fill:'#d1d5db','font-size':'10'});
-    ln1.textContent = name + (knkPartial ? ' ⚠' : ' ✓');
+    ln1.textContent = name;
     svg.appendChild(ln1);
     const ln2 = el('text',{x:W-mr+28,y:legY+11,fill:'#6b7280','font-size':'9'});
-    ln2.textContent = breakevenFrac <= nowFrac ? 'Done ✓ '+formatFrac(breakevenFrac)
-      : (beX ? formatFrac(breakevenFrac) : '>'+maxX);
+    ln2.textContent = (model.be != null && model.be <= histEndFrac) ? 'Done ✓ '+formatFrac(model.be)
+      : (model.be != null && model.be <= maxX + 0.5) ? formatFrac(model.be) : '>'+maxX;
     svg.appendChild(ln2);
   });
 
