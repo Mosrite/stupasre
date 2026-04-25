@@ -637,6 +637,108 @@ const BE_MODEL = {
   '_portfolio': {knk:118482.53, be:2030.46, pts:[{y:2020,cum:-121160.23},{y:2021,cum:-124457.21},{y:2022,cum:-122407.77},{y:2023,cum:-155574.32},{y:2024,cum:-143135.26},{y:2025,cum:-123105.59},{y:2026,cum:-102169.56},{y:2027,cum:-76345.52},{y:2028,cum:-47651.64},{y:2029,cum:-16003.38},{y:2030,cum:18686.61},{y:2031,cum:56485.6},{y:2032,cum:97458.23},{y:2033,cum:141699.26},{y:2034,cum:189306.67},{y:2035,cum:240381.76},{y:2036,cum:295029.29},{y:2037,cum:353357.64},{y:2038,cum:415478.86},{y:2039,cum:481508.92},{y:2040,cum:551567.76},{y:2041,cum:625779.49},{y:2042,cum:704272.55},{y:2043,cum:787179.83},{y:2044,cum:874638.9},{y:2045,cum:966792.15},{y:2046,cum:1063787.0},{y:2047,cum:1165776.04},{y:2048,cum:1272917.28},{y:2049,cum:1385374.36},{y:2050,cum:1503241.55},{y:2051,cum:1625069.26},{y:2052,cum:1749839.64},{y:2053,cum:1877250.23},{y:2054,cum:2007353.66},{y:2055,cum:2140203.6},{y:2056,cum:2275854.8},{y:2057,cum:2414362.6},{y:2058,cum:2555751.3},{y:2059,cum:2700059.01},{y:2060,cum:2847344.12}]},
 };
 
+// ── Annual Tilgung per property per year (absolute values, from forward_cashflow.json) ─
+const TILGUNG_BY_YEAR = {
+  berlin: {
+    2024:2500.19,2025:6175.60,2026:6416.65,2027:6675.34,2028:6952.23,
+    2029:7240.60,2030:7540.94,2031:7853.73,2032:8179.50,2033:8518.78,
+    2034:8872.13,2035:9240.14,2036:9623.42,2037:10022.59,2038:10438.33,
+    2039:10871.30,2040:11322.24,2041:11791.88,2042:12281.00,2043:12790.41,
+    2044:13320.94,2045:13873.49,2046:14448.95,2047:15048.29,2048:15672.48,
+    2049:16322.57,2050:16999.62,2051:16751.66,
+  },
+  eschweiler: {
+    2020:0,2021:2759.60,2022:2976.13,2023:3043.84,2024:3113.35,2025:3184.58,
+    2026:3253.73,2027:3327.19,2028:3404.69,2029:3484.24,2030:3565.89,
+    2031:2102.68,2032:2136.99,2033:2171.87,2034:2207.32,2035:2243.34,
+    2036:2279.96,2037:2317.17,2038:2354.98,2039:2393.42,2040:2432.48,
+    2041:2472.18,2042:2512.53,2043:2553.54,2044:2595.21,2045:2637.57,
+    2046:2680.62,2047:2724.37,2048:2768.83,2049:2814.02,2050:2859.95,
+    2051:2906.62,2052:2954.06,2053:3002.27,2054:3051.27,2055:3101.07,
+    2056:3151.68,2057:2614.30,
+  },
+  huegelstr: {
+    2023:4235.42,2024:8730.78,2025:9096.29,2026:9677.80,2027:10080.70,
+    2028:10488.64,2029:10913.08,2030:11354.70,2031:11814.19,2032:12292.27,
+    2033:12789.70,2034:13307.26,2035:13845.76,2036:14406.06,2037:14989.02,
+    2038:15595.58,2039:16226.69,2040:16883.33,2041:17566.55,2042:18277.41,
+    2043:19017.04,2044:19786.60,2045:20587.31,2046:21420.41,2047:22287.23,
+    2048:23189.12,2049:24127.51,2050:17013.56,
+  },
+  ohmstr: {
+    2023:1335.72,2024:8217.20,2025:8575.87,2026:8928.90,2027:9307.78,
+    2028:9714.11,2029:10138.17,2030:10580.74,2031:11042.63,2032:11524.68,
+    2033:12027.78,2034:12552.84,2035:13100.83,2036:13672.73,2037:14269.60,
+    2038:14892.53,2039:15542.64,2040:16221.14,2041:16929.26,2042:17668.29,
+    2043:18439.58,2044:19244.55,2045:20084.65,2046:20961.42,2047:21876.47,
+    2048:22831.47,2049:23828.16,2050:17191.01,
+  },
+  leipzig: {
+    2023:410.71,2024:2525.18,2025:2632.78,2026:2738.52,2027:2851.74,
+    2028:2973.03,2029:3099.48,2030:3231.31,2031:3368.74,2032:3512.02,
+    2033:3661.40,2034:3817.12,2035:3979.47,2036:4148.73,2037:4325.18,
+    2038:4509.14,2039:4700.93,2040:4900.87,2041:5109.31,2042:5326.62,
+    2043:5553.17,2044:5789.36,2045:6035.59,2046:6292.30,2047:6559.93,
+    2048:6838.93,2049:7129.81,2050:7415.90,
+  },
+};
+// Portfolio = sum of individual properties per year
+{
+  const allYears = [...new Set(Object.values(TILGUNG_BY_YEAR).flatMap(ty=>Object.keys(ty).map(Number)))].sort((a,b)=>a-b);
+  const portTy = {};
+  allYears.forEach(y => { portTy[y] = Object.values(TILGUNG_BY_YEAR).reduce((s,ty)=>s+(ty[y]||0),0); });
+  TILGUNG_BY_YEAR['_portfolio'] = portTy;
+}
+
+// Equity paid in at purchase (purchasePrice − loanAmt, floored at 0)
+const EQUITY_PAID = {berlin:16000,eschweiler:0,huegelstr:0,ohmstr:0,leipzig:7000,'_portfolio':23000};
+
+// Recompute break-even year from adjusted pts array and baseline (used as initial deficit)
+function recomputeBE(pts, knk) {
+  let prevFrac = pts[0].y, prevCum = -knk;
+  for (const p of pts) {
+    const frac = p.y + 1;
+    if (prevCum < 0 && p.cum >= 0) {
+      const t = (-prevCum) / (p.cum - prevCum);
+      return prevFrac + t * (frac - prevFrac);
+    }
+    prevFrac = frac; prevCum = p.cum;
+  }
+  return null;
+}
+
+// BE_TILT_MODEL: cum += cumulative tilgung through each year-end.
+// Tilgung counts as return (equity build). Break-even moves earlier.
+const BE_TILT_MODEL = (() => {
+  const out = {};
+  ['berlin','eschweiler','huegelstr','ohmstr','leipzig','_portfolio'].forEach(id => {
+    const bm = BE_MODEL[id];
+    const ty = TILGUNG_BY_YEAR[id] || {};
+    let cumT = 0;
+    const pts = bm.pts.map(p => { cumT += (ty[p.y]||0); return {y:p.y, cum:p.cum+cumT}; });
+    out[id] = {knk:bm.knk, be:recomputeBE(pts,bm.knk), pts};
+  });
+  return out;
+})();
+
+// BE_TOTAL_MODEL: further subtracts equity paid in from each cum value.
+// model.knk = KNK + equity (chart start point = −(KNK+equity)).
+// totalCapital = KNK + cumRepairs + equity (used in detail table).
+const BE_TOTAL_MODEL = (() => {
+  const out = {};
+  ['berlin','eschweiler','huegelstr','ohmstr','leipzig','_portfolio'].forEach(id => {
+    const tilt = BE_TILT_MODEL[id];
+    const eq = EQUITY_PAID[id] || 0;
+    const pts = tilt.pts.map(p => ({y:p.y, cum:p.cum-eq}));
+    const knk = tilt.knk + eq;
+    const cr = id==='_portfolio'
+      ? Object.keys(REPAIRS).reduce((s,k)=>(s+(REPAIRS[k]||[]).reduce((s2,r)=>s2+(r.amt||0),0)),0)
+      : (REPAIRS[id]||[]).reduce((s,r)=>s+(r.amt||0),0);
+    out[id] = {knk, totalCapital:tilt.knk+cr+eq, be:recomputeBE(pts,knk), pts};
+  });
+  return out;
+})();
+
 // Decimal-year fraction → linearly interpolated cumulative (between year-end points).
 // Each pts[k] represents end-of-year-y_k. We treat (y_k+1, cum_k) as an anchor in time.
 function beCumAtFrac(model, frac) {
