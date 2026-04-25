@@ -1889,7 +1889,7 @@ function renderBreakEven() {
     +'Forward assumptions: rent +2%/yr, Hausgeld +2%/yr, refi at current rates, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr.</div>';
   const beItems1 = makeBeItems(BE_TILT_MODEL);
   c1.appendChild(makeBreakEvenChart({items:beItems1, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
-  c1.appendChild(makeBeTable(beItems1, BE_TILT_MODEL));
+  c1.appendChild(makeBeTable(beItems1, BE_TILT_MODEL, true));
   sec.appendChild(c1);
 
   // ── Chart 2: BE_TOTAL_MODEL — CF + Tilgung vs. Total Capital Employed ───────
