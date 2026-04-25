@@ -858,11 +858,11 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
     }
   }
 
-  // Historical/forecast boundary marker (end of 2025)
+  // Solid/dashed boundary marker (end of 2026 — current year included via projected data)
   if (histPx >= ml && histPx <= W-mr) {
     svg.appendChild(el('line',{x1:histPx,y1:mt,x2:histPx,y2:H-mb,stroke:'#6b7280','stroke-width':'1','stroke-dasharray':'3,3'}));
-    svg.appendChild(el('text',{x:histPx-3,y:mt+9,'text-anchor':'end',fill:'#9ca3af','font-size':'8'},'Hist.'));
-    svg.appendChild(el('text',{x:histPx+3,y:mt+9,fill:'#9ca3af','font-size':'8'},'Forecast'));
+    svg.appendChild(el('text',{x:histPx-3,y:mt+9,'text-anchor':'end',fill:'#9ca3af','font-size':'8'},'← 2026'));
+    svg.appendChild(el('text',{x:histPx+3,y:mt+9,fill:'#9ca3af','font-size':'8'},'Forecast →'));
   }
 
   // "Now" vertical marker (Apr 2026)
