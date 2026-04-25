@@ -1249,7 +1249,7 @@ function renderOverview() {
     <b>Total Return</b> = Cashflow + Tilgung. Monthly cashflow is <i>constant</i> for a fixed-rate annuity loan (total payment fixed). However Total Return <i>increases</i> each year as Zinsen shrink and Tilgung grows — the equity-building component rises automatically.<br>
     <b>DSCR</b> = Pre-Financing CF (NOI) / Total Mortgage. Standard RE definition. &gt; 1.0 means operating income covers debt service.<br>
     <b>Gross Yield</b> = (Kaltmiete × 12) / Purchase Price.<br>
-    <b>KNK break-even</b>: Chart starts at y = −KNK at purchase date; rises to cross y = 0 (break-even). Eschweiler uses Volksbank mortgage only (DSL private loan excluded). All 5 properties fully confirmed from invoices. Hover KNK total in table for per-invoice breakdown.<br>
+    <b>KNK break-even</b>: Curves track cumulative Op CF (excl. Tilgung) − KNK over time using the cash-flow-accurate forward model in <code>/financial_model/model_output/forward_cashflow.json</code>. Solid through end-2025 (CSV actuals); dashed from 2026 onwards (projection: rent +2%/yr, Hausgeld +2%/yr, current refi rate, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr). Tilgung is treated as equity build (not counted as cost or recovery). All 5 properties have invoice-confirmed KNK; hover KNK total in table for per-invoice breakdown.<br>
     Grundsteuer &amp; DKB fees are quarterly amounts ÷ 3. Tax effects (AfA, Werbungskosten) not reflected here.`;
   sec.appendChild(fn);
 }
