@@ -729,13 +729,14 @@ const BE_TILT_MODEL = (() => {
   return out;
 })();
 
-// BE_TOTAL_MODEL: further subtracts equity paid in from each cum value.
+// BE_TOTAL_MODEL: Op CF vs. all capital deployed (KNK + cumRepairs + equity).
+// Based on BE_MODEL (pure op_cf — tilgung excluded, as equity & asset generation cancel).
 // model.knk = KNK + equity (chart start point = −(KNK+equity)).
 // totalCapital = KNK + cumRepairs + equity (used in detail table).
 const BE_TOTAL_MODEL = (() => {
   const out = {};
   ['berlin','eschweiler','huegelstr','ohmstr','leipzig','_portfolio'].forEach(id => {
-    const tilt = BE_TILT_MODEL[id];
+    const base = BE_MODEL[id];
     const eq = EQUITY_PAID[id] || 0;
 
     // Build repair-by-year lookup (repairs flow through as capital deployed, not just total)
@@ -759,17 +760,16 @@ const BE_TOTAL_MODEL = (() => {
       }
     }
 
-    // Subtract cumulative repairs year-by-year: repairs both reduce op_cf returns
-    // AND increase the capital target, so the break-even shifts out proportionally.
+    // Subtract cumulative repairs year-by-year from BE_MODEL cumulative
     let cumRep = 0;
-    const pts = tilt.pts.map(p => {
+    const pts = base.pts.map(p => {
       cumRep += (repByY[p.y]||0);
       return {y:p.y, cum:p.cum - cumRep - eq};
     });
 
-    const knk = tilt.knk + eq;  // chart start point = −(KNK + equity)
+    const knk = base.knk + eq;  // chart start point = −(KNK + equity)
     const totalCR = Object.values(repByY).reduce((s,v)=>s+v, 0);
-    out[id] = {knk, totalCapital:tilt.knk+totalCR+eq, be:recomputeBE(pts,knk), pts};
+    out[id] = {knk, totalCapital:base.knk+totalCR+eq, be:recomputeBE(pts,knk), pts};
   });
   return out;
 })();
