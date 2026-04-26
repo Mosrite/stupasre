@@ -1988,7 +1988,7 @@ function renderBreakEven() {
       <td style="color:#9ca3af">${fe(Math.round(portNetRepairs))}</td>
       <td style="color:#9ca3af">${fe(portEq)}</td>
       <td style="color:#fbbf24;font-weight:600">${fe(Math.round(portTC))}</td>
-      <td style="color:${portGrossReturn>=0?'#34d399':'#f87171'};font-weight:600">${fe(Math.round(portGrossReturn))}</td>
+      <td style="color:${portPureOpCF>=0?'#34d399':'#f87171'};font-weight:600">${fe(Math.round(portPureOpCF))}</td>
       <td style="min-width:100px">${portBar}</td>
     </tr></tbody></table>`;
     wrap.innerHTML = html;
