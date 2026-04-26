@@ -1911,9 +1911,14 @@ function renderBreakEven() {
       +`<div style="background:${portPct>=100?'#34d399':'#60a5fa'};width:${portPct.toFixed(0)}%;height:8px;border-radius:4px"></div>`
       +`</div><span style="font-size:9px;color:#9ca3af">${portPct.toFixed(0)}%</span>`;
     const portBEStr = pm.be != null ? formatFrac(pm.be) : '>2060';
+    const portOppK = progressVsKNK ? portKNK : BE_TOTAL_MODEL['_portfolio'].knk;
+    const portT0 = BE_TILT_MODEL['_portfolio'].pts[0].y;
+    const portBeatsDate = findBeatsOppDate(BE_TILT_MODEL['_portfolio'], portOppK, portT0);
+    const portBeatsStr = portBeatsDate != null ? formatFrac(portBeatsDate) : '>2060';
     html += `<tr class="total">
       <td class="left">PORTFOLIO</td>
       <td style="color:#9ca3af">${portBEStr}</td>
+      <td style="color:#9ca3af">${portBeatsStr}</td>
       <td style="color:#f59e0b">${fe(Math.round(portKNK))}</td>
       <td style="color:#9ca3af">${fe(Math.round(portNetRepairs))}</td>
       <td style="color:#9ca3af">${fe(portEq)}</td>
