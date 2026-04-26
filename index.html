@@ -1915,8 +1915,10 @@ function renderBreakEven() {
       const tc = BE_TOTAL_MODEL[d.id].totalCapital;
       const netRepairs = tc - knk - eq;
       const ovf = OVERFINANCING[d.id] || 0;
-      // grossReturn: cumulative Op CF received so far (BE_MODEL starts at −KNK, excludes tilgung)
+      // grossReturn: cumulative position from BE_MODEL (includes repair costs, used for progress bar)
       const grossReturn = beCumAtFrac(BE_MODEL[d.id], NOW_FRAC) + knk;
+      // pureOpCF: cumulative Op CF excl. repairs (rent − opex − Zinsen only, no capex)
+      const pureOpCF = grossReturn + cumRepairsAtFrac(d.id, NOW_FRAC);
       const progressBase = progressVsKNK ? knk : tc;
       const pct = progressBase > 0 ? Math.max(0, Math.min(100, 100 * grossReturn / progressBase)) : 0;
       const barPct = pct.toFixed(0);
