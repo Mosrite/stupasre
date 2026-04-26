@@ -1833,6 +1833,22 @@ function renderBreakEven() {
     return D.map(d => ({ id:d.id, name:d.name, color:PROP_COLORS[d.id], model:model[d.id] }));
   }
 
+  // Purchase date → fractional year for each property (for duration calculation)
+  function purchFrac(id) {
+    const pd = MORTGAGE_DATA[id] && MORTGAGE_DATA[id].purchaseDate;
+    if (!pd) return null;
+    const [y, m] = pd.split('-').map(Number);
+    return y + (m - 1) / 12;
+  }
+  // Format duration between two fractional years as "X y + Y m"
+  function fracDur(f1, f2) {
+    if (f1 == null || f2 == null || f2 <= f1) return null;
+    const totalM = Math.round((f2 - f1) * 12);
+    const y = Math.floor(totalM / 12);
+    const m = totalM % 12;
+    return m > 0 ? `${y} y + ${m} m` : `${y} y`;
+  }
+
   // progressVsKNK=true → progress bar denominator is KNK (Chart 1)
   // progressVsKNK=false → progress bar denominator is totalCapital (Chart 2)
   function makeBeTable(beItems, model, progressVsKNK) {
@@ -1846,7 +1862,7 @@ function renderBreakEven() {
       +'<th>Repair &amp; Maint.</th>'
       +'<th>Equity Paid In</th>'
       +'<th>Total Capital</th>'
-      +'<th>Return (CF+Tilg.)<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
+      +'<th>Cumul. Op CF<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
       +'<th>Progress</th>'
       +'</tr></thead><tbody>';
 
@@ -1858,28 +1874,34 @@ function renderBreakEven() {
       const tc = BE_TOTAL_MODEL[d.id].totalCapital;
       const netRepairs = tc - knk - eq;
       const ovf = OVERFINANCING[d.id] || 0;
-      // grossReturn: absolute cumulative (CF + Tilgung) received so far
-      // = position in BE_TILT_MODEL (which starts at −KNK) shifted up by KNK
-      const grossReturn = beCumAtFrac(BE_TILT_MODEL[d.id], NOW_FRAC) + knk;
+      // grossReturn: cumulative Op CF received so far (BE_MODEL starts at −KNK, excludes tilgung)
+      const grossReturn = beCumAtFrac(BE_MODEL[d.id], NOW_FRAC) + knk;
       const progressBase = progressVsKNK ? knk : tc;
       const pct = progressBase > 0 ? Math.max(0, Math.min(100, 100 * grossReturn / progressBase)) : 0;
       const barPct = pct.toFixed(0);
       const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
         +`<div style="background:${pct>=100?'#34d399':'#60a5fa'};width:${barPct}%;height:8px;border-radius:4px"></div>`
         +`</div><span style="font-size:9px;color:#9ca3af">${barPct}%</span>`;
+      // Break-even date + duration from purchase
+      const pf = purchFrac(d.id);
+      const beDateStr = m.be != null ? formatFrac(m.be) : null;
+      const beDurStr  = m.be != null ? fracDur(pf, m.be) : null;
       const beStr = m.be != null
-        ? `<span style="color:${m.be<=NOW_FRAC?'#34d399':'#9ca3af'}">${formatFrac(m.be)}${m.be<=NOW_FRAC?' ✓':''}</span>`
+        ? `<span style="color:${m.be<=NOW_FRAC?'#34d399':'#9ca3af'}">${beDateStr}${m.be<=NOW_FRAC?' ✓':''}</span>`
+          + (beDurStr ? `<br><span style="color:#4b5563;font-size:9px">${beDurStr}</span>` : '')
         : `<span style="color:#9ca3af">&gt;2060</span>`;
       const ovfBadge = ovf > 0
         ? ` <span style="font-size:9px;color:#34d399">(−€${(ovf/1000).toFixed(0)}k OVF)</span>`
         : '';
-      // "Beats 7%" = when cumulative CF+Tilgung exceeds what oppK at 7% p.a. would have returned
+      // "Beats 7%" = when cumulative Op CF exceeds what oppK at 7% p.a. would have returned
       // Chart 1: compare against KNK; Chart 2: compare against KNK+equity (= BE_TOTAL_MODEL.knk)
       const oppK = progressVsKNK ? knk : BE_TOTAL_MODEL[d.id].knk;
-      const t0 = BE_TILT_MODEL[d.id].pts[0].y;
-      const beatsDate = findBeatsOppDate(BE_TILT_MODEL[d.id], oppK, t0);
+      const t0 = BE_MODEL[d.id].pts[0].y;
+      const beatsDate = findBeatsOppDate(BE_MODEL[d.id], oppK, t0);
+      const beatsDurStr = beatsDate != null ? fracDur(pf, beatsDate) : null;
       const beatsStr = beatsDate != null
         ? `<span style="color:${beatsDate<=NOW_FRAC?'#34d399':'#9ca3af'}">${formatFrac(beatsDate)}${beatsDate<=NOW_FRAC?' ✓':''}</span>`
+          + (beatsDurStr ? `<br><span style="color:#4b5563;font-size:9px">${beatsDurStr}</span>` : '')
         : `<span style="color:#6b7280">&gt;2060</span>`;
       html += `<tr>
         <td class="left" style="color:${PROP_COLORS[d.id]}">${d.name}</td>
@@ -1903,7 +1925,7 @@ function renderBreakEven() {
     const portKNK = BE_MODEL['_portfolio'].knk;
     const portTC = BE_TOTAL_MODEL['_portfolio'].totalCapital;
     const portNetRepairs = portTC - portKNK - portEq;
-    const portGrossReturn = beCumAtFrac(BE_TILT_MODEL['_portfolio'], NOW_FRAC) + portKNK;
+    const portGrossReturn = beCumAtFrac(BE_MODEL['_portfolio'], NOW_FRAC) + portKNK;
     const portProgressBase = progressVsKNK ? portKNK : portTC;
     const portPct = portProgressBase > 0 ? Math.max(0, Math.min(100, 100 * portGrossReturn / portProgressBase)) : 0;
     const portBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
@@ -1911,8 +1933,8 @@ function renderBreakEven() {
       +`</div><span style="font-size:9px;color:#9ca3af">${portPct.toFixed(0)}%</span>`;
     const portBEStr = pm.be != null ? formatFrac(pm.be) : '>2060';
     const portOppK = progressVsKNK ? portKNK : BE_TOTAL_MODEL['_portfolio'].knk;
-    const portT0 = BE_TILT_MODEL['_portfolio'].pts[0].y;
-    const portBeatsDate = findBeatsOppDate(BE_TILT_MODEL['_portfolio'], portOppK, portT0);
+    const portT0 = BE_MODEL['_portfolio'].pts[0].y;
+    const portBeatsDate = findBeatsOppDate(BE_MODEL['_portfolio'], portOppK, portT0);
     const portBeatsStr = portBeatsDate != null ? formatFrac(portBeatsDate) : '>2060';
     html += `<tr class="total">
       <td class="left">PORTFOLIO</td>
