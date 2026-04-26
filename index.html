@@ -1969,6 +1969,7 @@ function renderBreakEven() {
     const portTC = BE_TOTAL_MODEL['_portfolio'].totalCapital;
     const portNetRepairs = portTC - portKNK - portEq;
     const portGrossReturn = beCumAtFrac(BE_MODEL['_portfolio'], NOW_FRAC) + portKNK;
+    const portPureOpCF = portGrossReturn + cumRepairsAtFrac('_portfolio', NOW_FRAC);
     const portProgressBase = progressVsKNK ? portKNK : portTC;
     const portPct = portProgressBase > 0 ? Math.max(0, Math.min(100, 100 * portGrossReturn / portProgressBase)) : 0;
     const portBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
