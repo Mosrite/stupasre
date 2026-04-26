@@ -1778,8 +1778,49 @@ function renderMarketValue() {
   sec.appendChild(fn);
 }
 
+// ─── BREAK-EVEN HELPERS ──────────────────────────────────────────────────────
+// Find the fractional year when the property's cumulative CF+Tilgung
+// first exceeds what oppK invested in stocks at 7% p.a. would have returned.
+// tiltModel = BE_TILT_MODEL[id], oppK = capital to compare against, t0 = purchase year
+function findBeatsOppDate(tiltModel, oppK, t0) {
+  if (!tiltModel || !tiltModel.pts.length || !oppK) return null;
+  let prevFrac = tiltModel.pts[0].y;
+  let prevCum  = -tiltModel.knk;
+  let prevF    = prevCum; // opp = 0 at t0, so f = cum - opp = cum
+
+  for (const p of tiltModel.pts) {
+    const endFrac = p.y + 1;
+    const oppEnd  = oppK * (Math.pow(1.07, endFrac - t0) - 1);
+    const fEnd    = p.cum - oppEnd;
+
+    if (prevF < 0 && fEnd >= 0) {
+      // Binary search within this 1-year segment for the crossing
+      const STEPS = 48;
+      let pf = prevF, pFr = prevFrac;
+      for (let i = 1; i <= STEPS; i++) {
+        const fr  = prevFrac + i / STEPS * (endFrac - prevFrac);
+        const tl  = (fr - prevFrac) / (endFrac - prevFrac);
+        const cum = prevCum + tl * (p.cum - prevCum);   // linear interp
+        const opp = oppK * (Math.pow(1.07, fr - t0) - 1); // exponential
+        const f   = cum - opp;
+        if (f >= 0) {
+          // linear interp between (pFr, pf) and (fr, f)
+          return pFr + (-pf) / (f - pf) * (fr - pFr);
+        }
+        pf = f; pFr = fr;
+      }
+      return endFrac;
+    }
+    prevFrac = endFrac;
+    prevCum  = p.cum;
+    prevF    = fEnd;
+  }
+  return null; // never beats 7% within data range
+}
+
 function renderBreakEven() {
   const sec = document.getElementById('break-even');
+  sec.innerHTML = ''; // clear for re-render
   const NOW_FRAC = 2026 + 3/12;
   const PROP_COLORS = {
     berlin:'#60a5fa', eschweiler:'#34d399', huegelstr:'#f59e0b', ohmstr:'#f87171', leipzig:'#a78bfa'
