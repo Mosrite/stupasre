@@ -1952,23 +1952,25 @@ function renderBreakEven() {
   }
 
   // Compute shared X range across both models so the charts are directly comparable
-  const allItems = [...makeBeItems(BE_TILT_MODEL), ...makeBeItems(BE_TOTAL_MODEL)];
+  const allItems = [...makeBeItems(BE_MODEL), ...makeBeItems(BE_TOTAL_MODEL)];
   const sharedMinX = Math.floor(Math.min(...allItems.map(it => it.model.pts[0].y)));
   const allBE = allItems.filter(it => it.model.be != null && it.model.be < 2060).map(it => it.model.be);
   const sharedMaxBE = allBE.length ? Math.max(...allBE) : NOW_FRAC;
   const sharedMaxX = Math.ceil(Math.max(sharedMaxBE, NOW_FRAC) + 1.5);
 
-  // ── Chart 1: BE_TILT_MODEL — KNK vs. CF + Tilgung ──────────────────────────
+  // ── Chart 1: BE_MODEL — KNK vs. Op CF only ─────────────────────────────────
+  // Tilgung (equity) and asset generation cancel out exactly → excluded from both sides.
   const c1 = document.createElement('div');
   c1.className = 'card chart-wrap'; c1.style.marginBottom = '16px';
-  c1.innerHTML = '<div class="chart-title">Break-Even: KNK vs. CF + Tilgung</div>'
-    +'<div class="chart-sub">Each line shows cumulative return (Op CF + Tilgung as equity) minus Kaufnebenkosten. '
-    +'Tilgung counts as return — it is equity you own. Crossing y = 0 (green line) = break-even. '
+  c1.innerHTML = '<div class="chart-title">Break-Even: KNK vs. Cumulative Op CF</div>'
+    +'<div class="chart-sub">Each line shows cumulative operating cash flow (rent − opex − interest, excl. Tilgung) minus Kaufnebenkosten. '
+    +'Tilgung is excluded: it builds equity, but that equity is offset by the corresponding asset value — the two cancel. '
+    +'Crossing y = 0 (green line) = break-even on pure operating returns. '
     +'Solid = historical (CSV through 2025), dashed = projected from 2026. Filled circle = break-even date. '
     +'Forward assumptions: rent +2%/yr, Hausgeld +2%/yr, refi at current rates, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr.</div>';
-  const beItems1 = makeBeItems(BE_TILT_MODEL);
+  const beItems1 = makeBeItems(BE_MODEL);
   c1.appendChild(makeBreakEvenChart({items:beItems1, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
-  c1.appendChild(makeBeTable(beItems1, BE_TILT_MODEL, true));
+  c1.appendChild(makeBeTable(beItems1, BE_MODEL, true));
   sec.appendChild(c1);
 
   // ── Chart 2: BE_TOTAL_MODEL — CF + Tilgung vs. Total Capital Employed ───────
