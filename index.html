@@ -802,7 +802,8 @@ function beCumAtFrac(model, frac) {
 // Each line is the per-property cumulative position (Op CF excl. Tilgung minus KNK)
 // over time. Solid through end-2025 (historical), dashed from 2026 (projected).
 // items: [{id, name, color, model:{knk, be, pts}}]
-function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, xMin=null, xMax=null, showOppCost=false }) {
+// capitalLabel: label used in tooltips for the starting-capital figure ('KNK' or 'Capital Employed')
+function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, xMin=null, xMax=null, showOppCost=false, capitalLabel='KNK' }) {
   const iW=W-ml-mr, iH=H-mt-mb;
   const nowFrac = 2026 + 3/12;
   // Use end-of-2026 as the solid/dashed boundary: 2026 is the current year and its
