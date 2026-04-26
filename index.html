@@ -879,50 +879,42 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
   // Per-property piecewise-linear curves
   items.forEach((it, idx) => {
     const { color, name, model } = it;
-    // Build polyline points in time-order: start at (firstPt.y, -knk), then each (y+1, cum)
-    const polyPts = [];
-    polyPts.push({ frac: model.pts[0].y, cum: -model.knk });
+
+    // ── Property group (all paths + dots for this property) ────────────────
+    // Click the legend entry to toggle visibility.
+    const propGroup = el('g');
+    svg.appendChild(propGroup);
+
+    // Build polyline points: start at (firstPt.y, -knk), then each (y+1, cum)
+    const polyPts = [{ frac: model.pts[0].y, cum: -model.knk }];
     model.pts.forEach(p => {
       if (p.y + 1 <= maxX + 0.01) polyPts.push({ frac: p.y + 1, cum: p.cum });
     });
 
-    // Split into solid (≤ histEndFrac) and dashed (> histEndFrac) at the boundary.
+    // Split into solid (≤ histEndFrac) and dashed (> histEndFrac)
     const solidPts = [], dashedPts = [];
-    for (let i = 0; i < polyPts.length; i++) {
-      const p = polyPts[i];
-      if (p.frac <= histEndFrac + 1e-6) {
-        solidPts.push(p);
-      } else {
-        dashedPts.push(p);
-      }
-    }
-    // Ensure solid and dashed segments are connected at the boundary (no gap).
+    polyPts.forEach(p => (p.frac <= histEndFrac + 1e-6 ? solidPts : dashedPts).push(p));
+
+    // Connect solid → dashed with no gap
     if (solidPts.length && dashedPts.length) {
       const last = solidPts[solidPts.length - 1];
       const next = dashedPts[0];
       if (next.frac > histEndFrac) {
         if (last.frac < histEndFrac) {
-          // Interpolate a point exactly at the boundary
           const t = (histEndFrac - last.frac) / (next.frac - last.frac);
-          const boundaryCum = last.cum + t * (next.cum - last.cum);
-          const boundaryPt = { frac: histEndFrac, cum: boundaryCum };
-          solidPts.push(boundaryPt);
-          dashedPts.unshift(boundaryPt);
+          const bp = { frac: histEndFrac, cum: last.cum + t * (next.cum - last.cum) };
+          solidPts.push(bp); dashedPts.unshift(bp);
         } else {
-          // Solid ends at or past the boundary — connect dashed to the last solid point
           dashedPts.unshift(last);
         }
       }
     }
 
     const toPath = pts => pts.map((p,i) => (i===0?'M':'L')+xPx(p.frac).toFixed(2)+','+yPx(p.cum).toFixed(2)).join(' ');
-
-    if (solidPts.length >= 2) {
-      svg.appendChild(el('path',{d:toPath(solidPts), stroke:color, 'stroke-width':'2.5', fill:'none'}));
-    }
-    if (dashedPts.length >= 2) {
-      svg.appendChild(el('path',{d:toPath(dashedPts), stroke:color, 'stroke-width':'1.8', 'stroke-dasharray':'6,3', fill:'none'}));
-    }
+    if (solidPts.length >= 2)
+      propGroup.appendChild(el('path',{d:toPath(solidPts), stroke:color, 'stroke-width':'2.5', fill:'none'}));
+    if (dashedPts.length >= 2)
+      propGroup.appendChild(el('path',{d:toPath(dashedPts), stroke:color, 'stroke-width':'1.8', 'stroke-dasharray':'6,3', fill:'none'}));
 
     // Break-even crossing dot
     if (model.be != null && model.be <= maxX + 0.5) {
@@ -930,60 +922,64 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
       const beDot = el('circle',{cx:beX,cy:zeroY,r:'5',fill:color,stroke:'#111827','stroke-width':'1.5'});
       const beLabel = model.be <= histEndFrac ? `Broke even: <b>${formatFrac(model.be)}</b> ✓` : `Break-even: <b>${formatFrac(model.be)}</b>`;
       beDot.addEventListener('mouseenter',e=>showTooltip(e,
-        `<b>${name}</b><br/>${beLabel}<br/>KNK: ${fe(Math.round(model.knk))}`));
+        `<b>${name}</b><br/>${beLabel}<br/>${capitalLabel}: ${fe(Math.round(model.knk))}`));
       beDot.addEventListener('mousemove',moveTooltip);
       beDot.addEventListener('mouseleave',hideTooltip);
-      svg.appendChild(beDot);
+      propGroup.appendChild(beDot);
     }
 
-    // Now-position dot (Apr 2026) on actual curve
+    // Now-position dot (Apr 2026)
     const nowCum = beCumAtFrac(model, nowFrac);
-    const nowY = yPx(nowCum);
-    const nowDot = el('circle',{cx:nowPx,cy:nowY,r:'3.5',fill:color,stroke:'#111827','stroke-width':'1.2'});
-    const relPos = nowCum;
+    const nowDot = el('circle',{cx:nowPx,cy:yPx(nowCum),r:'3.5',fill:color,stroke:'#111827','stroke-width':'1.2'});
     const pct = Math.max(0, Math.min(100, 100 * (1 + nowCum / model.knk)));
     nowDot.addEventListener('mouseenter',e=>showTooltip(e,
-      `<b>${name}</b><br/>Apr 2026: ${relPos>=0?'+':''}${fe(Math.round(relPos))} vs. break-even<br/>KNK: ${fe(Math.round(model.knk))}<br/>Progress: ${pct.toFixed(0)}%`));
+      `<b>${name}</b><br/>Apr 2026: ${nowCum>=0?'+':''}${fe(Math.round(nowCum))} vs. break-even<br/>${capitalLabel}: ${fe(Math.round(model.knk))}<br/>Progress: ${pct.toFixed(0)}%`));
     nowDot.addEventListener('mousemove',moveTooltip);
     nowDot.addEventListener('mouseleave',hideTooltip);
-    svg.appendChild(nowDot);
+    propGroup.appendChild(nowDot);
 
-    // Start dot at purchase year (-KNK)
-    svg.appendChild(el('circle',{cx:xPx(model.pts[0].y),cy:yPx(-model.knk),r:'3',fill:color,stroke:'#111827','stroke-width':'1',opacity:'0.7'}));
+    // Start dot at purchase
+    propGroup.appendChild(el('circle',{cx:xPx(model.pts[0].y),cy:yPx(-model.knk),r:'3',fill:color,stroke:'#111827','stroke-width':'1',opacity:'0.7'}));
 
-    // Opportunity-cost line: what KNK+equity would have grown to at 7% p.a. in stocks.
-    // In chart coordinates: opp_y = K * (1.07^t - 1), starts at y=0 at purchase date.
+    // Opportunity-cost line (Chart 2 only)
     if (showOppCost) {
       const K = model.knk;
       const t0 = model.pts[0].y;
       const oppPts = [];
-      for (let yr = t0; yr <= maxX; yr += 0.5) {
+      for (let yr = t0; yr <= maxX; yr += 0.5)
         oppPts.push({ frac: yr, opp: K * (Math.pow(1.07, yr - t0) - 1) });
-      }
-      const oppPath = oppPts
-        .map((p,i) => (i===0?'M':'L') + xPx(p.frac).toFixed(2) + ',' + yPx(p.opp).toFixed(2))
-        .join(' ');
-      const oppLine = el('path', { d:oppPath, stroke:color, 'stroke-width':'0.8',
-        'stroke-dasharray':'3,4', fill:'none', opacity:'0.45' });
-      oppLine.addEventListener('mouseenter', e => showTooltip(e,
+      const oppPath = oppPts.map((p,i) => (i===0?'M':'L')+xPx(p.frac).toFixed(2)+','+yPx(p.opp).toFixed(2)).join(' ');
+      const oppLine = el('path',{d:oppPath,stroke:color,'stroke-width':'0.8','stroke-dasharray':'3,4',fill:'none',opacity:'0.45'});
+      oppLine.addEventListener('mouseenter',e=>showTooltip(e,
         `<b>${name} — 7% stock market alternative</b><br/>` +
-        `Initial capital: ${fe(Math.round(K))}<br/>` +
-        `At Apr 2026: ${fe(Math.round(K * (Math.pow(1.07, nowFrac - t0) - 1)))} gain`));
-      oppLine.addEventListener('mousemove', moveTooltip);
-      oppLine.addEventListener('mouseleave', hideTooltip);
-      svg.appendChild(oppLine);
+        `${capitalLabel}: ${fe(Math.round(K))}<br/>` +
+        `At Apr 2026: ${fe(Math.round(K*(Math.pow(1.07,nowFrac-t0)-1)))} gain`));
+      oppLine.addEventListener('mousemove',moveTooltip);
+      oppLine.addEventListener('mouseleave',hideTooltip);
+      propGroup.appendChild(oppLine);
     }
 
-    // Legend
+    // ── Legend entry (clickable — toggles this property's visibility) ──────
     const legY = mt + 20 + idx * 26;
-    svg.appendChild(el('rect',{x:W-mr+10,y:legY-9,width:14,height:10,fill:color,rx:'2'}));
+    const legGroup = el('g');
+    legGroup.style.cursor = 'pointer';
+    legGroup.title = 'Click to show/hide';
+    let hidden = false;
+    const legRect = el('rect',{x:W-mr+10,y:legY-9,width:14,height:10,fill:color,rx:'2'});
     const ln1 = el('text',{x:W-mr+28,y:legY,fill:'#d1d5db','font-size':'10'});
     ln1.textContent = name;
-    svg.appendChild(ln1);
     const ln2 = el('text',{x:W-mr+28,y:legY+11,fill:'#6b7280','font-size':'9'});
-    ln2.textContent = (model.be != null && model.be <= histEndFrac) ? 'Done ✓ '+formatFrac(model.be)
-      : (model.be != null && model.be <= maxX + 0.5) ? formatFrac(model.be) : '>'+maxX;
-    svg.appendChild(ln2);
+    ln2.textContent = (model.be!=null&&model.be<=histEndFrac) ? 'Done ✓ '+formatFrac(model.be)
+      : (model.be!=null&&model.be<=maxX+0.5) ? formatFrac(model.be) : '>'+maxX;
+    legGroup.appendChild(legRect);
+    legGroup.appendChild(ln1);
+    legGroup.appendChild(ln2);
+    legGroup.addEventListener('click', () => {
+      hidden = !hidden;
+      propGroup.style.display = hidden ? 'none' : '';
+      legGroup.setAttribute('opacity', hidden ? '0.3' : '1');
+    });
+    svg.appendChild(legGroup);
   });
 
   return svg;
