@@ -1550,6 +1550,19 @@ function renderMortgages() {
   const tCard = document.createElement('div');
   tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
   tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Mortgage Detail</div>';
+  // Payoff date: annuity formula — months until remaining balance reaches 0
+  // n = −ln(1 − r·B/P) / ln(1+r), where r = monthly rate, B = balance, P = monthly payment
+  function mortPayoffStr(remaining, mZi, mTi) {
+    const P = mZi + mTi;
+    if (remaining <= 0 || P <= 0 || mZi <= 0) return '—';
+    const r = mZi / remaining;
+    const arg = 1 - r * remaining / P;
+    if (arg <= 0 || arg >= 1) return '—';
+    const n = -Math.log(arg) / Math.log(1 + r); // months from Apr 2026
+    const payoffFrac = 2026 + 3/12 + n/12;
+    return formatFrac(payoffFrac);
+  }
+
   let html = `<table><thead><tr>
     <th class="left">Property</th>
     <th>Purchase Date</th>
@@ -1563,10 +1576,12 @@ function renderMortgages() {
     <th>Zinsen/mo</th>
     <th>Tilgung/mo</th>
     <th>Mortgage/mo</th>
+    <th>Est. Payoff</th>
   </tr></thead><tbody>`;
 
   mortKpis.forEach(m => {
     const ltvColor = m.ltv<=80?'#34d399':m.ltv<=90?'#fbbf24':'#f87171';
+    const payoff = mortPayoffStr(m.remaining, m.mZi, m.mTi);
     html += `<tr>
       <td class="left">${m.name}<br><span style="font-weight:400;color:#9ca3af;font-size:10px">${m.addr}</span></td>
       <td style="color:#9ca3af">${m.purchaseDate}</td>
@@ -1580,10 +1595,11 @@ function renderMortgages() {
       <td style="color:#f87171">${fe(m.mZi,2)}</td>
       <td style="color:#c084fc">${fe(m.mTi,2)}</td>
       <td style="color:#fca5a5">${fe(m.mMort,2)}</td>
+      <td style="color:#818cf8;font-weight:600">${payoff}</td>
     </tr>`;
     if(m.id==='eschweiler'){
-      html+=`<tr><td colspan="12" style="background:#1c2535;padding:4px 10px">
-        <span style="color:#9ca3af;font-size:10px">DSL Bank Privatkredit (€13k, 3.24%, matures Dez 2030) excluded — not a property mortgage. Combined cashflow cost: Zinsen €125.29, Tilgung €270.19.</span></td></tr>`;
+      html+=`<tr><td colspan="13" style="background:#1c2535;padding:4px 10px">
+        <span style="color:#9ca3af;font-size:10px">DSL Bank Privatkredit (€13k, 3.24%, matures Dez 2030) excluded — not a property mortgage. Combined cashflow cost: Zinsen €125.29, Tilgung €270.19. Est. Payoff shown for Volksbank Immobiliar only.</span></td></tr>`;
     }
   });
 
@@ -1600,6 +1616,7 @@ function renderMortgages() {
     <td style="color:#f87171">${fe(mortKpis.reduce((s,m)=>s+m.mZi,0),2)}</td>
     <td style="color:#c084fc">${fe(mortKpis.reduce((s,m)=>s+m.mTi,0),2)}</td>
     <td style="color:#fca5a5">${fe(mortKpis.reduce((s,m)=>s+m.mMort,0),2)}</td>
+    <td style="color:#9ca3af">—</td>
   </tr></tbody></table>`;
 
   tCard.innerHTML += html;
