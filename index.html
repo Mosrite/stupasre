@@ -195,11 +195,11 @@ P.gmPct = P.gp/P.tot*100; P.nmPct = P.np/P.tot*100;
 const REPAIRS = {
   // Source: invoice PDFs (invoices on file). Totals = sum of REPAIRS_DETAIL for that year.
   // Eschweiler 2020/2021: from Buchhaltung CSV (full invoice set not in folder for those years).
-  berlin:     [{y:2024,amt:5955.79},{y:2025,amt:726.46},{y:2026,amt:166.60}],
-  eschweiler: [{y:2021,amt:3779.34},{y:2022,amt:0},{y:2023,amt:0},{y:2024,amt:0},{y:2025,amt:0}],
+  berlin:     [{y:2024,amt:5955.79},{y:2025,amt:777.67},{y:2026,amt:166.60}],   // 2025 +51.21 Heizungswartung
+  eschweiler: [{y:2020,amt:2489.20},{y:2021,amt:3779.34},{y:2022,amt:0},{y:2023,amt:0},{y:2024,amt:0},{y:2025,amt:0}], // 2020 pre-purchase renovation (Martin Wildt immostanding)
   huegelstr:  [{y:2023,amt:26327.36},{y:2024,amt:0},{y:2025,amt:124.95}],
   ohmstr:     [{y:2023,amt:5000.00},{y:2024,amt:0},{y:2025,amt:0}],
-  leipzig:    [{y:2023,amt:4905.15},{y:2024,amt:0},{y:2025,amt:0},{y:2026,amt:168.39}],
+  leipzig:    [{y:2023,amt:4943.73},{y:2024,amt:0},{y:2025,amt:0},{y:2026,amt:168.39}],  // 2023 +38.58 Duschvorhang/-stange
 };
 // Per-invoice repair/maintenance breakdown for hover tooltips. Source: invoice PDFs.
 const REPAIRS_DETAIL = {
