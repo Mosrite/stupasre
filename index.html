@@ -1628,6 +1628,7 @@ function renderMortgages() {
     <b>Equity</b> = Purchase Price − Remaining Loan Balance. Remaining Balance = Original Loan − Cumulative Tilgung paid to April 2026.<br>
     <b>LTV</b> (Loan-to-Value) = Remaining Balance / Purchase Price. Below 80% is conventional; below 60% is strong.<br>
     <b>Tilgung Paid</b> is cumulative principal repaid from loan disbursement to April 2026, extracted from DKB transaction data.<br>
+    <b>Est. Payoff</b> = projected full repayment date, assuming constant monthly payment (current Zinsen + Tilgung) and current interest rate held throughout. Uses annuity formula: n = −ln(1 − r·B/P) / ln(1+r). Will change at next rate fix.<br>
     Eschweiler: Volksbank Immobiliar (€89k) only — the €3k above purchase price financed a kitchen. DSL Bank Privatkredit (€13k) is a personal loan, not a property mortgage, and is excluded from this tab. Combined monthly cost incl. DSL: Zinsen €125.29, Tilgung €270.19.<br>
     Purchase price is used as property value proxy. Actual market value may differ — see Market Value tab for appreciation estimates.`;
   sec.appendChild(fn);
