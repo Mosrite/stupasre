@@ -1874,9 +1874,18 @@ function renderBreakEven() {
       const ovfBadge = ovf > 0
         ? ` <span style="font-size:9px;color:#34d399">(−€${(ovf/1000).toFixed(0)}k OVF)</span>`
         : '';
+      // "Beats 7%" = when cumulative CF+Tilgung exceeds what oppK at 7% p.a. would have returned
+      // Chart 1: compare against KNK; Chart 2: compare against KNK+equity (= BE_TOTAL_MODEL.knk)
+      const oppK = progressVsKNK ? knk : BE_TOTAL_MODEL[d.id].knk;
+      const t0 = BE_TILT_MODEL[d.id].pts[0].y;
+      const beatsDate = findBeatsOppDate(BE_TILT_MODEL[d.id], oppK, t0);
+      const beatsStr = beatsDate != null
+        ? `<span style="color:${beatsDate<=NOW_FRAC?'#34d399':'#9ca3af'}">${formatFrac(beatsDate)}${beatsDate<=NOW_FRAC?' ✓':''}</span>`
+        : `<span style="color:#6b7280">&gt;2060</span>`;
       html += `<tr>
         <td class="left" style="color:${PROP_COLORS[d.id]}">${d.name}</td>
         <td>${beStr}</td>
+        <td>${beatsStr}</td>
         <td style="color:#f59e0b;cursor:help"
             onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
             onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(knk,2)}</td>
