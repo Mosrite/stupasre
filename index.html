@@ -1976,11 +1976,11 @@ function renderBreakEven() {
   // ── Chart 2: BE_TOTAL_MODEL — CF + Tilgung vs. Total Capital Employed ───────
   const c2 = document.createElement('div');
   c2.className = 'card chart-wrap'; c2.style.marginBottom = '16px';
-  c2.innerHTML = '<div class="chart-title">Break-Even: CF + Tilgung vs. Total Capital Employed</div>'
-    +'<div class="chart-sub">Each line shows cumulative return (Op CF + Tilgung) minus all capital invested: '
+  c2.innerHTML = '<div class="chart-title">Break-Even: Op CF vs. Total Capital Employed</div>'
+    +'<div class="chart-sub">Each line shows cumulative operating CF (excl. Tilgung) minus all capital invested: '
     +'Kaufnebenkosten + repair/maintenance costs + initial equity payments. '
-    +'Repairs flow through Op CF (already reducing the cumulative); equity is additional own capital deployed at purchase. '
     +'The chart starts at −(KNK + equity); Total Capital in the table adds cumulative repairs for a full accounting. '
+    +'Dotted lines = 7% p.a. stock-market alternative on capital employed (same start date). '
     +'Solid = historical, dashed = projected. Filled circle = break-even date.</div>';
   const beItems2 = makeBeItems(BE_TOTAL_MODEL);
   c2.appendChild(makeBreakEvenChart({items:beItems2, W:900, xMin:sharedMinX, xMax:sharedMaxX, showOppCost:true, capitalLabel:'Capital Employed'}));
