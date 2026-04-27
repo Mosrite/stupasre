@@ -1008,7 +1008,7 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
 
     // Opportunity-cost line (Chart 2 only)
     if (showOppCost) {
-      const K = oppKFor(it); // gross capital incl. any private loan (restores visibility after netting)
+      const K = model.knk;
       const t0 = model.pts[0].y;
       const oppPts = [];
       for (let yr = t0; yr <= maxX; yr += 0.5)
