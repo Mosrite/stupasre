@@ -2004,6 +2004,19 @@ function renderBreakEven() {
     return m > 0 ? `${y} y + ${m} m` : `${y} y`;
   }
 
+  // Compute cumulative Tilgung paid on a private loan up to fractional year `frac`.
+  // Used to undo the PRIV_LOANS adjustment for the progress bar (so bars don't change
+  // just because Tilgung reduces Op CF while KNK is netted to near-zero).
+  function privCumTilgung(privL, frac) {
+    if (!privL) return 0;
+    const r = privL.annualRate / 12;
+    const P = privL.amount * r / (1 - Math.pow(1 + r, -privL.months));
+    const mPaid = Math.min(privL.months, Math.max(0, Math.floor((frac - privL.startY) * 12)));
+    let bal = privL.amount, ct = 0;
+    for (let m = 0; m < mPaid; m++) { const ti = P - bal * r; ct += ti; bal -= ti; }
+    return ct;
+  }
+
   // progressVsKNK=true → progress bar denominator is KNK (Chart 1)
   // progressVsKNK=false → progress bar denominator is totalCapital (Chart 2)
   function makeBeTable(beItems, model, progressVsKNK) {
