@@ -939,7 +939,7 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
   }, 0);
   // Also include max opportunity-cost value at maxX so those lines stay in frame
   const oppCapMax = showOppCost
-    ? items.reduce((m,it) => Math.max(m, it.model.knk * (Math.pow(1.07, maxX - it.model.pts[0].y) - 1)), 0)
+    ? items.reduce((m,it) => Math.max(m, purchaseYearOppK(it.id) * (Math.pow(1.07, maxX - it.model.pts[0].y) - 1)), 0)
     : 0;
   const minY = minCum * 1.08;
   const maxY = Math.max(yCap * 1.1, oppCapMax * 1.05, maxKNK * 0.2, 5000);
