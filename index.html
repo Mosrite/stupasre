@@ -792,6 +792,22 @@ const PRIV_LOANS = {
   });
 })();
 
+// Capital base for the 7% opportunity-cost comparison:
+//   net KNK (after private-loan netting) + equity paid at purchase + repairs in the purchase year.
+// This is the total upfront capital you deployed when you bought the property.
+// Used for both the dotted chart lines and the "Beats 7%" table column.
+function purchaseYearOppK(id) {
+  if (id === '_portfolio') return RAW.reduce((s, d) => s + purchaseYearOppK(d.id), 0);
+  const knk   = BE_MODEL[id].knk;                        // net KNK (private loan already netted)
+  const eq    = EQUITY_PAID[id] || 0;
+  const md    = MORTGAGE_DATA[id];
+  const pYear = md ? +md.purchaseDate.slice(0, 4) : null;
+  const repPY = pYear
+    ? (REPAIRS[id] || []).filter(r => r.y === pYear).reduce((s, r) => s + (r.amt || 0), 0)
+    : 0;
+  return knk + eq + repPY;
+}
+
 // BE_TILT_MODEL: cum += cumulative tilgung through each year-end.
 // Tilgung counts as return (equity build). Break-even moves earlier.
 const BE_TILT_MODEL = (() => {
