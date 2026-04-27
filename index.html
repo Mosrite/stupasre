@@ -1135,30 +1135,50 @@ function kpiCard(label, value, sub, color='#f9fafb', sm=false) {
 function renderOverview() {
   const sec = document.getElementById('overview');
 
-  // KPI row 1
+  // KPI Row 1 — Absolute figures
+  const r1Label = document.createElement('div');
+  r1Label.style.cssText='color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-left:2px';
+  r1Label.textContent='Absolute figures (€ / month)';
+  sec.appendChild(r1Label);
   const r1 = document.createElement('div');
-  r1.className='grid'; r1.style.cssText='grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:12px';
+  r1.className='grid'; r1.style.cssText='grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:12px';
   r1.innerHTML = [
-    kpiCard('Monthly Kaltmiete',   fe(P.km),  `€\u202f${f(P.km*12)} / year`),
-    kpiCard('Pre-Financing CF',    fe(P.gp),  'Warmmiete − Opex (before mortgage)', vc(P.gp), true),
-    kpiCard('Gross Margin',        fp(P.gmPct), 'On total income (Warmmiete)', vc(P.gmPct)),
-    kpiCard('Net Margin',          fp(P.nmPct), 'After all mortgage costs', vc(P.nmPct)),
-    kpiCard('Monthly Cashflow',    fe(P.cf),  'All income minus all costs', vc(P.cf)),
-    kpiCard('Total Return / mo',   fe(P.tr),  `Cashflow + €\u202f${f(P.ti)} equity`, vc(P.tr)),
-    kpiCard('Active Tenants',      P.tn,      '5 properties'),
+    kpiCard('Monthly Revenue',       fe(P.km),   `€\u202f${f(P.km*12)} NK p.a.`),
+    kpiCard('Monthly Cashflow',      fe(P.cf),   'All income minus all costs', vc(P.cf)),
+    kpiCard('Total Economic Return', fe(P.tr),   `Cashflow + €\u202f${f(P.ti)} equity`, vc(P.tr)),
+    kpiCard('Total Zinsen / mo',     fe(P.zi),   'Interest payments',  '#f87171', true),
+    kpiCard('Total Tilgung / mo',    fe(P.ti),   'Principal → equity', '#c084fc', true),
+    kpiCard('Total Mortgage / mo',   fe(P.mort), 'Zinsen + Tilgung',   '#fca5a5', true),
   ].join('');
   sec.appendChild(r1);
 
-  // KPI row 2 — costs
+  // KPI Row 2 — Return metrics
+  const r2Label = document.createElement('div');
+  r2Label.style.cssText='color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-left:2px';
+  r2Label.textContent='Return metrics (portfolio weighted avg)';
+  sec.appendChild(r2Label);
   const r2 = document.createElement('div');
-  r2.className='grid g4'; r2.style.marginBottom='20px';
+  r2.className='grid'; r2.style.cssText='grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px';
   r2.innerHTML = [
-    kpiCard('Total Opex / mo',     fe(P.opex), 'Hausgeld + Grundsteuer + misc', '#fb923c', true),
-    kpiCard('Total Zinsen / mo',   fe(P.zi),   'Interest payments',            '#f87171', true),
-    kpiCard('Total Tilgung / mo',  fe(P.ti),   'Principal → equity',           '#c084fc', true),
-    kpiCard('Total Mortgage / mo', fe(P.mort), 'Zinsen + Tilgung',             '#fca5a5', true),
+    kpiCard('Gross Return',       fp(P.grossReturn), 'Kaltmiete × 12 / Kaufpreis', vc(P.grossReturn)),
+    kpiCard('Net Return',         fp(P.netReturn),   '(Warmmiete − costs) × 12 / (Kaufpreis + KNK)', vc(P.netReturn)),
+    kpiCard('Return on Equity',   fp(P.roe),         'NOI after interest / (Equity + KNK) · excl. Eschweiler', vc(P.roe)),
   ].join('');
   sec.appendChild(r2);
+
+  // KPI Row 3 — Counts
+  const r3Label = document.createElement('div');
+  r3Label.style.cssText='color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-left:2px';
+  r3Label.textContent='Portfolio counts';
+  sec.appendChild(r3Label);
+  const r3 = document.createElement('div');
+  r3.className='grid'; r3.style.cssText='grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px';
+  r3.innerHTML = [
+    kpiCard('Number of Properties', D.length, 'Across all cities'),
+    kpiCard('Active Tenants',       P.tn,     'April 2026'),
+    kpiCard('Number of Cities',     4,        'Berlin · Eschweiler · Frankfurt · Leipzig'),
+  ].join('');
+  sec.appendChild(r3);
 
   // Chart row 1: Margins + Cashflow
   const cr1 = document.createElement('div');
