@@ -1987,8 +1987,9 @@ function renderBreakEven() {
         ? ` <span style="font-size:9px;color:#34d399">(−€${(ovf/1000).toFixed(0)}k OVF)</span>`
         : '';
       // "Beats 7%" = when cumulative Op CF exceeds what oppK at 7% p.a. would have returned
-      // Chart 1: compare against KNK; Chart 2: compare against KNK+equity (= BE_TOTAL_MODEL.knk)
-      const oppK = progressVsKNK ? knk : BE_TOTAL_MODEL[d.id].knk;
+      // Add back private loan amount → gross capital basis (same as the chart opp-cost line).
+      const privLAmt = PRIV_LOANS[d.id]?.amount || 0;
+      const oppK = progressVsKNK ? (knk + privLAmt) : (BE_TOTAL_MODEL[d.id].totalCapital + privLAmt);
       const t0 = BE_MODEL[d.id].pts[0].y;
       const beatsDate = findBeatsOppDate(BE_MODEL[d.id], oppK, t0);
       const beatsDurStr = beatsDate != null ? fracDur(pf, beatsDate) : null;
