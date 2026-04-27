@@ -1999,7 +1999,7 @@ function renderBreakEven() {
         <td>${beatsStr}</td>
         <td style="color:#f59e0b;cursor:help"
             onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
-            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(knk,2)}</td>
+            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(knk,2)}${privBadge}</td>
         <td style="cursor:help" onmouseenter="showBERepairTooltip(event,'${d.id}',${ovf})"
             onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(netRepairs,2)}${ovfBadge}</td>
         <td style="color:#9ca3af">${eq>0?fe(eq):'—'}</td>
