@@ -719,6 +719,49 @@ function recomputeBE(pts, knk) {
   return null;
 }
 
+// ── Private consumer loan adjustments to BE_MODEL ────────────────────────────
+// A Privatkredit that financed the KNK is treated differently from a property mortgage:
+//   (a) It reduces net KNK — no own capital was deployed for the loan amount.
+//   (b) Its Tilgung does NOT build property equity → counts as an Op CF cost.
+// Zinsen are already in BE_MODEL (included in zi field). Only Tilgung is added here.
+// Both BE_MODEL.id.knk and .pts are mutated in place (before BE_TILT_MODEL / BE_TOTAL_MODEL).
+const PRIV_LOANS = {
+  // DSL Bank Privatkredit: €13,000 @ 3.24% p.a., 120 months, Jan 2021–Dec 2030.
+  // Financed Eschweiler KNK (€13,102.49). Net own KNK = €13,102.49 − €13,000 = €102.49.
+  eschweiler: { amount: 13000, annualRate: 0.0324, startY: 2021, months: 120 }
+};
+;(() => {
+  Object.entries(PRIV_LOANS).forEach(([id, loan]) => {
+    const r = loan.annualRate / 12;
+    const P = loan.amount * r / (1 - Math.pow(1 + r, -loan.months));
+    // Build cumulative Tilgung by year-end (each iteration overwrites until Dec of that year)
+    const cumTi = {};
+    let bal = loan.amount, ct = 0;
+    for (let m = 0; m < loan.months; m++) {
+      const yr = loan.startY + Math.floor(m / 12);
+      const ti = P - bal * r;
+      ct += ti; bal -= ti;
+      cumTi[yr] = ct;
+    }
+    const endY = loan.startY + Math.floor((loan.months - 1) / 12); // last year of repayment
+    const offset = loan.amount;
+
+    function adjustEntry(orig) {
+      const newKnk = orig.knk - offset;
+      const newPts = orig.pts.map(p => {
+        // cti = cumulative Tilgung repaid through year-end p.y
+        const cti = p.y < loan.startY ? 0 : p.y > endY ? offset : (cumTi[p.y] || 0);
+        // +offset cancels the KNK reduction; −cti subtracts the Tilgung cost year-by-year
+        return { y: p.y, cum: p.cum + offset - cti };
+      });
+      return { knk: newKnk, be: recomputeBE(newPts, newKnk), pts: newPts };
+    }
+
+    BE_MODEL[id]           = adjustEntry(BE_MODEL[id]);
+    BE_MODEL['_portfolio'] = adjustEntry(BE_MODEL['_portfolio']);
+  });
+})();
+
 // BE_TILT_MODEL: cum += cumulative tilgung through each year-end.
 // Tilgung counts as return (equity build). Break-even moves earlier.
 const BE_TILT_MODEL = (() => {
