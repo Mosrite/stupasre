@@ -937,12 +937,14 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
     const v = beCumAtFrac(it.model, maxX);
     return Math.max(m, v);
   }, 0);
-  // Also include max opportunity-cost value at maxX so those lines stay in frame
-  const oppCapMax = showOppCost
-    ? items.reduce((m,it) => Math.max(m, purchaseYearOppK(it.id) * (Math.pow(1.07, maxX - it.model.pts[0].y) - 1)), 0)
+  // Opp-cost lines now start at −K (same as property lines start at −knk).
+  // minY must accommodate the lowest opp-line start; maxY accommodates the end value (−2 formula).
+  const maxOppK   = showOppCost ? items.reduce((m,it) => Math.max(m, purchaseYearOppK(it.id)), 0) : 0;
+  const oppEndMax = showOppCost
+    ? items.reduce((m,it) => Math.max(m, purchaseYearOppK(it.id) * (Math.pow(1.07, maxX - it.model.pts[0].y) - 2)), 0)
     : 0;
-  const minY = minCum * 1.08;
-  const maxY = Math.max(yCap * 1.1, oppCapMax * 1.05, maxKNK * 0.2, 5000);
+  const minY = Math.min(minCum * 1.08, showOppCost ? -maxOppK * 1.05 : 0);
+  const maxY = Math.max(yCap * 1.1, oppEndMax * 1.05, maxKNK * 0.2, 5000);
   const rangeY = maxY - minY;
 
   const xPx = x => ml + (x - minX) / (maxX - minX) * iW;
