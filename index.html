@@ -2052,8 +2052,8 @@ function renderBreakEven() {
         ? ` <span style="font-size:9px;color:#34d399">(−€${(ovf/1000).toFixed(0)}k OVF)</span>`
         : '';
       // "Beats 7%" = when cumulative Op CF exceeds what oppK at 7% p.a. would have returned
-      // Chart 1: compare against net KNK; Chart 2: compare against totalCapital
-      const oppK = progressVsKNK ? knk : BE_TOTAL_MODEL[d.id].totalCapital;
+      // oppK = net KNK + equity + purchase-year repairs (consistent with the chart opp-cost line)
+      const oppK = purchaseYearOppK(d.id);
       const t0 = BE_MODEL[d.id].pts[0].y;
       const beatsDate = findBeatsOppDate(BE_MODEL[d.id], oppK, t0);
       const beatsDurStr = beatsDate != null ? fracDur(pf, beatsDate) : null;
