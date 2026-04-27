@@ -2107,8 +2107,13 @@ function renderBreakEven() {
     const portNetRepairs = portTC - portKNK - portEq;
     const portGrossReturn = beCumAtFrac(BE_MODEL['_portfolio'], NOW_FRAC) + portKNK;
     const portPureOpCF = portGrossReturn + cumRepairsAtFrac('_portfolio', NOW_FRAC);
-    const portProgressBase = progressVsKNK ? portKNK : portTC;
-    const portPct = portProgressBase > 0 ? Math.max(0, Math.min(100, 100 * portGrossReturn / portProgressBase)) : 0;
+    // Undo PRIV_LOANS adjustment for portfolio progress bar (same logic as per-property)
+    const portPrivTi = Object.values(PRIV_LOANS).reduce((s, pl) => s + privCumTilgung(pl, NOW_FRAC), 0);
+    const portPrivAmt = Object.values(PRIV_LOANS).reduce((s, pl) => s + pl.amount, 0);
+    const portProgressGrossReturn = portGrossReturn + portPrivTi;
+    const portProgressKNK = portKNK + portPrivAmt;
+    const portProgressBase = progressVsKNK ? portProgressKNK : portTC;
+    const portPct = portProgressBase > 0 ? Math.max(0, Math.min(100, 100 * portProgressGrossReturn / portProgressBase)) : 0;
     const portBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
       +`<div style="background:${portPct>=100?'#34d399':'#60a5fa'};width:${portPct.toFixed(0)}%;height:8px;border-radius:4px"></div>`
       +`</div><span style="font-size:9px;color:#9ca3af">${portPct.toFixed(0)}%</span>`;
