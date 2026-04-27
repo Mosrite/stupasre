@@ -2050,8 +2050,14 @@ function renderBreakEven() {
       const grossReturn = beCumAtFrac(BE_MODEL[d.id], NOW_FRAC) + knk;
       // pureOpCF: cumulative Op CF excl. repairs (rent − opex − Zinsen only, no capex)
       const pureOpCF = grossReturn + cumRepairsAtFrac(d.id, NOW_FRAC);
-      const progressBase = progressVsKNK ? knk : tc;
-      const pct = progressBase > 0 ? Math.max(0, Math.min(100, 100 * grossReturn / progressBase)) : 0;
+      // For progress bar: undo PRIV_LOANS adjustment so bars reflect pre-netting economic reality.
+      // PRIV_LOANS nets privL.amount off KNK and subtracts cumTilgung from Op CF.
+      // To restore: add back cumTilgung to numerator, add back privL.amount to denominator.
+      const privTi = privCumTilgung(privL, NOW_FRAC);
+      const progressGrossReturn = grossReturn + privTi;
+      const progressKNK = knk + (privL ? privL.amount : 0);
+      const progressBase = progressVsKNK ? progressKNK : tc;
+      const pct = progressBase > 0 ? Math.max(0, Math.min(100, 100 * progressGrossReturn / progressBase)) : 0;
       const barPct = pct.toFixed(0);
       const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
         +`<div style="background:${pct>=100?'#34d399':'#60a5fa'};width:${barPct}%;height:8px;border-radius:4px"></div>`
