@@ -1958,6 +1958,10 @@ function renderBreakEven() {
       const tc = BE_TOTAL_MODEL[d.id].totalCapital;
       const netRepairs = tc - knk - eq;
       const ovf = OVERFINANCING[d.id] || 0;
+      const privL = PRIV_LOANS[d.id];
+      const privBadge = privL
+        ? `<br><span style="font-size:9px;color:#a78bfa" title="Privatkredit (€${(privL.amount/1000).toFixed(0)}k) financed KNK — netted against own capital">(−€${(privL.amount/1000).toFixed(0)}k Privatkred.)</span>`
+        : '';
       // grossReturn: cumulative position from BE_MODEL (includes repair costs, used for progress bar)
       const grossReturn = beCumAtFrac(BE_MODEL[d.id], NOW_FRAC) + knk;
       // pureOpCF: cumulative Op CF excl. repairs (rent − opex − Zinsen only, no capex)
