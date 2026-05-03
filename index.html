@@ -1198,19 +1198,19 @@ function renderOverview() {
   // Return metrics chart
   const mc = document.createElement('div');
   mc.className='card chart-wrap';
-  mc.innerHTML='<div class="chart-title">Gross Return, Net Return &amp; RoE by Property (%)</div>'
-    +'<div class="chart-sub">Green = Gross Return, Red = Net Return, Purple = RoE</div>';
+  mc.innerHTML='<div class="chart-title">Gross Rental Yield, Net Rental Yield &amp; RoE by Property (%)</div>'
+    +'<div class="chart-sub">Green = Gross Rental Yield, Red = Net Rental Yield, Purple = RoE</div>';
   const returnData = D.map(d=>({
-    name:           d.name,
-    'Gross Return %': d.grossReturn !== null ? +d.grossReturn.toFixed(1) : 0,
-    'Net Return %':   d.netReturn   !== null ? +d.netReturn.toFixed(1)   : 0,
-    'RoE %':          d.roe         !== null ? +d.roe.toFixed(1)         : 0,
+    name:                    d.name,
+    'Gross Rental Yield %':  d.grossRentalYieldPct !== null ? +d.grossRentalYieldPct.toFixed(1) : 0,
+    'Net Rental Yield %':    d.netRentalYieldPct   !== null ? +d.netRentalYieldPct.toFixed(1)   : 0,
+    'RoE %':                 d.roePct              !== null ? +d.roePct.toFixed(1)              : 0,
   }));
-  mc.appendChild(makeGroupedChart({data:returnData, keys:['Gross Return %','Net Return %','RoE %'],
+  mc.appendChild(makeGroupedChart({data:returnData, keys:['Gross Rental Yield %','Net Rental Yield %','RoE %'],
     colors:['#34d399','#f87171','#818cf8'], unit:'%'}));
   { const leg=document.createElement('div'); leg.className='legend';
-    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Gross Return %</div>'
-      +'<div class="leg-item"><div class="leg-dot" style="background:#f87171"></div>Net Return %</div>'
+    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Gross Rental Yield %</div>'
+      +'<div class="leg-item"><div class="leg-dot" style="background:#f87171"></div>Net Rental Yield %</div>'
       +'<div class="leg-item"><div class="leg-dot" style="background:#818cf8"></div>RoE %</div>';
     mc.appendChild(leg); }
   cr1.appendChild(mc);
