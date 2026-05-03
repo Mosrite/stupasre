@@ -184,26 +184,15 @@ function derive(p) {
   const cf   = tot - opex - mort;
   const tr   = cf + p.ti;
 
-  const eigenanteil = p.id === 'eschweiler' ? -3000 : p.pp - p.origLoan;
+  // Return metrics: passed through directly from Notion KPIs & Metrics (2025 Actual).
+  // Source: https://www.notion.so/35496be88787810ab48eebb2f1844547
+  // Do NOT recompute these — always source from Notion.
+  const grossRentalYieldPct = p.grossRentalYield ?? null;
+  const netRentalYieldPct   = p.netRentalYield   ?? null;
+  const roePct              = p.roe              ?? null;
 
-  const grossReturn = p.pp ? (p.km * 12 / p.pp) * 100 : null;
-
-  const netReturn = (p.pp && p.knk != null)
-    ? ((tot - p.hg - p.gs - p.avgRepair) * 12 / (p.pp + p.knk)) * 100
-    : null;
-
-  // Eschweiler: deduct full DSL payment from numerator; net DSL loan out of KNK in denominator
-  const roeNum = p.id === 'eschweiler'
-    ? ((tot - p.hg - p.gs - p.avgRepair) * 12) - (107.21 * 12) - (127.00 * 12)
-    : ((tot - p.hg - p.gs - p.avgRepair) * 12) - (p.zi * 12);
-  const roeDen = p.id === 'eschweiler'
-    ? -3000 + (p.knk - 13000)
-    : eigenanteil + p.knk;
-  const roe = roeDen !== 0 ? (roeNum / roeDen) * 100 : null;
-  const roeNegEq = roeDen < 0;
-
-  return { ...p, tot, opex, mort, gp, np, cf, tr, eigenanteil,
-    grossReturn, netReturn, roe, roeNegEq,
+  return { ...p, tot, opex, mort, gp, np, cf, tr,
+    grossRentalYieldPct, netRentalYieldPct, roePct,
     dscr:  gp/mort,
     ptr:   p.pp ? p.pp/(p.km*12) : null,
     ppSqm: (p.pp && p.size) ? Math.round(p.pp / p.size) : null,
