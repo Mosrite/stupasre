@@ -897,18 +897,19 @@ function buildNotionModels(rows) {
     cum1 += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti + r.fur;
     return { y: r.year, cum: +(-knk1 + cum1).toFixed(2) };
   });
-  // Chart 2 (BE_TOTAL_MODEL): Op CF excluding fur; starting deficit = KNK + equity
-  let cum2 = 0, cumFur2 = 0;
-  const knk2 = knk1 + eqTotal;
+  // Chart 2 (BE_TOTAL_MODEL): Op CF excluding fur; starting deficit = KNK + equity + total fur.
+  // All renovation capital is included in the starting deficit so the property line and the
+  // 7% opportunity-cost line both start at the same point: −(KNK + equity + fur).
+  const totalFur2 = rows.reduce((s,r) => s + Math.abs(r.fur||0), 0);
+  const knk2 = knk1 + eqTotal + totalFur2;   // = purchaseYearOppK(id)
+  let cum2 = 0;
   const pts2 = rows.map(r => {
-    cum2    += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti;
-    cumFur2 += Math.abs(r.fur||0);
-    return { y: r.year, cum: +(-knk2 - cumFur2 + cum2).toFixed(2) };
+    cum2 += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti;
+    return { y: r.year, cum: +(-knk2 + cum2).toFixed(2) };
   });
   return {
     chart1: { knk: knk1, pts: pts1, be: recomputeBE(pts1, knk1) },
-    chart2: { knk: knk2, pts: pts2, be: recomputeBE(pts2, knk2),
-              totalCapital: knk1 + eqTotal + cumFur2 },
+    chart2: { knk: knk2, pts: pts2, be: recomputeBE(pts2, knk2), totalCapital: knk2 },
   };
 }
 
