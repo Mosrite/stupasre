@@ -1002,25 +1002,6 @@ function beCumAtFrac(model, frac) {
   return prevCum; // beyond last point
 }
 
-// Cumulative repair costs realized up to fractional year `frac` (linearly interpolated).
-// Repairs are baked into BE_MODEL pts as year-end lump sums; at intra-year frac they are
-// prorated linearly. Add this back to BE_MODEL's beCumAtFrac result to get pure Op CF
-// (i.e. rent − opex − Zinsen, with repairs removed from the running total).
-function cumRepairsAtFrac(id, frac) {
-  let reps;
-  if (id === '_portfolio') {
-    reps = [];
-    Object.values(REPAIRS).forEach(arr => arr.forEach(r => { if (r.amt) reps.push(r); }));
-  } else {
-    reps = (REPAIRS[id] || []).filter(r => r.amt);
-  }
-  return reps.reduce((sum, r) => {
-    if (r.y + 1 <= frac) return sum + r.amt;        // year fully elapsed
-    if (r.y < frac)      return sum + r.amt * (frac - r.y); // partial current year
-    return sum;                                         // future — not yet realised
-  }, 0);
-}
-
 // Cash-flow-aware break-even timeline chart.
 // Each line is the per-property cumulative position (Op CF excl. Tilgung minus KNK)
 // over time. Solid through end-2025 (historical), dashed from 2026 (projected).
