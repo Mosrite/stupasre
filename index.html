@@ -1285,7 +1285,7 @@ function renderOverview() {
   const tCard = document.createElement('div');
   tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
   tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Full KPI Summary</div>';
-  const cols = ['Property','Kaltmiete','Opex','Op. Surplus','Gross Return','Mortgage','Cashflow','Net Return','Total Return','RoE','DSCR'];
+  const cols = ['Property','Kaltmiete','Opex','Op. Surplus','Gross Rental Yield','Mortgage','Cashflow','Net Rental Yield','Total Return','RoE','DSCR'];
   let html = '<table><thead><tr>'
     + cols.map((c,i)=>`<th${i===0?' class="left"':''}>${c}</th>`).join('')
     + '</tr></thead><tbody>';
