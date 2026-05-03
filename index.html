@@ -204,14 +204,12 @@ const D = RAW.map(derive);
 const P = ['tot','km','nk','opex','mort','gp','np','cf','tr','zi','ti','tn']
   .reduce((o,k) => { o[k]=D.reduce((s,d)=>s+d[k],0); return o; }, {});
 
-// Kaltmiete-weighted return averages
-const _gr = D.filter(d=>d.grossReturn!==null);
-P.grossReturn = _gr.length ? _gr.reduce((s,d)=>s+d.km*d.grossReturn,0)/_gr.reduce((s,d)=>s+d.km,0) : null;
-const _nr = D.filter(d=>d.netReturn!==null);
-P.netReturn = _nr.length ? _nr.reduce((s,d)=>s+d.km*d.netReturn,0)/_nr.reduce((s,d)=>s+d.km,0) : null;
-// RoE excludes Eschweiler (negative-equity denominator distorts the weighted average)
-const _roe = D.filter(d=>d.roe!==null&&!d.roeNegEq);
-P.roe = _roe.length ? _roe.reduce((s,d)=>s+d.km*d.roe,0)/_roe.reduce((s,d)=>s+d.km,0) : null;
+// Portfolio return metrics: hardcoded from Notion KPIs & Metrics (2025 Actual).
+// Source: https://www.notion.so/35496be88787810ab48eebb2f1844547
+// Do NOT recompute these — always source from Notion.
+P.grossRentalYieldPct = 5.95;
+P.netRentalYieldPct   = 4.66;
+P.roePct              = 10.50;
 
 // ─── SUPPLEMENTAL DATA ──────────────────────────────────────────────────────
 // Repair & maintenance costs (€/year) per property. null = not yet extracted from Buchhaltung.
