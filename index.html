@@ -2243,29 +2243,48 @@ function renderBreakEven() {
   const c1 = document.createElement('div');
   c1.className = 'card chart-wrap'; c1.style.marginBottom = '16px';
   c1.innerHTML = '<div class="chart-title">Break-Even: KNK vs. Cumulative Op CF</div>'
-    +'<div class="chart-sub">Each line shows cumulative operating cash flow (rent − opex − interest, excl. Tilgung) minus Kaufnebenkosten. '
+    +'<div class="chart-sub">Each line shows cumulative operating cash flow (rent + NK − Hausgeld − Grundsteuer − Zinsen − Rücklage − private-loan repayment, excl. mortgage Tilgung) minus Kaufnebenkosten. '
     +'Tilgung is excluded: it builds equity, but that equity is offset by the corresponding asset value — the two cancel. '
+    +'Initial renovation/furnishing (fur) is included in Op CF for this chart. '
     +'Crossing y = 0 (green line) = break-even on pure operating returns. '
-    +'Solid = historical (CSV through 2025), dashed = projected from 2026. Filled circle = break-even date. '
-    +'Forward assumptions: rent +2%/yr, Hausgeld +2%/yr, refi at current rates, vacancy 3% Eschweiler / 0% rest, Rücklage 10 €/m²/yr.</div>';
+    +'Solid = historical actuals (DKB CSV + invoices through 2025), dashed = projected from 2026. Filled circle = break-even date.</div>';
   const beItems1 = makeBeItems(BE_MODEL);
   c1.appendChild(makeBreakEvenChart({items:beItems1, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
   c1.appendChild(makeBeTable(beItems1, BE_MODEL, true));
   sec.appendChild(c1);
 
-  // ── Chart 2: BE_TOTAL_MODEL — CF + Tilgung vs. Total Capital Employed ───────
+  // ── Chart 2: BE_TOTAL_MODEL — Op CF vs. Total Capital Employed ───────
   const c2 = document.createElement('div');
   c2.className = 'card chart-wrap'; c2.style.marginBottom = '16px';
   c2.innerHTML = '<div class="chart-title">Break-Even: Op CF vs. Total Capital Employed</div>'
-    +'<div class="chart-sub">Each line shows cumulative operating CF (excl. Tilgung) minus all capital invested: '
-    +'Kaufnebenkosten + repair/maintenance costs + initial equity payments. '
-    +'The chart starts at −(KNK + equity); Total Capital in the table adds cumulative repairs for a full accounting. '
-    +'Dotted lines = 7% p.a. stock-market alternative on capital employed (same start date). '
+    +'<div class="chart-sub">Each line shows cumulative operating CF (excl. Tilgung and initial renovation) minus all capital deployed: '
+    +'Kaufnebenkosten + initial renovation/furnishing + initial equity. '
+    +'Chart starts at −(KNK + equity); renovation costs are added to the capital base as incurred. '
+    +'Dotted lines = 7% p.a. compound return on total capital deployed (same start date as property line). '
     +'Solid = historical, dashed = projected. Filled circle = break-even date.</div>';
   const beItems2 = makeBeItems(BE_TOTAL_MODEL);
   c2.appendChild(makeBreakEvenChart({items:beItems2, W:900, xMin:sharedMinX, xMax:sharedMaxX, showOppCost:true, capitalLabel:'Capital Employed'}));
   c2.appendChild(makeBeTable(beItems2, BE_TOTAL_MODEL, false));
   sec.appendChild(c2);
+
+  // ── Footnotes / Assumptions ─────────────────────────────────────────────────
+  const fn = document.createElement('div');
+  fn.className = 'card';
+  fn.style.cssText = 'margin-bottom:16px;padding:16px 20px';
+  fn.innerHTML = `<div class="chart-title" style="font-size:12px;margin-bottom:8px">Calculation Assumptions</div>
+<div class="footnotes" style="border-top:none;padding-top:0;margin-top:0">
+<b>Data sources:</b> Actuals 2020–2025 from DKB bank statements (CSV) and invoice PDFs. Projections 2026 onwards per assumptions below.<br>
+<b>Op CF components (both charts):</b> Kaltmiete + NK Vorauszahlung − Hausgeld − Grundsteuer − Zinsen (mortgage interest) − Privatkredit interest − Privatkredit repayment − Rücklage (10 €/m²/yr). Mortgage Tilgung excluded (builds equity ↔ offsets asset value, net zero).<br>
+<b>Chart 1 — KNK:</b> Op CF includes initial renovation/furnishing (fur) as an operating outflow. Starting deficit = Kaufnebenkosten (net of any private loan financing the KNK).<br>
+<b>Chart 2 — Total Capital:</b> Initial renovation/furnishing is reclassified as capital deployed (not Op CF). Starting deficit = KNK + initial equity paid in; renovation costs added to capital base as incurred. Dotted opp-cost lines start at the same point as the property line (−total capital).<br>
+<b>KNK netting:</b> Eschweiler KNK is shown net of the DSL Bank Privatkredit (€13,000 @ 3.24% p.a., 120 months, Jan 2021–Dec 2030) that financed it — own capital deployed was €102.49. Privatkredit repayment is counted as Op CF cost (does not build property equity).<br>
+<b>Rent projections (2026+):</b> +2.0%/yr per property (Kaltmiete + NK).<br>
+<b>Cost projections (2026+):</b> Hausgeld +2.0%/yr; Other operating costs +2.0%/yr.<br>
+<b>Mortgage interest:</b> Property-specific fixed rates. Eschweiler (Volksbank) fixed through 2035. Frankfurt properties (Hügelstr, Ohmstr) refinanced at lower prevailing rate from 2026. Berlin (DKB) per loan schedule.<br>
+<b>Rücklage (maintenance reserve):</b> 10 €/m²/yr ongoing for all properties. Initial renovation (fur) is a one-time cost, separate from ongoing maintenance.<br>
+<b>Vacancy:</b> 3% for Eschweiler (small city), 0% for all other properties.
+</div>`;
+  sec.appendChild(fn);
 }
 
 // ─── TAB SWITCHING ───────────────────────────────────────────────────────────
