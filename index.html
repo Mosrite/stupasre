@@ -662,8 +662,322 @@ function formatFrac(frac) {
 //   knk=Kaufnebenkosten net of private loans (purchase year only),
 //   eq=Initial Equity Invested (purchase year only).
 // ti=Redemption Mortgage is excluded from Op CF (builds equity ↔ offsets asset value).
-const BE_MODEL = {
-  berlin: {knk:22597.4, be:2030.36, pts:[{y:2024,cum:-29232.01},{y:2025,cum:-24751.23},{y:2026,cum:-20892.71},{y:2027,cum:-15456.21},{y:2028,cum:-9391.54},{y:2029,cum:-2680.18},{y:2030,cum:4697.0},{y:2031,cum:12759.76},{y:2032,cum:21528.53},{y:2033,cum:31024.44},{y:2034,cum:41269.31},{y:2035,cum:52285.71},{y:2036,cum:64096.97},{y:2037,cum:76727.23},{y:2038,cum:90201.44},{y:2039,cum:104545.41},{y:2040,cum:119785.83},{y:2041,cum:135950.32},{y:2042,cum:153067.45},{y:2043,cum:171166.77},{y:2044,cum:190278.88},{y:2045,cum:210435.42},{y:2046,cum:231669.15},{y:2047,cum:254013.97},{y:2048,cum:277504.98},{y:2049,cum:302178.51},{y:2050,cum:328072.18},{y:2051,cum:355224.93},{y:2052,cum:383296.75},{y:2053,cum:411944.9},{y:2054,cum:441180.9},{y:2055,cum:471016.51},{y:2056,cum:501463.72},{y:2057,cum:532534.76},{y:2058,cum:564242.11},{y:2059,cum:596598.49},{y:2060,cum:629616.89}]},
+const NOTION_BE_DATA = [
+  // ── Berlin (purchase Jul 2024) ────────────────────────────────────────────
+  { property:'Berlin', year:2024, source:'Actual',
+    km:4982.5, nk:466, hg:-804.8, gs:0, ox:0, util:0,
+    zi:-5024.31, pzi:0, pti:0, mc:0, fur:-5955.79, knk:-22597.4, eq:-16000, opp:-44553.19 },
+  { property:'Berlin', year:2025, source:'Actual',
+    km:18119.72, nk:1679.78, hg:-2350.92, gs:-322.77, ox:-9, util:0,
+    zi:-11883.2, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-41434.47 },
+  { property:'Berlin', year:2026, source:'Projected',
+    km:18482.11, nk:1713.38, hg:-2397.94, gs:-322.77, ox:-9.18, util:0,
+    zi:-7737.34, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-38097.43 },
+  { property:'Berlin', year:2027, source:'Projected',
+    km:18851.76, nk:1747.64, hg:-2445.9, gs:-322.77, ox:-9.36, util:0,
+    zi:-11383.46, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-34526.81 },
+  { property:'Berlin', year:2028, source:'Projected',
+    km:19228.79, nk:1782.6, hg:-2494.82, gs:-322.77, ox:-9.55, util:0,
+    zi:-11106.57, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-30706.24 },
+  { property:'Berlin', year:2029, source:'Projected',
+    km:19613.37, nk:1818.25, hg:-2544.71, gs:-322.77, ox:-9.74, util:0,
+    zi:-10818.2, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-26618.23 },
+  { property:'Berlin', year:2030, source:'Projected',
+    km:20005.64, nk:1854.61, hg:-2595.61, gs:-322.77, ox:-9.94, util:0,
+    zi:-10517.86, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-22244.06 },
+  { property:'Berlin', year:2031, source:'Projected',
+    km:20405.75, nk:1891.71, hg:-2647.52, gs:-322.77, ox:-10.14, util:0,
+    zi:-10205.07, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-17563.69 },
+  { property:'Berlin', year:2032, source:'Projected',
+    km:20813.86, nk:1929.54, hg:-2700.47, gs:-322.77, ox:-10.34, util:0,
+    zi:-9879.3, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-12555.7 },
+  { property:'Berlin', year:2033, source:'Projected',
+    km:21230.14, nk:1968.13, hg:-2754.48, gs:-322.77, ox:-10.54, util:0,
+    zi:-9540.02, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-7197.16 },
+  { property:'Berlin', year:2034, source:'Projected',
+    km:21654.74, nk:2007.49, hg:-2809.57, gs:-322.77, ox:-10.76, util:0,
+    zi:-9186.67, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-1463.51 },
+  { property:'Berlin', year:2035, source:'Projected',
+    km:22087.84, nk:2047.64, hg:-2865.76, gs:-322.77, ox:-10.97, util:0,
+    zi:-8818.66, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:4671.49 },
+  // ── Eschweiler (purchase Jan 2021; pre-purchase costs in 2020) ────────────
+  { property:'Eschweiler', year:2020, source:'Actual',
+    km:0, nk:0, hg:0, gs:0, ox:-2677.7, util:0,
+    zi:0, pzi:0, pti:0, mc:0, fur:0, knk:0, eq:0, opp:-881.83 },
+  { property:'Eschweiler', year:2021, source:'Actual',
+    km:2962.51, nk:853.57, hg:-1450, gs:-168.44, ox:0, util:0,
+    zi:-1310.62, pzi:-404.66, pti:-1119.34, mc:-410, fur:-779.34, knk:-102.49, eq:0, opp:-820.1 },
+  { property:'Eschweiler', year:2022, source:'Actual',
+    km:4400.3, nk:1251.91, hg:-1740, gs:-168.44, ox:0, util:0,
+    zi:-1401.76, pzi:-367.87, pti:-1156.13, mc:-410, fur:0, knk:0, eq:0, opp:-754.05 },
+  { property:'Eschweiler', year:2023, source:'Actual',
+    km:4834.8, nk:1440.6, hg:-2291, gs:-168.44, ox:0, util:0,
+    zi:-1372.06, pzi:-329.86, pti:-1194.14, mc:-410, fur:0, knk:0, eq:0, opp:-683.38 },
+  { property:'Eschweiler', year:2024, source:'Actual',
+    km:5302.18, nk:1733.48, hg:-2198, gs:-168.44, ox:0, util:0,
+    zi:-1341.86, pzi:-290.55, pti:-1233.45, mc:-410, fur:0, knk:0, eq:0, opp:-607.76 },
+  { property:'Eschweiler', year:2025, source:'Actual',
+    km:4578.1, nk:1471.9, hg:-2208, gs:-339.88, ox:-11, util:0,
+    zi:-1311.17, pzi:-250.01, pti:-1273.99, mc:-410, fur:0, knk:0, eq:0, opp:-526.85 },
+  { property:'Eschweiler', year:2026, source:'Projected',
+    km:4669.66, nk:1501.34, hg:-2252.16, gs:-339.88, ox:-11.22, util:0,
+    zi:-851.57, pzi:-136.23, pti:-879.77, mc:-410, fur:0, knk:0, eq:0, opp:-440.27 },
+  { property:'Eschweiler', year:2027, source:'Projected',
+    km:4763.06, nk:1531.36, hg:-2297.2, gs:-339.88, ox:-11.44, util:0,
+    zi:-1250.93, pzi:-167.64, pti:-1356.36, mc:-410, fur:0, knk:0, eq:0, opp:-347.63 },
+  { property:'Eschweiler', year:2028, source:'Projected',
+    km:4858.32, nk:1561.99, hg:-2343.15, gs:-339.88, ox:-11.67, util:0,
+    zi:-1218.76, pzi:-122.3, pti:-1401.7, mc:-410, fur:0, knk:0, eq:0, opp:-248.51 },
+  { property:'Eschweiler', year:2029, source:'Projected',
+    km:4955.48, nk:1593.23, hg:-2390.01, gs:-339.88, ox:-11.91, util:0,
+    zi:-1186.07, pzi:-75.44, pti:-1448.56, mc:-410, fur:0, knk:0, eq:0, opp:-142.45 },
+  { property:'Eschweiler', year:2030, source:'Projected',
+    km:5054.59, nk:1625.1, hg:-2437.81, gs:-339.88, ox:-12.14, util:0,
+    zi:-1152.85, pzi:-27.02, pti:-1496.98, mc:-410, fur:0, knk:0, eq:0, opp:-28.97 },
+  { property:'Eschweiler', year:2031, source:'Projected',
+    km:5155.68, nk:1657.6, hg:-2486.57, gs:-339.88, ox:-12.39, util:0,
+    zi:-1119.08, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:92.46 },
+  { property:'Eschweiler', year:2032, source:'Projected',
+    km:5258.8, nk:1690.75, hg:-2536.3, gs:-339.88, ox:-12.64, util:0,
+    zi:-1084.77, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:222.39 },
+  { property:'Eschweiler', year:2033, source:'Projected',
+    km:5363.97, nk:1724.57, hg:-2587.02, gs:-339.88, ox:-12.89, util:0,
+    zi:-1049.89, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:361.41 },
+  { property:'Eschweiler', year:2034, source:'Projected',
+    km:5471.25, nk:1759.06, hg:-2638.76, gs:-339.88, ox:-13.15, util:0,
+    zi:-1014.44, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:510.17 },
+  { property:'Eschweiler', year:2035, source:'Projected',
+    km:5580.68, nk:1794.24, hg:-2691.54, gs:-339.88, ox:-13.41, util:0,
+    zi:-978.42, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:669.34 },
+  // ── Hügelstr. Frankfurt (purchase Jun 2023) ───────────────────────────────
+  { property:'Huegelstr', year:2023, source:'Actual',
+    km:11847.5, nk:2566.56, hg:-3300, gs:0, ox:-200, util:-239.99,
+    zi:-8427.58, pzi:0, pti:0, mc:0, fur:-26327.36, knk:-44082.98, eq:0, opp:-70410.34 },
+  { property:'Huegelstr', year:2024, source:'Actual',
+    km:28375, nk:6355.12, hg:-6760, gs:-162.38, ox:0, util:-380,
+    zi:-16595.22, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-65481.62 },
+  { property:'Huegelstr', year:2025, source:'Actual',
+    km:28564.6, nk:6640.07, hg:-7670, gs:-693.07, ox:-9.75, util:-312,
+    zi:-16229.71, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-60207.88 },
+  { property:'Huegelstr', year:2026, source:'Projected',
+    km:29135.89, nk:6772.87, hg:-7823.4, gs:-693.07, ox:-9.95, util:-318.24,
+    zi:-10382.3, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-54564.99 },
+  { property:'Huegelstr', year:2027, source:'Projected',
+    km:29718.61, nk:6908.33, hg:-7979.87, gs:-693.07, ox:-10.14, util:-324.6,
+    zi:-15245.3, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-48527.09 },
+  { property:'Huegelstr', year:2028, source:'Projected',
+    km:30312.98, nk:7046.5, hg:-8139.47, gs:-693.07, ox:-10.35, util:-331.1,
+    zi:-14837.36, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-42066.54 },
+  { property:'Huegelstr', year:2029, source:'Projected',
+    km:30919.24, nk:7187.43, hg:-8302.25, gs:-693.07, ox:-10.55, util:-337.72,
+    zi:-14412.92, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-35153.75 },
+  { property:'Huegelstr', year:2030, source:'Projected',
+    km:31537.63, nk:7331.17, hg:-8468.3, gs:-693.07, ox:-10.76, util:-344.47,
+    zi:-13971.3, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-27757.06 },
+  { property:'Huegelstr', year:2031, source:'Projected',
+    km:32168.38, nk:7477.8, hg:-8637.67, gs:-693.07, ox:-10.98, util:-351.36,
+    zi:-13511.81, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-19842.61 },
+  { property:'Huegelstr', year:2032, source:'Projected',
+    km:32811.75, nk:7627.35, hg:-8810.42, gs:-693.07, ox:-11.2, util:-358.39,
+    zi:-13033.73, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-11374.14 },
+  { property:'Huegelstr', year:2033, source:'Projected',
+    km:33467.98, nk:7779.9, hg:-8986.63, gs:-693.07, ox:-11.42, util:-365.56,
+    zi:-12536.3, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-2312.88 },
+  { property:'Huegelstr', year:2034, source:'Projected',
+    km:34137.34, nk:7935.5, hg:-9166.36, gs:-693.07, ox:-11.65, util:-372.87,
+    zi:-12018.74, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:7382.66 },
+  { property:'Huegelstr', year:2035, source:'Projected',
+    km:34820.09, nk:8094.21, hg:-9349.69, gs:-693.07, ox:-11.89, util:-380.33,
+    zi:-11480.24, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:17756.9 },
+  // ── Ohmstraße Frankfurt (purchase Sep 2023) ───────────────────────────────
+  { property:'Ohmstr', year:2023, source:'Actual',
+    km:1750, nk:225, hg:-583.9, gs:0, ox:-4, util:0,
+    zi:-2850.96, pzi:0, pti:0, mc:0, fur:-5672.95, knk:-29633.61, eq:0, opp:-35306.56 },
+  { property:'Ohmstr', year:2024, source:'Actual',
+    km:21257.5, nk:3507.5, hg:-3795.35, gs:-484.8, ox:-524.56, util:0,
+    zi:-16902.88, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-32835.1 },
+  { property:'Ohmstr', year:2025, source:'Actual',
+    km:19339.9, nk:2992.87, hg:-3503.4, gs:-384.6, ox:-33, util:0,
+    zi:-16544.21, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-30190.64 },
+  { property:'Ohmstr', year:2026, source:'Projected',
+    km:19726.7, nk:3052.73, hg:-3573.47, gs:-384.6, ox:-33.66, util:0,
+    zi:-10758.84, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-27361.07 },
+  { property:'Ohmstr', year:2027, source:'Projected',
+    km:20121.23, nk:3113.78, hg:-3644.94, gs:-384.6, ox:-34.33, util:0,
+    zi:-15812.3, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-24333.42 },
+  { property:'Ohmstr', year:2028, source:'Projected',
+    km:20523.66, nk:3176.06, hg:-3717.84, gs:-384.6, ox:-35.02, util:0,
+    zi:-15405.97, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-21093.84 },
+  { property:'Ohmstr', year:2029, source:'Projected',
+    km:20934.13, nk:3239.58, hg:-3792.19, gs:-384.6, ox:-35.72, util:0,
+    zi:-14981.91, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-17627.49 },
+  { property:'Ohmstr', year:2030, source:'Projected',
+    km:21352.81, nk:3304.37, hg:-3868.04, gs:-384.6, ox:-36.43, util:0,
+    zi:-14539.34, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-13918.5 },
+  { property:'Ohmstr', year:2031, source:'Projected',
+    km:21779.87, nk:3370.46, hg:-3945.4, gs:-384.6, ox:-37.16, util:0,
+    zi:-14077.45, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-9949.88 },
+  { property:'Ohmstr', year:2032, source:'Projected',
+    km:22215.47, nk:3437.87, hg:-4024.31, gs:-384.6, ox:-37.91, util:0,
+    zi:-13595.4, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-5703.45 },
+  { property:'Ohmstr', year:2033, source:'Projected',
+    km:22659.78, nk:3506.62, hg:-4104.79, gs:-384.6, ox:-38.66, util:0,
+    zi:-13092.3, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-1159.77 },
+  { property:'Ohmstr', year:2034, source:'Projected',
+    km:23112.97, nk:3576.76, hg:-4186.89, gs:-384.6, ox:-39.44, util:0,
+    zi:-12567.24, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:3701.96 },
+  { property:'Ohmstr', year:2035, source:'Projected',
+    km:23575.23, nk:3648.29, hg:-4270.63, gs:-384.6, ox:-40.23, util:0,
+    zi:-12019.25, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:8904.02 },
+  // ── Leipzig (purchase Nov 2023) ───────────────────────────────────────────
+  { property:'Leipzig', year:2023, source:'Actual',
+    km:1540, nk:480, hg:-1068, gs:-21.62, ox:-89.4, util:0,
+    zi:-856.19, pzi:0, pti:0, mc:0, fur:-5563.1, knk:-9795.25, eq:-7000, opp:-22358.35 },
+  { property:'Leipzig', year:2024, source:'Actual',
+    km:9362.5, nk:3065, hg:-4257, gs:-86.48, ox:-286.2, util:0,
+    zi:-5076.22, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-20793.27 },
+  { property:'Leipzig', year:2025, source:'Actual',
+    km:9699.7, nk:2880, hg:-4236, gs:-175.92, ox:-83, util:0,
+    zi:-4968.62, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-19118.63 },
+  { property:'Leipzig', year:2026, source:'Projected',
+    km:9893.69, nk:2937.6, hg:-4320.72, gs:-175.92, ox:-84.66, util:0,
+    zi:-3231.37, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-17326.76 },
+  { property:'Leipzig', year:2027, source:'Projected',
+    km:10091.57, nk:2996.35, hg:-4407.13, gs:-175.92, ox:-86.35, util:0,
+    zi:-4749.66, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-15409.46 },
+  { property:'Leipzig', year:2028, source:'Projected',
+    km:10293.4, nk:3056.28, hg:-4495.28, gs:-175.92, ox:-88.08, util:0,
+    zi:-4628.37, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-13357.96 },
+  { property:'Leipzig', year:2029, source:'Projected',
+    km:10499.27, nk:3117.4, hg:-4585.18, gs:-175.92, ox:-89.84, util:0,
+    zi:-4501.92, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-11162.85 },
+  { property:'Leipzig', year:2030, source:'Projected',
+    km:10709.25, nk:3179.75, hg:-4676.89, gs:-175.92, ox:-91.64, util:0,
+    zi:-4370.09, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-8814.08 },
+  { property:'Leipzig', year:2031, source:'Projected',
+    km:10923.44, nk:3243.35, hg:-4770.42, gs:-175.92, ox:-93.47, util:0,
+    zi:-4232.66, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-6300.89 },
+  { property:'Leipzig', year:2032, source:'Projected',
+    km:11141.91, nk:3308.21, hg:-4865.83, gs:-175.92, ox:-95.34, util:0,
+    zi:-4089.38, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-3611.79 },
+  { property:'Leipzig', year:2033, source:'Projected',
+    km:11364.74, nk:3374.38, hg:-4963.15, gs:-175.92, ox:-97.25, util:0,
+    zi:-3940, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-734.44 },
+  { property:'Leipzig', year:2034, source:'Projected',
+    km:11592.04, nk:3441.87, hg:-5062.41, gs:-175.92, ox:-99.19, util:0,
+    zi:-3784.28, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:2344.32 },
+  { property:'Leipzig', year:2035, source:'Projected',
+    km:11823.88, nk:3510.7, hg:-5163.66, gs:-175.92, ox:-101.18, util:0,
+    zi:-3621.93, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:5638.59 },
+];
+
+// ── Model builders ───────────────────────────────────────────────────────────
+// Recompute break-even year from pts array and KNK baseline
+function recomputeBE(pts, knk) {
+  let prevFrac = pts[0].y, prevCum = -knk;
+  for (const p of pts) {
+    const frac = p.y + 1;
+    if (prevCum < 0 && p.cum >= 0) {
+      const t = (-prevCum) / (p.cum - prevCum);
+      return +(prevFrac + t * (frac - prevFrac)).toFixed(4);
+    }
+    prevFrac = frac; prevCum = p.cum;
+  }
+  return null;
+}
+
+// Build Chart1 and Chart2 models from an array of Notion rows (sorted by year)
+function buildNotionModels(rows) {
+  // KNK (net of private loans), equity, and fur totals from Notion
+  const knk1    = rows.reduce((s,r) => s + Math.abs(r.knk||0), 0);
+  const eqTotal = rows.reduce((s,r) => s + Math.abs(r.eq||0),  0);
+  // Chart 1 (BE_MODEL): Op CF including initial renovation (fur); starting deficit = KNK
+  let cum1 = 0;
+  const pts1 = rows.map(r => {
+    cum1 += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti + r.fur;
+    return { y: r.year, cum: +(-knk1 + cum1).toFixed(2) };
+  });
+  // Chart 2 (BE_TOTAL_MODEL): Op CF excluding fur; starting deficit = KNK + equity
+  let cum2 = 0, cumFur2 = 0;
+  const knk2 = knk1 + eqTotal;
+  const pts2 = rows.map(r => {
+    cum2    += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti;
+    cumFur2 += Math.abs(r.fur||0);
+    return { y: r.year, cum: +(-knk2 - cumFur2 + cum2).toFixed(2) };
+  });
+  return {
+    chart1: { knk: knk1, pts: pts1, be: recomputeBE(pts1, knk1) },
+    chart2: { knk: knk2, pts: pts2, be: recomputeBE(pts2, knk2),
+              totalCapital: knk1 + eqTotal + cumFur2 },
+  };
+}
+
+// Property Notion name → dashboard ID mapping
+const _NPROP = { Berlin:'berlin', Eschweiler:'eschweiler', Huegelstr:'huegelstr', Ohmstr:'ohmstr', Leipzig:'leipzig' };
+
+// Build per-property BE_MODEL, BE_TOTAL_MODEL and EQUITY_PAID from Notion data
+const BE_MODEL = {}, BE_TOTAL_MODEL = {}, EQUITY_PAID = {}, _FUR_TOT = {};
+
+Object.entries(_NPROP).forEach(([notionName, id]) => {
+  const rows = NOTION_BE_DATA.filter(r => r.property === notionName).sort((a,b) => a.year - b.year);
+  const m = buildNotionModels(rows);
+  BE_MODEL[id]       = m.chart1;
+  BE_TOTAL_MODEL[id] = m.chart2;
+  EQUITY_PAID[id]    = rows.reduce((s,r) => s + Math.abs(r.eq||0), 0);
+  _FUR_TOT[id]       = rows.reduce((s,r) => s + Math.abs(r.fur||0), 0);
+});
+
+// Portfolio aggregate: sum all properties year by year
+{
+  const allYears = [...new Set(NOTION_BE_DATA.map(r => r.year))].sort((a,b) => a-b);
+  const portRows = allYears.map(y => {
+    const yrs = NOTION_BE_DATA.filter(r => r.year === y);
+    return yrs.reduce((acc,r) => ({
+      year:y, property:'_portfolio',
+      source: r.source === 'Projected' ? 'Projected' : acc.source,
+      km: acc.km+r.km,  nk: acc.nk+r.nk, hg: acc.hg+r.hg,
+      gs: acc.gs+r.gs,  ox: acc.ox+r.ox,  util: acc.util+(r.util||0),
+      zi: acc.zi+r.zi,  pzi: acc.pzi+r.pzi, pti: acc.pti+r.pti,
+      mc: acc.mc+r.mc,  fur: acc.fur+r.fur, knk: acc.knk+r.knk,
+      eq: acc.eq+r.eq,  opp: acc.opp+r.opp,
+    }), {year:y,property:'_portfolio',source:'Actual',km:0,nk:0,hg:0,gs:0,ox:0,util:0,zi:0,pzi:0,pti:0,mc:0,fur:0,knk:0,eq:0,opp:0});
+  });
+  const pm = buildNotionModels(portRows);
+  BE_MODEL['_portfolio']       = pm.chart1;
+  BE_TOTAL_MODEL['_portfolio'] = pm.chart2;
+  EQUITY_PAID['_portfolio']    = portRows.reduce((s,r) => s + Math.abs(r.eq||0), 0);
+  _FUR_TOT['_portfolio']       = portRows.reduce((s,r) => s + Math.abs(r.fur||0), 0);
+}
+
+// Private loans and overfinancing handled natively in Notion data (knk is already net)
+const PRIV_LOANS    = {};
+const OVERFINANCING = {};
+
+// Capital base for 7% opportunity-cost line: net KNK + equity + all initial renovation
+function purchaseYearOppK(id) {
+  if (id === '_portfolio')
+    return Object.values(_NPROP).reduce((s,i) => s + purchaseYearOppK(i), 0);
+  return BE_MODEL[id].knk + (EQUITY_PAID[id]||0) + (_FUR_TOT[id]||0);
+}
+
+// Cumulative initial renovation (fur) costs realised through fractional year frac.
+// Subtracted from grossReturn to compute pureOpCF (Op CF without one-time renovation capex).
+function cumRepairsAtFrac(id, frac) {
+  const rows = id === '_portfolio'
+    ? NOTION_BE_DATA
+    : NOTION_BE_DATA.filter(r => r.property === _NPROP[id] || Object.values(_NPROP)[0] === id);
+  // For portfolio sum all; for individual filter by property
+  const filtered = id === '_portfolio'
+    ? NOTION_BE_DATA
+    : NOTION_BE_DATA.filter(r => r.property === Object.keys(_NPROP).find(k => _NPROP[k]===id));
+  return filtered.reduce((sum, r) => {
+    const amt = Math.abs(r.fur||0);
+    if (!amt) return sum;
+    if (r.year + 1 <= frac) return sum + amt;          // year fully elapsed
+    if (r.year < frac)      return sum + amt * (frac - r.year); // partial year
+    return sum;
+  }, 0);
+}
   eschweiler: {knk:13102.49, be:2030.04, pts:[{y:2020,cum:-15050.99},{y:2021,cum:-18347.97},{y:2022,cum:-16298.53},{y:2023,cum:-13999.99},{y:2024,cum:-10998.56},{y:2025,cum:-9105.21},{y:2026,cum:-6998.15},{y:2027,cum:-4863.6},{y:2028,cum:-2566.85},{y:2029,cum:-104.15},{y:2030,cum:2528.32},{y:2031,cum:5311.46},{y:2032,cum:8220.6},{y:2033,cum:11258.13},{y:2034,cum:14426.5},{y:2035,cum:17728.19},{y:2036,cum:21165.73},{y:2037,cum:24741.71},{y:2038,cum:28458.75},{y:2039,cum:32319.54},{y:2040,cum:36326.82},{y:2041,cum:40483.37},{y:2042,cum:44792.03},{y:2043,cum:49255.69},{y:2044,cum:53877.3},{y:2045,cum:58659.87},{y:2046,cum:63606.46},{y:2047,cum:68720.19},{y:2048,cum:74004.25},{y:2049,cum:79461.87},{y:2050,cum:85096.37},{y:2051,cum:90911.11},{y:2052,cum:96909.52},{y:2053,cum:103095.11},{y:2054,cum:109471.44},{y:2055,cum:116042.14},{y:2056,cum:122810.92},{y:2057,cum:129781.05},{y:2058,cum:136923.74},{y:2059,cum:144222.92},{y:2060,cum:151681.73}]},
   huegelstr: {knk:44082.98, be:2030.14, pts:[{y:2023,cum:-68163.85},{y:2024,cum:-58059.0},{y:2025,cum:-48715.62},{y:2026,cum:-39698.75},{y:2027,cum:-28111.8},{y:2028,cum:-15551.37},{y:2029,cum:-1989.65},{y:2030,cum:12602.07},{y:2031,cum:28253.44},{y:2032,cum:44995.05},{y:2033,cum:62858.49},{y:2034,cum:81876.38},{y:2035,cum:102082.4},{y:2036,cum:123511.33},{y:2037,cum:146199.1},{y:2038,cum:170182.82},{y:2039,cum:195500.82},{y:2040,cum:222192.71},{y:2041,cum:250299.4},{y:2042,cum:279863.17},{y:2043,cum:310927.71},{y:2044,cum:343538.18},{y:2045,cum:377741.24},{y:2046,cum:413585.14},{y:2047,cum:451119.74},{y:2048,cum:490396.59},{y:2049,cum:531469.01},{y:2050,cum:574353.97},{y:2051,cum:618390.98},{y:2052,cum:663337.63},{y:2053,cum:709212.1},{y:2054,cum:756032.96},{y:2055,cum:803819.13},{y:2056,cum:852589.92},{y:2057,cum:902365.02},{y:2058,cum:953164.51},{y:2059,cum:1005008.89},{y:2060,cum:1057919.05}]},
   ohmstr: {knk:29633.61, be:2032.33, pts:[{y:2023,cum:-36097.47},{y:2024,cum:-33040.06},{y:2025,cum:-31470.29},{y:2026,cum:-28363.68},{y:2027,cum:-24877.85},{y:2028,cum:-20579.6},{y:2029,cum:-15443.08},{y:2030,cum:-9441.49},{y:2031,cum:-2547.06},{y:2032,cum:5268.99},{y:2033,cum:14036.5},{y:2034,cum:23786.39},{y:2035,cum:34550.73},{y:2036,cum:46362.78},{y:2037,cum:59257.02},{y:2038,cum:73269.2},{y:2039,cum:88436.43},{y:2040,cum:104797.18},{y:2041,cum:122391.37},{y:2042,cum:141260.42},{y:2043,cum:161447.31},{y:2044,cum:182996.63},{y:2045,cum:205954.68},{y:2046,cum:230369.51},{y:2047,cum:256290.99},{y:2048,cum:283770.89},{y:2049,cum:312862.98},{y:2050,cum:343586.03},{y:2051,cum:375238.21},{y:2052,cum:407543.57},{y:2053,cum:440515.16},{y:2054,cum:474166.31},{y:2055,cum:508510.62},{y:2056,cum:543561.94},{y:2057,cum:579334.42},{y:2058,cum:615842.47},{y:2059,cum:653100.81},{y:2060,cum:691124.45}]},
