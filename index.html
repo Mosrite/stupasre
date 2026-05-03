@@ -1171,9 +1171,9 @@ function renderOverview() {
   const r2 = document.createElement('div');
   r2.className='grid'; r2.style.cssText='grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px';
   r2.innerHTML = [
-    kpiCard('Gross Return',       fp(P.grossReturn), 'Kaltmiete × 12 / Kaufpreis', vc(P.grossReturn)),
-    kpiCard('Net Return',         fp(P.netReturn),   '(Warmmiete − costs) × 12 / (Kaufpreis + KNK)', vc(P.netReturn)),
-    kpiCard('Return on Equity',   fp(P.roe),         'NOI after interest / (Equity + KNK) · excl. Eschweiler', vc(P.roe)),
+    kpiCard('Gross Rental Yield', fp(P.grossRentalYieldPct), 'Kaltmiete × 12 / Kaufpreis', vc(P.grossRentalYieldPct)),
+    kpiCard('Net Rental Yield',   fp(P.netRentalYieldPct),   '(Warmmiete − costs) × 12 / (Kaufpreis + KNK)', vc(P.netRentalYieldPct)),
+    kpiCard('Return on Equity',   fp(P.roePct),              'NOI after interest / (Equity + KNK)', vc(P.roePct)),
   ].join('');
   sec.appendChild(r2);
 
