@@ -1549,12 +1549,12 @@ function renderPropDetail(id) {
     ['Property Size',     d.size ? f(d.size,1)+' m²' : '—',         d.size ? '' : 'Size not on file',                '#9ca3af'],
     ['€/m² Purchase',     d.ppSqm ? fe(d.ppSqm) : '—',              d.size ? f(d.size,1)+'m² · '+fe(d.pp)+' pp' : 'Size unknown', '#60a5fa'],
     ['€/m² Kaltmiete/mo', d.kmSqm ? fe(d.kmSqm,2) : '—',           d.size ? f(d.size,1)+'m²' : 'Size unknown',     '#34d399'],
-    ['Monthly Cashflow',      fe(d.cf),              'Incl. NK income',                vc(d.cf)],
-    ['Total Economic Return', fe(d.tr),              'Cashflow + Tilgung',             vc(d.tr)],
-    ['Gross Margin',          fp(d.gmPct),           '',                               vc(d.gmPct)],
-    ['Net Margin',            fp(d.nmPct),           '',                               vc(d.nmPct)],
-    ['Gross Rental Yield',    fp(d.yield),           d.pp?`on €\u202f${f(d.pp)} purchase`:'Price unknown','#60a5fa'],
-    ['DSCR',                  d.dscr.toFixed(2)+'×', '> 1.0 = rent covers mortgage',  d.dscr>=1?'#34d399':'#f87171'],
+        ['Monthly Cashflow',      fe(d.cf),                  'Incl. NK income',                       vc(d.cf)],
+    ['Total Economic Return', fe(d.tr),                  'Cashflow + Tilgung',                    vc(d.tr)],
+    ['Gross Rental Yield',    fp(d.grossRentalYieldPct), d.pp?`Kaltmiete × 12 / € ${f(d.pp)}`:'', '#34d399'],
+    ['Net Rental Yield',      fp(d.netRentalYieldPct),   '(Warmmiete − costs) × 12 / (pp + KNK)', '#34d399'],
+    ['Return on Equity',      fp(d.roePct),              'NOI after interest / equity invested',   vc(d.roePct)],
+    ['DSCR',                  d.dscr.toFixed(2)+'×',     '> 1.0 = rent covers mortgage',           d.dscr>=1?'#34d399':'#f87171'],
     ['Price / Rent Ratio',    d.ptr?d.ptr.toFixed(1)+' yrs':'—','Years of rent = purchase price','#9ca3af'],
   ];
 
