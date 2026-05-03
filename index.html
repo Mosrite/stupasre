@@ -1295,12 +1295,12 @@ function renderOverview() {
       <td>${fe(d.km)}</td>
       <td style="color:#fb923c">${fe(d.opex)}</td>
       <td style="color:${vc(d.gp)};font-weight:600">${fe(d.gp)}</td>
-      <td style="color:${vc(d.grossReturn)};font-weight:600">${fp(d.grossReturn)}</td>
+      <td style="color:${vc(d.grossRentalYieldPct)};font-weight:600">${fp(d.grossRentalYieldPct)}</td>
       <td style="color:#f87171">${fe(d.mort)}</td>
       <td style="color:${vc(d.np)};font-weight:600">${fe(d.np)}</td>
-      <td style="color:${vc(d.netReturn)};font-weight:600">${fp(d.netReturn)}</td>
+      <td style="color:${vc(d.netRentalYieldPct)};font-weight:600">${fp(d.netRentalYieldPct)}</td>
       <td style="color:${vc(d.tr)};font-weight:600">${fe(d.tr)}</td>
-      <td style="color:${vc(d.roe)};font-weight:600">${fp(d.roe)}${d.roeNegEq?' <span style="color:#fbbf24;font-size:9px">⚠</span>':''}</td>
+      <td style="color:${vc(d.roePct)};font-weight:600">${fp(d.roePct)}</td>
       <td style="color:${d.dscr>=1?'#34d399':'#f87171'};font-weight:600">${d.dscr.toFixed(2)}×</td>
     </tr>`;
     if (d.note) html += `<tr><td colspan="11" style="background:#1c2535;padding:4px 10px">
