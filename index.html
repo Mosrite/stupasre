@@ -1264,17 +1264,17 @@ function renderOverview() {
   // Yield + DSCR grouped
   const yc = document.createElement('div');
   yc.className='card chart-wrap';
-  yc.innerHTML='<div class="chart-title">Gross Return (%) &amp; DSCR (×)</div>'
-    +'<div class="chart-sub">Dashed yellow line = DSCR 1.0. Gross Return = Kaltmiete × 12 / Kaufpreis.</div>';
+  yc.innerHTML='<div class="chart-title">Gross Rental Yield (%) &amp; DSCR (×)</div>'
+    +'<div class="chart-sub">Dashed yellow line = DSCR 1.0. Gross Rental Yield sourced from Notion KPIs &amp; Metrics.</div>';
   const yieldData = D.map(d=>({
     name:d.name,
-    'Gross Return %': d.grossReturn ? +d.grossReturn.toFixed(2) : 0,
+    'Gross Rental Yield %': d.grossRentalYieldPct !== null ? +d.grossRentalYieldPct.toFixed(2) : 0,
     'DSCR': +d.dscr.toFixed(2),
   }));
   yc.appendChild(makeGroupedChart({data:yieldData,
-    keys:['Gross Return %','DSCR'], colors:['#60a5fa','#a78bfa'], unit:'x'}));
+    keys:['Gross Rental Yield %','DSCR'], colors:['#60a5fa','#a78bfa'], unit:'x'}));
   { const leg=document.createElement('div'); leg.className='legend';
-    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#60a5fa"></div>Gross Return %</div>'
+    leg.innerHTML='<div class="leg-item"><div class="leg-dot" style="background:#60a5fa"></div>Gross Rental Yield %</div>'
       +'<div class="leg-item"><div class="leg-dot" style="background:#a78bfa"></div>DSCR ×</div>'
       +'<div class="leg-item"><div class="leg-dot" style="background:#fbbf24"></div>DSCR = 1.0 threshold</div>';
     yc.appendChild(leg); }
