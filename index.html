@@ -1453,9 +1453,10 @@ function renderOverview() {
   const fn = document.createElement('div');
   fn.className='footnotes';
   fn.innerHTML = `
-    <b>Gross Return</b> = (Kaltmiete × 12) / Kaufpreis. Financing and operating costs excluded.<br>
-    <b>Net Return</b> = ((Warmmiete − Hausgeld − Grundsteuer − Ø monthly repair) × 12) / (Kaufpreis + KNK).<br>
-    <b>RoE</b> = (Net operating income after mortgage interest × 12) / (Equity invested + KNK). Equity = Kaufpreis − original loan. For Eschweiler, DSL Privatkredit full payment (Zinsen + Tilgung) reduces the numerator; KNK is netted against DSL loan in the denominator. ⚠ = negative equity denominator.<br>
+    <b>Gross Rental Yield</b> = (Kaltmiete × 12) / Kaufpreis. Sourced from Notion KPIs &amp; Metrics (2025 Actual). Financing and operating costs excluded.<br>
+    <b>Net Rental Yield</b> = ((Warmmiete − Hausgeld − Grundsteuer − Ø monthly repair) × 12) / (Kaufpreis + KNK). Sourced from Notion KPIs &amp; Metrics (2025 Actual).<br>
+    <b>Return on Equity</b> = (NOI after mortgage interest) / (Equity invested + KNK). Equity = Kaufpreis − original loan. Eschweiler special treatment: DSL Privatkredit is a consumer loan — both Zinsen &amp; Tilgung reduce the numerator; KNK is netted against DSL loan in the denominator. Sourced from Notion KPIs &amp; Metrics (2025 Actual).<br>
+    Maintenance reserves used (€/m²/yr): Berlin €5.0, Eschweiler €5.5, Hügelstr. €5.5, Ohmstr. €4.5, Leipzig €5.0.<br>
     <b>Cashflow</b> = Total income (Kaltmiete + NK) − Opex − Mortgage. NK treated as income offsetting operating costs.<br>
     <b>Total Return</b> = Cashflow + Tilgung. Tilgung reduces debt and builds equity — it's not an economic loss.<br>
     <b>DSCR</b> = Pre-Financing CF (NOI) / Total Mortgage. &gt; 1.0 means operating income covers debt service.<br>
@@ -1603,7 +1604,7 @@ function renderPropDetail(id) {
   const miniKpis = document.createElement('div');
   miniKpis.className='mini-kpis';
   miniKpis.innerHTML=`
-    <div class="mini-kpi"><div class="mini-kpi-label">Gross Margin</div><div class="mini-kpi-value" style="color:${vc(d.gmPct)}">${fp(d.gmPct)}</div></div>
+    <div class="mini-kpi"><div class="mini-kpi-label">Gross Rental Yield</div><div class="mini-kpi-value" style="color:#34d399">${fp(d.grossRentalYieldPct)}</div></div>
     <div class="mini-kpi"><div class="mini-kpi-label">Cashflow</div><div class="mini-kpi-value" style="color:${vc(d.cf)}">${fe(d.cf)}</div></div>
     <div class="mini-kpi"><div class="mini-kpi-label">Total Return</div><div class="mini-kpi-value" style="color:${vc(d.tr)}">${fe(d.tr)}</div></div>`;
   rightCard.appendChild(miniKpis);
