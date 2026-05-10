@@ -1288,7 +1288,12 @@ function renderOverview() {
     const outs = tv.moveOuts.length;
     portOuts += outs; portSlots += tv.slots;
     const rate = yrs>0 ? (outs/yrs).toFixed(1) : '—';
-    const outStr = outs ? tv.moveOuts.map(m=>`<span onmouseenter="showTooltip(event,'<b>${m.name}</b><br/>Move-out: ${m.date}${m.note?' · '+m.note:''}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()" style="cursor:help;border-bottom:1px dotted #6b7280">${m.name}</span>`).join(', ')
+    const outStr = outs ? tv.moveOuts.map(m => {
+      const [yr, mo] = m.date.split('-').map(Number);
+      const lastDay = new Date(yr, mo, 0).getDate();
+      const fullDate = `${String(lastDay).padStart(2,'0')}.${String(mo).padStart(2,'0')}.${yr}`;
+      return `<span onmouseenter="showTooltip(event,'<b>${m.name}</b><br/>Move-out: ${fullDate}${m.note?' · '+m.note:''}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()" style="cursor:help;border-bottom:1px dotted #6b7280">${m.name}</span>`;
+    }).join(', ')
       : '<span style="color:#6b7280">—</span>';
     tvH += `<tr><td class="left">${d.name}</td><td>${tv.since}</td><td>${tv.slots}</td>`
       +`<td class="left" style="font-size:10px">${outStr}</td>`
