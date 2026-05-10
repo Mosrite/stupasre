@@ -1577,10 +1577,11 @@ function renderMortgages() {
       <td style="color:#f87171">${fe(m.mZi,2)}</td>
       <td style="color:#c084fc">${fe(m.mTi,2)}</td>
       <td style="color:#fca5a5">${fe(m.mMort,2)}</td>
+      <td style="color:#fbbf24;font-weight:600">${m.zinsbindung || '—'}</td>
       <td style="color:#818cf8;font-weight:600">${payoff}</td>
     </tr>`;
     if(m.id==='eschweiler'){
-      html+=`<tr><td colspan="13" style="background:#1c2535;padding:4px 10px">
+      html+=`<tr><td colspan="14" style="background:#1c2535;padding:4px 10px">
         <span style="color:#9ca3af;font-size:10px">DSL Bank Privatkredit (€13k, 3.24%, matures Dez 2030) financed the KNK. In the Break-Even model: net KNK = €102.49 (gross €13,102.49 − €13,000); Privatkredit Tilgung reduces Op CF (no property equity built). Est. Payoff above is Volksbank Immobiliar only.</span></td></tr>`;
     }
   });
