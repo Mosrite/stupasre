@@ -651,540 +651,296 @@ function formatFrac(frac) {
   return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.min(mo-1,11)]+' '+yr;
 }
 
-// ── Break-Even Data — sourced from Airtable "Break-Even Analysis_Historical Annuals" ────
-// All values are annual totals (EUR). Negative = outflow, positive = inflow.
-// Actuals (2020–2025): DKB CSV + invoice PDFs. Projections (2026+): per Airtable.
-// Columns: km=Kaltmiete, nk=NK Vorauszahlung, hg=Hausgeld, gs=Grundsteuer,
-//   ox=Other Operating, util=Utilities Landlord (landlord-paid),
-//   zi=Interest Mortgage, pzi=Private Loan Interest,
-//   pti=Private Loan Repayment (DSL Privatkredit pzi+pti combined),
-//   mc=Maintenance/Rücklage (10 €/m²/yr), fur=Initial Furnishing & Renovation (one-time),
-//   knk=Kaufnebenkosten net (purchase year only),
-//   eq=Initial Equity Invested (purchase year only).
-// ti=Redemption Mortgage excluded from Op CF (builds equity).
-const NOTION_BE_DATA = [
-  // ── Berlin (purchase Jul 2024) ────────────────────────────────────────────
-  { property:'Berlin', year:2024, source:'Actual',
-    km:4982.5, nk:466, hg:-804.8, gs:0, ox:0, util:0,
-    zi:-5024.31, pzi:0, pti:0, mc:0, fur:-5471.16, knk:-22597.4, eq:-16000, opp:-44068.56 },
-  { property:'Berlin', year:2025, source:'Actual',
-    km:18119.72, nk:1679.78, hg:-2350.92, gs:-184.44, ox:0, util:0,
-    zi:-11883.2, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-40983.76 },
-  { property:'Berlin', year:2026, source:'Projected',
-    km:18482.11, nk:1713.38, hg:-2397.94, gs:-184.44, ox:0, util:0,
-    zi:-11627.76, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-37898.96 },
-  { property:'Berlin', year:2027, source:'Projected',
-    km:18851.76, nk:1747.64, hg:-2445.9, gs:-184.44, ox:0, util:0,
-    zi:-11361.75, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-34814.16 },
-  { property:'Berlin', year:2028, source:'Projected',
-    km:19228.79, nk:1782.6, hg:-2494.82, gs:-184.44, ox:0, util:0,
-    zi:-11084.74, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-31729.36 },
-  { property:'Berlin', year:2029, source:'Projected',
-    km:19613.37, nk:1818.25, hg:-2544.71, gs:-184.44, ox:0, util:0,
-    zi:-10796.27, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-28644.56 },
-  { property:'Berlin', year:2030, source:'Projected',
-    km:20005.64, nk:1854.61, hg:-2595.61, gs:-184.44, ox:0, util:0,
-    zi:-10495.85, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-25559.76 },
-  { property:'Berlin', year:2031, source:'Projected',
-    km:20405.75, nk:1891.71, hg:-2647.52, gs:-184.44, ox:0, util:0,
-    zi:-10183.03, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-22474.97 },
-  { property:'Berlin', year:2032, source:'Projected',
-    km:20813.86, nk:1929.54, hg:-2700.47, gs:-184.44, ox:0, util:0,
-    zi:-9857.26, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-19390.17 },
-  { property:'Berlin', year:2033, source:'Projected',
-    km:21230.14, nk:1968.13, hg:-2754.48, gs:-184.44, ox:0, util:0,
-    zi:-9517.99, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-16305.37 },
-  { property:'Berlin', year:2034, source:'Projected',
-    km:21654.74, nk:2007.49, hg:-2809.57, gs:-184.44, ox:0, util:0,
-    zi:-9164.72, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-13220.57 },
-  { property:'Berlin', year:2035, source:'Projected',
-    km:22087.84, nk:2047.64, hg:-2865.76, gs:-184.44, ox:0, util:0,
-    zi:-8796.82, pzi:0, pti:0, mc:-560, fur:0, knk:0, eq:0, opp:-10135.77 },
-  // ── Eschweiler (purchase Jan 2021; pre-purchase costs in 2020) ────────────
-  { property:'Eschweiler', year:2020, source:'Actual',
-    km:0, nk:0, hg:0, gs:0, ox:-2677.7, util:0,
-    zi:0, pzi:0, pti:0, mc:0, fur:0, knk:0, eq:0, opp:-881.83 },
-  { property:'Eschweiler', year:2021, source:'Actual',
-    km:2567.51, nk:604.37, hg:-1595, gs:-168.44, ox:0, util:0,
-    zi:-1682.93, pzi:0, pti:-1402.85, mc:-410, fur:-779.34, knk:-102.49, eq:0, opp:-881.83 },
-  { property:'Eschweiler', year:2022, source:'Actual',
-    km:4795.3, nk:1115.76, hg:-1740, gs:-168.44, ox:0, util:0,
-    zi:-1772.69, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-820.1 },
-  { property:'Eschweiler', year:2023, source:'Actual',
-    km:4834.8, nk:1315.62, hg:-1856, gs:-168.44, ox:0, util:0,
-    zi:-1705.1, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-758.37 },
-  { property:'Eschweiler', year:2024, source:'Actual',
-    km:4891.22, nk:1594.44, hg:-2208, gs:-168.44, ox:0, util:0,
-    zi:-1635.7, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-696.65 },
-  { property:'Eschweiler', year:2025, source:'Actual',
-    km:4989.06, nk:1610.94, hg:-2208, gs:-271.9, ox:0, util:0,
-    zi:-1564.59, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-634.92 },
-  { property:'Eschweiler', year:2026, source:'Projected',
-    km:5088.84, nk:1643.16, hg:-2252.16, gs:-271.9, ox:0, util:0,
-    zi:-1491.62, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-573.19 },
-  { property:'Eschweiler', year:2027, source:'Projected',
-    km:5190.62, nk:1676.02, hg:-2297.2, gs:-271.9, ox:0, util:0,
-    zi:-1416.78, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-511.46 },
-  { property:'Eschweiler', year:2028, source:'Projected',
-    km:5294.43, nk:1709.54, hg:-2343.15, gs:-271.9, ox:0, util:0,
-    zi:-1339.99, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-449.73 },
-  { property:'Eschweiler', year:2029, source:'Projected',
-    km:5400.32, nk:1743.73, hg:-2390.01, gs:-271.9, ox:0, util:0,
-    zi:-1261.23, pzi:0, pti:-1524, mc:-410, fur:0, knk:0, eq:0, opp:-388.01 },
-  { property:'Eschweiler', year:2030, source:'Projected',
-    km:5508.33, nk:1778.61, hg:-2437.81, gs:-271.9, ox:0, util:0,
-    zi:-1180.37, pzi:0, pti:-123.34, mc:-410, fur:0, knk:0, eq:0, opp:-326.28 },
-  { property:'Eschweiler', year:2031, source:'Projected',
-    km:5618.49, nk:1814.18, hg:-2486.57, gs:-271.9, ox:0, util:0,
-    zi:-1116.57, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:-264.55 },
-  { property:'Eschweiler', year:2032, source:'Projected',
-    km:5730.86, nk:1850.46, hg:-2536.3, gs:-271.9, ox:0, util:0,
-    zi:-1081.89, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:-202.82 },
-  { property:'Eschweiler', year:2033, source:'Projected',
-    km:5845.48, nk:1887.47, hg:-2587.02, gs:-271.9, ox:0, util:0,
-    zi:-1046.95, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:-141.09 },
-  { property:'Eschweiler', year:2034, source:'Projected',
-    km:5962.39, nk:1925.22, hg:-2638.76, gs:-271.9, ox:0, util:0,
-    zi:-1011.46, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:-79.36 },
-  { property:'Eschweiler', year:2035, source:'Projected',
-    km:6081.64, nk:1963.73, hg:-2691.54, gs:-271.9, ox:0, util:0,
-    zi:-975.38, pzi:0, pti:0, mc:-410, fur:0, knk:0, eq:0, opp:-17.64 },
-  // ── Hügelstr. Frankfurt (purchase Jun 2023) ───────────────────────────────
-  { property:'Huegelstr', year:2023, source:'Actual',
-    km:11115, nk:2704, hg:-3300, gs:0, ox:0, util:-279.99,
-    zi:-9823.86, pzi:0, pti:0, mc:-1120, fur:-26900.26, knk:-44082.98, eq:0, opp:-70983.24 },
-  { property:'Huegelstr', year:2024, source:'Actual',
-    km:27840, nk:6840, hg:-6760, gs:-287.12, ox:0, util:-223.84,
-    zi:-16565.9, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-66014.41 },
-  { property:'Huegelstr', year:2025, source:'Actual',
-    km:28125.3, nk:6840, hg:-7080, gs:-243.57, ox:0, util:-173.47,
-    zi:-16206.28, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-61045.59 },
-  { property:'Huegelstr', year:2026, source:'Projected',
-    km:28687.81, nk:6976.8, hg:-7221.6, gs:-243.57, ox:0, util:-176.94,
-    zi:-15831.89, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-56076.76 },
-  { property:'Huegelstr', year:2027, source:'Projected',
-    km:29261.56, nk:7116.34, hg:-7366.03, gs:-243.57, ox:0, util:-180.48,
-    zi:-15442.14, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-51107.93 },
-  { property:'Huegelstr', year:2028, source:'Projected',
-    km:29846.79, nk:7258.66, hg:-7513.35, gs:-243.57, ox:0, util:-184.09,
-    zi:-15036.35, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-46139.11 },
-  { property:'Huegelstr', year:2029, source:'Projected',
-    km:30443.73, nk:7403.84, hg:-7663.62, gs:-243.57, ox:0, util:-187.77,
-    zi:-14613.95, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-41170.28 },
-  { property:'Huegelstr', year:2030, source:'Projected',
-    km:31052.6, nk:7551.91, hg:-7816.89, gs:-243.57, ox:0, util:-191.52,
-    zi:-14174.19, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-36201.45 },
-  { property:'Huegelstr', year:2031, source:'Projected',
-    km:31673.66, nk:7702.95, hg:-7973.23, gs:-243.57, ox:0, util:-195.36,
-    zi:-13716.37, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-31232.63 },
-  { property:'Huegelstr', year:2032, source:'Projected',
-    km:32307.13, nk:7857.01, hg:-8132.69, gs:-243.57, ox:0, util:-199.26,
-    zi:-13239.75, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-26263.8 },
-  { property:'Huegelstr', year:2033, source:'Projected',
-    km:32953.27, nk:8014.15, hg:-8295.35, gs:-243.57, ox:0, util:-203.25,
-    zi:-12743.6, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-21294.97 },
-  { property:'Huegelstr', year:2034, source:'Projected',
-    km:33612.34, nk:8174.43, hg:-8461.26, gs:-243.57, ox:0, util:-207.31,
-    zi:-12227.05, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-16326.15 },
-  { property:'Huegelstr', year:2035, source:'Projected',
-    km:34284.58, nk:8337.92, hg:-8630.48, gs:-243.57, ox:0, util:-211.46,
-    zi:-11689.31, pzi:0, pti:0, mc:-1120, fur:0, knk:0, eq:0, opp:-11357.32 },
-  // ── Ohmstraße Frankfurt (purchase Sep 2023) ───────────────────────────────
-  { property:'Ohmstr', year:2023, source:'Actual',
-    km:1750, nk:225, hg:-875.85, gs:0, ox:0, util:0,
-    zi:-2850.96, pzi:0, pti:0, mc:0, fur:-5672.95, knk:-29633.61, eq:0, opp:-35306.56 },
-  { property:'Ohmstr', year:2024, source:'Actual',
-    km:20127.5, nk:3322.5, hg:-3503.4, gs:-242.4, ox:0, util:0,
-    zi:-16902.88, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-32835.1 },
-  { property:'Ohmstr', year:2025, source:'Actual',
-    km:20469.9, nk:3177.87, hg:-3503.4, gs:-256.4, ox:0, util:0,
-    zi:-16544.21, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-30363.64 },
-  { property:'Ohmstr', year:2026, source:'Projected',
-    km:20879.3, nk:3241.43, hg:-3573.47, gs:-256.4, ox:0, util:0,
-    zi:-16169.87, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-27892.18 },
-  { property:'Ohmstr', year:2027, source:'Projected',
-    km:21296.88, nk:3306.26, hg:-3644.94, gs:-256.4, ox:0, util:0,
-    zi:-15779.18, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-25420.72 },
-  { property:'Ohmstr', year:2028, source:'Projected',
-    km:21722.82, nk:3372.38, hg:-3717.84, gs:-256.4, ox:0, util:0,
-    zi:-15371.47, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-22949.26 },
-  { property:'Ohmstr', year:2029, source:'Projected',
-    km:22157.28, nk:3439.83, hg:-3792.19, gs:-256.4, ox:0, util:0,
-    zi:-14945.94, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-20477.8 },
-  { property:'Ohmstr', year:2030, source:'Projected',
-    km:22600.42, nk:3508.63, hg:-3868.04, gs:-256.4, ox:0, util:0,
-    zi:-14501.85, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-18006.35 },
-  { property:'Ohmstr', year:2031, source:'Projected',
-    km:23052.43, nk:3578.8, hg:-3945.4, gs:-256.4, ox:0, util:0,
-    zi:-14038.37, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-15534.89 },
-  { property:'Ohmstr', year:2032, source:'Projected',
-    km:23513.48, nk:3650.37, hg:-4024.31, gs:-256.4, ox:0, util:0,
-    zi:-13554.64, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-13063.43 },
-  { property:'Ohmstr', year:2033, source:'Projected',
-    km:23983.75, nk:3723.38, hg:-4104.79, gs:-256.4, ox:0, util:0,
-    zi:-13049.83, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-10591.97 },
-  { property:'Ohmstr', year:2034, source:'Projected',
-    km:24463.43, nk:3797.85, hg:-4186.89, gs:-256.4, ox:0, util:0,
-    zi:-12522.96, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-8120.51 },
-  { property:'Ohmstr', year:2035, source:'Projected',
-    km:24952.69, nk:3873.81, hg:-4270.63, gs:-256.4, ox:0, util:0,
-    zi:-11973.11, pzi:0, pti:0, mc:-750, fur:0, knk:0, eq:0, opp:-5649.05 },
-  // ── Leipzig (purchase Nov 2023) ───────────────────────────────────────────
-  { property:'Leipzig', year:2023, source:'Actual',
-    km:1540, nk:480, hg:-1068, gs:-21.62, ox:0, util:0,
-    zi:-1283.21, pzi:0, pti:0, mc:-565, fur:-5862.1, knk:-9795.25, eq:-7000, opp:-22657.35 },
-  { property:'Leipzig', year:2024, source:'Actual',
-    km:9317.5, nk:2880, hg:-4257, gs:-86.48, ox:0, util:0,
-    zi:-5067.42, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-21071.34 },
-  { property:'Leipzig', year:2025, source:'Actual',
-    km:9699.7, nk:2880, hg:-4236, gs:-119.25, ox:0, util:0,
-    zi:-4959.45, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-19485.32 },
-  { property:'Leipzig', year:2026, source:'Projected',
-    km:9893.69, nk:2937.6, hg:-4320.72, gs:-119.25, ox:0, util:0,
-    zi:-4846.87, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-17899.31 },
-  { property:'Leipzig', year:2027, source:'Projected',
-    km:10091.57, nk:2996.35, hg:-4407.13, gs:-119.25, ox:0, util:0,
-    zi:-4729.51, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-16313.29 },
-  { property:'Leipzig', year:2028, source:'Projected',
-    km:10293.4, nk:3056.28, hg:-4495.28, gs:-119.25, ox:0, util:0,
-    zi:-4607.13, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-14727.28 },
-  { property:'Leipzig', year:2029, source:'Projected',
-    km:10499.27, nk:3117.4, hg:-4585.18, gs:-119.25, ox:0, util:0,
-    zi:-4479.54, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-13141.26 },
-  { property:'Leipzig', year:2030, source:'Projected',
-    km:10709.25, nk:3179.75, hg:-4676.89, gs:-119.25, ox:0, util:0,
-    zi:-4346.52, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-11555.25 },
-  { property:'Leipzig', year:2031, source:'Projected',
-    km:10923.44, nk:3243.35, hg:-4770.42, gs:-119.25, ox:0, util:0,
-    zi:-4207.8, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-9969.23 },
-  { property:'Leipzig', year:2032, source:'Projected',
-    km:11141.91, nk:3308.21, hg:-4865.83, gs:-119.25, ox:0, util:0,
-    zi:-4063.23, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-8383.22 },
-  { property:'Leipzig', year:2033, source:'Projected',
-    km:11364.74, nk:3374.38, hg:-4963.15, gs:-119.25, ox:0, util:0,
-    zi:-3912.47, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-6797.21 },
-  { property:'Leipzig', year:2034, source:'Projected',
-    km:11592.04, nk:3441.87, hg:-5062.41, gs:-119.25, ox:0, util:0,
-    zi:-3755.29, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-5211.19 },
-  { property:'Leipzig', year:2035, source:'Projected',
-    km:11823.88, nk:3510.7, hg:-5163.66, gs:-119.25, ox:0, util:0,
-    zi:-3591.43, pzi:0, pti:0, mc:-565, fur:0, knk:0, eq:0, opp:-3625.18 },
+
+// ── Break-Even Data — sourced from Airtable "Break-Even Analysis_Historical Annuals" ──
+// Fields: prop, year, source (Actual|Projected), beAll (Break Even_All €), oppCost (Opportunity Costs €), progress (0–1+)
+const AT_BE = [
+  // Berlin (purchase Jul 2024)
+  {prop:'berlin',year:2024,source:'Actual',   beAll:-45009.17,oppCost:-44068.56,progress:-0.0213,equityPaid:-16000},
+  {prop:'berlin',year:2025,source:'Actual',   beAll:-40188.23,oppCost:-40983.76,progress: 0.0881},
+  {prop:'berlin',year:2026,source:'Projected',beAll:-34762.88,oppCost:-37898.96,progress: 0.2112},
+  {prop:'berlin',year:2027,source:'Projected',beAll:-28715.57,oppCost:-34814.16,progress: 0.3484},
+  {prop:'berlin',year:2028,source:'Projected',beAll:-22028.18,oppCost:-31729.36,progress: 0.5001},
+  {prop:'berlin',year:2029,source:'Projected',beAll:-14681.98,oppCost:-28644.56,progress: 0.6668},
+  {prop:'berlin',year:2030,source:'Projected',beAll: -6657.63,oppCost:-25559.76,progress: 0.8489},
+  {prop:'berlin',year:2031,source:'Projected',beAll:  2064.84,oppCost:-22474.97,progress: 1},
+  {prop:'berlin',year:2032,source:'Projected',beAll: 11506.07,oppCost:-19390.17,progress: 1},
+  {prop:'berlin',year:2033,source:'Projected',beAll: 21687.43,oppCost:-16305.37,progress: 1},
+  {prop:'berlin',year:2034,source:'Projected',beAll: 32630.93,oppCost:-13220.57,progress: 1},
+  {prop:'berlin',year:2035,source:'Projected',beAll: 44359.39,oppCost:-10135.77,progress: 1},
+  // Eschweiler (purchase 2021)
+  {prop:'eschweiler',year:2021,source:'Actual',   beAll: -2969.17,oppCost:  -881.83,progress:-2.3671},
+  {prop:'eschweiler',year:2022,source:'Actual',   beAll: -2673.24,oppCost:  -820.10,progress:-2.0315},
+  {prop:'eschweiler',year:2023,source:'Actual',   beAll: -2186.36,oppCost:  -758.37,progress:-1.4793},
+  {prop:'eschweiler',year:2024,source:'Actual',   beAll: -1646.84,oppCost:  -696.65,progress:-0.8675},
+  {prop:'eschweiler',year:2025,source:'Actual',   beAll: -1025.33,oppCost:  -634.92,progress:-0.1627},
+  {prop:'eschweiler',year:2026,source:'Projected',beAll:  -243.01,oppCost:  -573.19,progress: 0.7244},
+  {prop:'eschweiler',year:2027,source:'Projected',beAll:   703.75,oppCost:  -511.46,progress: 1},
+  {prop:'eschweiler',year:2028,source:'Projected',beAll:  1818.68,oppCost:  -449.73,progress: 1},
+  {prop:'eschweiler',year:2029,source:'Projected',beAll:  3105.59,oppCost:  -388.01,progress: 1},
+  {prop:'eschweiler',year:2030,source:'Projected',beAll:  5969.11,oppCost:  -326.28,progress: 1},
+  {prop:'eschweiler',year:2031,source:'Projected',beAll:  9116.74,oppCost:  -264.55,progress: 1},
+  {prop:'eschweiler',year:2032,source:'Projected',beAll: 12397.97,oppCost:  -202.82,progress: 1},
+  {prop:'eschweiler',year:2033,source:'Projected',beAll: 15815.05,oppCost:  -141.09,progress: 1},
+  {prop:'eschweiler',year:2034,source:'Projected',beAll: 19370.54,oppCost:   -79.36,progress: 1},
+  {prop:'eschweiler',year:2035,source:'Projected',beAll: 23067.09,oppCost:   -17.64,progress: 1},
+  // Hügelstr EG + Mansarde (purchase 2023)
+  {prop:'huegelstr',year:2023,source:'Actual',   beAll:-71688.09,oppCost:-70983.24,progress:-0.0099},
+  {prop:'huegelstr',year:2024,source:'Actual',   beAll:-61964.95,oppCost:-66014.41,progress: 0.1270},
+  {prop:'huegelstr',year:2025,source:'Actual',   beAll:-51822.97,oppCost:-61045.59,progress: 0.2699},
+  {prop:'huegelstr',year:2026,source:'Projected',beAll:-40752.36,oppCost:-56076.76,progress: 0.4259},
+  {prop:'huegelstr',year:2027,source:'Projected',beAll:-28726.68,oppCost:-51107.93,progress: 0.5953},
+  {prop:'huegelstr',year:2028,source:'Projected',beAll:-15718.59,oppCost:-46139.11,progress: 0.7786},
+  {prop:'huegelstr',year:2029,source:'Projected',beAll: -1699.93,oppCost:-41170.28,progress: 0.9761},
+  {prop:'huegelstr',year:2030,source:'Projected',beAll: 13358.41,oppCost:-36201.45,progress: 1},
+  {prop:'huegelstr',year:2031,source:'Projected',beAll: 29486.49,oppCost:-31232.63,progress: 1},
+  {prop:'huegelstr',year:2032,source:'Projected',beAll: 46715.36,oppCost:-26263.80,progress: 1},
+  {prop:'huegelstr',year:2033,source:'Projected',beAll: 65077.01,oppCost:-21294.97,progress: 1},
+  {prop:'huegelstr',year:2034,source:'Projected',beAll: 84604.59,oppCost:-16326.15,progress: 1},
+  {prop:'huegelstr',year:2035,source:'Projected',beAll:105332.27,oppCost:-11357.32,progress: 1},
+  // Ohmstraße (purchase 2023)
+  {prop:'ohmstr',year:2023,source:'Actual',   beAll:-37808.37,oppCost:-35306.56,progress:-0.0405},
+  {prop:'ohmstr',year:2024,source:'Actual',   beAll:-35757.05,oppCost:-32835.10,progress: 0.0575},
+  {prop:'ohmstr',year:2025,source:'Actual',   beAll:-33163.29,oppCost:-30363.64,progress: 0.1767},
+  {prop:'ohmstr',year:2026,source:'Projected',beAll:-29792.30,oppCost:-27892.18,progress: 0.3082},
+  {prop:'ohmstr',year:2027,source:'Projected',beAll:-25619.68,oppCost:-25420.72,progress: 0.4524},
+  {prop:'ohmstr',year:2028,source:'Projected',beAll:-20620.19,oppCost:-22949.26,progress: 0.6097},
+  {prop:'ohmstr',year:2029,source:'Projected',beAll:-14767.61,oppCost:-20477.80,progress: 0.7804},
+  {prop:'ohmstr',year:2030,source:'Projected',beAll: -8034.85,oppCost:-18006.35,progress: 0.9649},
+  {prop:'ohmstr',year:2031,source:'Projected',beAll:  -393.79,oppCost:-15534.89,progress: 1},
+  {prop:'ohmstr',year:2032,source:'Projected',beAll:  8184.71,oppCost:-13063.43,progress: 1},
+  {prop:'ohmstr',year:2033,source:'Projected',beAll: 17730.82,oppCost:-10591.97,progress: 1},
+  {prop:'ohmstr',year:2034,source:'Projected',beAll: 28275.85,oppCost: -8120.51,progress: 1},
+  {prop:'ohmstr',year:2035,source:'Projected',beAll: 39852.21,oppCost: -5649.05,progress: 1},
+  // Leipzig (purchase 2023)
+  {prop:'leipzig',year:2023,source:'Actual',   beAll:-23575.18,oppCost:-22657.35,progress:-0.0709,equityPaid:-7000},
+  {prop:'leipzig',year:2024,source:'Actual',   beAll:-21353.58,oppCost:-21071.34,progress:-0.0128},
+  {prop:'leipzig',year:2025,source:'Actual',   beAll:-18653.58,oppCost:-19485.32,progress: 0.0607},
+  {prop:'leipzig',year:2026,source:'Projected',beAll:-15674.13,oppCost:-17899.31,progress: 0.1562},
+  {prop:'leipzig',year:2027,source:'Projected',beAll:-12407.10,oppCost:-16313.29,progress: 0.2744},
+  {prop:'leipzig',year:2028,source:'Projected',beAll: -8844.08,oppCost:-14727.28,progress: 0.4160},
+  {prop:'leipzig',year:2029,source:'Projected',beAll: -4976.38,oppCost:-13141.26,progress: 0.5817},
+  {prop:'leipzig',year:2030,source:'Projected',beAll:  -795.04,oppCost:-11555.25,progress: 0.7724},
+  {prop:'leipzig',year:2031,source:'Projected',beAll:  3709.28,oppCost: -9969.23,progress: 0.9888},
+  {prop:'leipzig',year:2032,source:'Projected',beAll:  8546.09,oppCost: -8383.22,progress: 1},
+  {prop:'leipzig',year:2033,source:'Projected',beAll: 13725.34,oppCost: -6797.21,progress: 1},
+  {prop:'leipzig',year:2034,source:'Projected',beAll: 19257.30,oppCost: -5211.19,progress: 1},
+  {prop:'leipzig',year:2035,source:'Projected',beAll: 25152.54,oppCost: -3625.18,progress: 1},
 ];
 
-// ── Model builders ───────────────────────────────────────────────────────────
-// Recompute break-even year from pts array and KNK baseline
-function recomputeBE(pts, knk) {
-  let prevFrac = pts[0].y, prevCum = -knk;
-  for (const p of pts) {
-    const frac = p.y + 1;
-    if (prevCum < 0 && p.cum >= 0) {
-      const t = (-prevCum) / (p.cum - prevCum);
-      return +(prevFrac + t * (frac - prevFrac)).toFixed(4);
-    }
-    prevFrac = frac; prevCum = p.cum;
-  }
-  return null;
-}
+// ── Initial Furnishing & Renovation detail — sourced from Airtable "Initial Furnishing & Renovation" ──
+// Mansarde (recwnqvYyHjPlff1f) merged into huegelstr group.
+const AT_FUR_DETAIL = {
+  berlin: [
+    {desc:'Kühlschrank Hanseatic HKGK17954DWDI',           party:'OTTO',                      date:'11.09.2024', amount:  372.95},
+    {desc:'WE-Übernahme, Übergabe, Küchenanlieferung',      party:'DLX Sandra Matschuck',      date:'19.09.2024', amount:  298.21},
+    {desc:'Einbauküche inkl. Waschmaschine',                party:'Kitchennette Marcel Peter', date:'17.08.2024', amount: 4800.00},
+  ],
+  eschweiler: [
+    {desc:'Malerarbeiten, Laminat, Duschtasse + Armaturen, Fliesen', party:'Johnen Haustechnik', date:'11.12.2021', amount: 1531.34},
+    {desc:'Einbauküche (Anschaffung)',                                party:'unbekannt',           date:'08.07.2021', amount: 2248.00},
+  ],
+  huegelstr: [
+    {desc:'Handwerkerarbeiten EG — Renovierung, Bad, Tapeten, Türen', party:'J.-A. Nosek',          date:'12.07.2023', amount:12316.50},
+    {desc:'Gorenje Waschmaschine WNHPI74SCPS',                        party:'OTTO',                  date:'23.06.2023', amount:  353.95},
+    {desc:'Gorenje Kühl-/Gefrierkombination RK4182PS4',               party:'OTTO',                  date:'30.06.2023', amount:  359.00},
+    {desc:'Einbau Waschmaschine Service',                              party:'OTTO',                  date:'04.07.2023', amount:   15.00},
+    {desc:'Reparatur Waschmaschinenanschluss',                         party:'Ing. R. Gruner GmbH',  date:'02.08.2023', amount:  258.09},
+    {desc:'Einbauküche EG (Möbelland Hochtaunus)',                     party:'Möbelland Hochtaunus', date:'27.05.2023', amount: 4000.00},
+    {desc:'Küche + Bad Mansarde (J.-A. Nosek)',                        party:'J.-A. Nosek',           date:'10.08.2023', amount: 1047.20},
+    {desc:'Gorenje Kühlschrank RB39FPW4 — Mansarde',                  party:'OTTO',                  date:'23.06.2023', amount:  199.00},
+    {desc:'Router TP-Link TL-MR6400 4G LTE — Mansarde',              party:'Amazon',                date:'23.06.2023', amount:   64.90},
+    {desc:'Ausstattung Mansarde Küche/Haushalt',                       party:'Amazon',                date:'16.07.2023', amount:  102.39},
+    {desc:'Mikrowelle + Backofen MD 15501 — Mansarde',                party:'Medion',                date:'24.06.2023', amount:  149.99},
+    {desc:'Miniküche OPTIkompakt Oslo214 — Mansarde',                 party:'Hornbach',              date:'30.06.2023', amount:  358.00},
+    {desc:'Router TP-Link TL-MR6400 — Mansarde',                     party:'Amazon',                date:'23.06.2023', amount:   64.90},
+    {desc:'Mikrowelle + Backofen MD 15501 (Medion) — Mansarde',      party:'Medion',                date:'24.06.2023', amount:  149.99},
+    {desc:'Miniküche OPTIkompakt Oslo214 100cm — Mansarde',          party:'Hornbach',              date:'30.06.2023', amount:  358.00},
+    {desc:'Wandspiegel SoBuy FRG129 — Mansarde',                     party:'OTTO',                  date:'01.08.2023', amount:   29.95},
+    {desc:'Handwerkerarbeiten OG — Renovierung, Fliesen, Laminat',   party:'J.-A. Nosek',           date:'12.07.2023', amount: 6227.27},
+    {desc:'Erstausstattung Mansarde — IKEA',                          party:'IKEA',                  date:'16.07.2023', amount:  846.13},
+  ],
+  ohmstr: [
+    {desc:'Einbauküche Nobilia EBK',                                  party:'Mira Küchen GmbH',      date:'27.11.2023', amount: 4200.00},
+    {desc:'Duschabtrennung + Spiegel LED + Toilettenhalter',          party:'J.-A. Nosek',           date:'28.11.2023', amount:  800.00},
+    {desc:'Amica Kühl-/Gefrierkombination KGCL 384',                  party:'OTTO',                  date:'06.11.2023', amount:  338.95},
+    {desc:'Gorenje Waschmaschine WNHPI74SCPS/DE + Anschluss',        party:'OTTO',                  date:'06.11.2023', amount:  334.00},
+  ],
+  leipzig: [
+    {desc:'Einbauküche (Ratiomat Einbauküchen)',                       party:'Ratiomat',              date:'17.07.2023', amount: 4388.00},
+    {desc:'Reparatur defekte Herddose',                                party:'Fischer Haustechnik',   date:'20.11.2023', amount:   82.13},
+    {desc:'Koordination Anschluss Waschmaschine',                      party:'Homewise GmbH',         date:'01.12.2023', amount:   59.50},
+    {desc:'Amica Kühl-/Gefrierkombination KGCL 384',                  party:'OTTO',                  date:'31.10.2023', amount:  299.00},
+    {desc:'Gorenje Waschmaschine WNHPI74SCPS/DE',                     party:'OTTO',                  date:'31.10.2023', amount:  358.95},
+    {desc:'Kombi-Eckventil + Monteur Bad',                             party:'Fa. Reich / Homewise',  date:'10.11.2023', amount:  133.95},
+    {desc:'Organisation Elektroarbeiten Küche',                        party:'Homewise GmbH',         date:'02.12.2023', amount:   89.25},
+    {desc:'Amica Kühl-/Gefrierkombination KGCL 384',                  party:'OTTO',                  date:'31.10.2023', amount:  299.00},
+    {desc:'Organisation Küchenmontage',                                party:'Homewise GmbH',         date:'27.11.2023', amount:   89.25},
+    {desc:'Anschluss Waschmaschine',                                   party:'Homewise GmbH',         date:'01.12.2023', amount:   63.07},
+  ],
+};
 
-// Build Chart1 and Chart2 models from an array of Notion rows (sorted by year)
-function buildNotionModels(rows) {
-  // KNK (net of private loans), equity, and fur totals from Notion
-  const knk1    = rows.reduce((s,r) => s + Math.abs(r.knk||0), 0);
-  const eqTotal = rows.reduce((s,r) => s + Math.abs(r.eq||0),  0);
-  // Chart 1 (BE_MODEL): Op CF including initial renovation (fur); starting deficit = KNK
-  let cum1 = 0;
-  const pts1 = rows.map(r => {
-    cum1 += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti + r.fur;
-    return { y: r.year, cum: +(-knk1 + cum1).toFixed(2) };
-  });
-  // Chart 2 (BE_TOTAL_MODEL): Op CF excluding fur; starting deficit = KNK + equity + total fur.
-  // All renovation capital is included in the starting deficit so the property line and the
-  // 7% opportunity-cost line both start at the same point: −(KNK + equity + fur).
-  const totalFur2 = rows.reduce((s,r) => s + Math.abs(r.fur||0), 0);
-  const knk2 = knk1 + eqTotal + totalFur2;   // = purchaseYearOppK(id)
-  let cum2 = 0;
-  const pts2 = rows.map(r => {
-    cum2 += r.km + r.nk + r.hg + r.gs + r.ox + (r.util||0) + r.zi + r.pzi + r.mc + r.pti;
-    return { y: r.year, cum: +(-knk2 + cum2).toFixed(2) };
-  });
-  return {
-    chart1: { knk: knk1, pts: pts1, be: recomputeBE(pts1, knk1) },
-    chart2: { knk: knk2, pts: pts2, be: recomputeBE(pts2, knk2), totalCapital: knk2 },
-  };
-}
+// ── Break-Even Line Chart ─────────────────────────────────────────────────────
+// propData: [{id, label, color, rows}] where rows are AT_BE records for that property.
+// Solid line = Actual beAll, dashed = last Actual → Projected beAll, dotted = oppCost (all rows, 0.45 opacity).
+function makeBreakEvenLineChart({propData, W=900, H=340, ml=75, mr=140, mt=20, mb=35}) {
+  const iW = W - ml - mr;
+  const iH = H - mt - mb;
 
-// Property Notion name → dashboard ID mapping
-const _NPROP = { Berlin:'berlin', Eschweiler:'eschweiler', Huegelstr:'huegelstr', Ohmstr:'ohmstr', Leipzig:'leipzig' };
+  // X range
+  const allYears = propData.flatMap(p => p.rows.map(r => r.year));
+  const minX = Math.min(...allYears);
+  const maxX = Math.max(...allYears);
 
-// Build per-property BE_MODEL, BE_TOTAL_MODEL and EQUITY_PAID from Notion data
-const BE_MODEL = {}, BE_TOTAL_MODEL = {}, EQUITY_PAID = {}, _FUR_TOT = {};
-
-Object.entries(_NPROP).forEach(([notionName, id]) => {
-  const rows = NOTION_BE_DATA.filter(r => r.property === notionName).sort((a,b) => a.year - b.year);
-  const m = buildNotionModels(rows);
-  BE_MODEL[id]       = m.chart1;
-  BE_TOTAL_MODEL[id] = m.chart2;
-  EQUITY_PAID[id]    = rows.reduce((s,r) => s + Math.abs(r.eq||0), 0);
-  _FUR_TOT[id]       = rows.reduce((s,r) => s + Math.abs(r.fur||0), 0);
-});
-
-// Portfolio aggregate: sum all properties year by year
-{
-  const allYears = [...new Set(NOTION_BE_DATA.map(r => r.year))].sort((a,b) => a-b);
-  const portRows = allYears.map(y => {
-    const yrs = NOTION_BE_DATA.filter(r => r.year === y);
-    return yrs.reduce((acc,r) => ({
-      year:y, property:'_portfolio',
-      source: r.source === 'Projected' ? 'Projected' : acc.source,
-      km: acc.km+r.km,  nk: acc.nk+r.nk, hg: acc.hg+r.hg,
-      gs: acc.gs+r.gs,  ox: acc.ox+r.ox,  util: acc.util+(r.util||0),
-      zi: acc.zi+r.zi,  pzi: acc.pzi+r.pzi, pti: acc.pti+r.pti,
-      mc: acc.mc+r.mc,  fur: acc.fur+r.fur, knk: acc.knk+r.knk,
-      eq: acc.eq+r.eq,  opp: acc.opp+r.opp,
-    }), {year:y,property:'_portfolio',source:'Actual',km:0,nk:0,hg:0,gs:0,ox:0,util:0,zi:0,pzi:0,pti:0,mc:0,fur:0,knk:0,eq:0,opp:0});
-  });
-  const pm = buildNotionModels(portRows);
-  BE_MODEL['_portfolio']       = pm.chart1;
-  BE_TOTAL_MODEL['_portfolio'] = pm.chart2;
-  EQUITY_PAID['_portfolio']    = portRows.reduce((s,r) => s + Math.abs(r.eq||0), 0);
-  _FUR_TOT['_portfolio']       = portRows.reduce((s,r) => s + Math.abs(r.fur||0), 0);
-}
-
-// Private loans and overfinancing handled natively in Notion data (knk is already net)
-const PRIV_LOANS    = {};
-const OVERFINANCING = {};
-
-// Capital base for 7% opportunity-cost line: net KNK + equity + all initial renovation
-function purchaseYearOppK(id) {
-  if (id === '_portfolio')
-    return Object.values(_NPROP).reduce((s,i) => s + purchaseYearOppK(i), 0);
-  return BE_MODEL[id].knk + (EQUITY_PAID[id]||0) + (_FUR_TOT[id]||0);
-}
-
-// Cumulative initial renovation (fur) costs realised through fractional year frac.
-// Subtracted from grossReturn to compute pureOpCF (Op CF without one-time renovation capex).
-function cumRepairsAtFrac(id, frac) {
-  const rows = id === '_portfolio'
-    ? NOTION_BE_DATA
-    : NOTION_BE_DATA.filter(r => r.property === _NPROP[id] || Object.values(_NPROP)[0] === id);
-  // For portfolio sum all; for individual filter by property
-  const filtered = id === '_portfolio'
-    ? NOTION_BE_DATA
-    : NOTION_BE_DATA.filter(r => r.property === Object.keys(_NPROP).find(k => _NPROP[k]===id));
-  return filtered.reduce((sum, r) => {
-    const amt = Math.abs(r.fur||0);
-    if (!amt) return sum;
-    if (r.year + 1 <= frac) return sum + amt;          // year fully elapsed
-    if (r.year < frac)      return sum + amt * (frac - r.year); // partial year
-    return sum;
-  }, 0);
-}
-
-// Decimal-year fraction → linearly interpolated cumulative (between year-end points).
-// Each pts[k] represents end-of-year-y_k. We treat (y_k+1, cum_k) as an anchor in time.
-function beCumAtFrac(model, frac) {
-  const pts = model.pts;
-  if (!pts.length) return null;
-  // Anchor: at start-of-first-year (frac = pts[0].y), cumulative = -KNK (before any Op CF).
-  // At end-of-year y_k (frac = y_k + 1), cumulative = pts[k].cum.
-  const startFrac = pts[0].y;
-  if (frac <= startFrac) return -model.knk;
-  // Build piecewise list of (frac, cum)
-  let prevFrac = startFrac, prevCum = -model.knk;
-  for (const p of pts) {
-    const endFrac = p.y + 1;
-    if (frac <= endFrac) {
-      const t = (frac - prevFrac) / (endFrac - prevFrac);
-      return prevCum + t * (p.cum - prevCum);
-    }
-    prevFrac = endFrac;
-    prevCum = p.cum;
-  }
-  return prevCum; // beyond last point
-}
-
-// Cash-flow-aware break-even timeline chart.
-// Each line is the per-property cumulative position (Op CF excl. Tilgung minus KNK)
-// over time. Solid through end-2025 (historical), dashed from 2026 (projected).
-// items: [{id, name, color, model:{knk, be, pts}}]
-// capitalLabel: label used in tooltips for the starting-capital figure ('KNK' or 'Capital Employed')
-function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, xMin=null, xMax=null, showOppCost=false, capitalLabel='KNK' }) {
-  const iW=W-ml-mr, iH=H-mt-mb;
-  const nowFrac = 2026 + 3/12;
-  // Use end-of-2026 as the solid/dashed boundary: 2026 is the current year and its
-  // full-year projected value is used, so there are no gaps up to "now".
-  const histEndFrac = 2027;
-
-  // X range (caller may override for cross-chart alignment)
-  const minX = xMin !== null ? xMin : Math.floor(Math.min(...items.map(it => it.model.pts[0].y)));
-  const validBE = items.filter(it => it.model.be != null && it.model.be < 2060).map(it => it.model.be);
-  const maxBE = validBE.length ? Math.max(...validBE) : nowFrac;
-  const maxX = xMax !== null ? xMax : Math.ceil(Math.max(maxBE, nowFrac) + 1.5);
-
-  // Y range (per-property only — exclude portfolio, which we do not plot in main chart)
-  const allCums = items.flatMap(it => it.model.pts.filter(p => p.y <= maxX).map(p => p.cum));
-  const minKNK = Math.min(...items.map(it => it.model.knk));
-  const maxKNK = Math.max(...items.map(it => it.model.knk));
-  const minCum = Math.min(-maxKNK, ...allCums);
-  // Cap Y range at the value reached at maxX to keep the chart readable
-  const yCap = items.reduce((m,it) => {
-    const v = beCumAtFrac(it.model, maxX);
-    return Math.max(m, v);
-  }, 0);
-  // Opp-cost lines now start at −K (same as property lines start at −knk).
-  // minY must accommodate the lowest opp-line start; maxY accommodates the end value (−2 formula).
-  const maxOppK   = showOppCost ? items.reduce((m,it) => Math.max(m, purchaseYearOppK(it.id)), 0) : 0;
-  const oppEndMax = showOppCost
-    ? items.reduce((m,it) => Math.max(m, purchaseYearOppK(it.id) * (Math.pow(1.07, maxX - it.model.pts[0].y) - 2)), 0)
-    : 0;
-  const minY = Math.min(minCum * 1.08, showOppCost ? -maxOppK * 1.05 : 0);
-  const maxY = Math.max(yCap * 1.1, oppEndMax * 1.05, maxKNK * 0.2, 5000);
+  // Y range (include oppCost in min, only beAll in max)
+  const allBeAll = propData.flatMap(p => p.rows.map(r => r.beAll));
+  const allOpp   = propData.flatMap(p => p.rows.map(r => r.oppCost));
+  const rawMin = Math.min(...allBeAll, ...allOpp);
+  const rawMax = Math.max(...allBeAll, 0);
+  const pad = (rawMax - rawMin) * 0.07;
+  const minY = rawMin - pad;
+  const maxY = rawMax + pad;
   const rangeY = maxY - minY;
+
+  // Nice grid step (round to nearest 5000 or 10000)
+  const roughStep = (maxY - minY) / 6;
+  const mag = Math.pow(10, Math.floor(Math.log10(Math.abs(roughStep) || 1)));
+  const niceStep = Math.ceil(roughStep / (mag * 5)) * mag * 5 || 5000;
 
   const xPx = x => ml + (x - minX) / (maxX - minX) * iW;
   const yPx = y => mt + (1 - (y - minY) / rangeY) * iH;
   const zeroY = yPx(0);
-  const histPx = xPx(histEndFrac);
 
-  const svg = el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:'overflow:visible;display:block'});
+  const svg = el('svg', {viewBox:`0 0 ${W} ${H}`, width:'100%', style:'overflow:visible;display:block'});
 
-  // Y grid
-  const yStep = Math.ceil(maxKNK / 4 / 5000) * 5000 || 5000;
-  for(let v = Math.ceil(minY/yStep)*yStep; v <= maxY + yStep/2; v += yStep){
+  // Y grid lines + labels
+  for (let v = Math.ceil(minY / niceStep) * niceStep; v <= maxY + niceStep * 0.5; v += niceStep) {
     const py = yPx(v);
-    if(py < mt-2 || py > H-mb+2) continue;
-    svg.appendChild(el('line',{x1:ml,y1:py,x2:W-mr,y2:py,stroke:'#374151','stroke-dasharray':'3,3'}));
-    svg.appendChild(el('text',{x:ml-5,y:py+3,'text-anchor':'end',fill:'#9ca3af','font-size':'9'},fs(v)));
+    if (py < mt - 2 || py > H - mb + 2) continue;
+    svg.appendChild(el('line', {x1:ml, y1:py, x2:W-mr, y2:py, stroke:'#374151', 'stroke-dasharray':'3,3'}));
+    svg.appendChild(el('text', {x:ml-5, y:py+3, 'text-anchor':'end', fill:'#9ca3af', 'font-size':'9'}, fs(v)));
   }
 
-  // Break-even (y=0) line
-  svg.appendChild(el('line',{x1:ml,y1:zeroY,x2:W-mr,y2:zeroY,stroke:'#34d399','stroke-width':'1.5'}));
-  svg.appendChild(el('text',{x:ml-5,y:zeroY-4,'text-anchor':'end',fill:'#34d399','font-size':'8','font-weight':'600'},'Break-even'));
+  // Break-even zero line
+  if (zeroY >= mt - 1 && zeroY <= H - mb + 1) {
+    svg.appendChild(el('line', {x1:ml, y1:zeroY, x2:W-mr, y2:zeroY, stroke:'#34d399', 'stroke-width':'1.5'}));
+    svg.appendChild(el('text', {x:ml-5, y:zeroY-4, 'text-anchor':'end', fill:'#34d399', 'font-size':'8', 'font-weight':'600'}, 'Break-even'));
+  }
 
   // X year ticks
   const span = maxX - minX;
-  for(let yr=minX; yr<=maxX; yr++){
+  for (let yr = minX; yr <= maxX; yr++) {
     const px = xPx(yr);
-    svg.appendChild(el('line',{x1:px,y1:mt,x2:px,y2:H-mb,stroke:'#374151','stroke-dasharray':'2,4'}));
-    if(span <= 12 || yr % 2 === 0){
-      svg.appendChild(el('text',{x:px,y:H-mb+13,'text-anchor':'middle',fill:'#9ca3af','font-size':'9'},yr));
+    svg.appendChild(el('line', {x1:px, y1:mt, x2:px, y2:H-mb, stroke:'#374151', 'stroke-dasharray':'2,4'}));
+    if (span <= 12 || yr % 2 === 0) {
+      svg.appendChild(el('text', {x:px, y:H-mb+13, 'text-anchor':'middle', fill:'#9ca3af', 'font-size':'9'}, yr));
     }
   }
 
-  // Solid/dashed boundary marker (end of 2026 — current year included via projected data)
-  if (histPx >= ml && histPx <= W-mr) {
-    svg.appendChild(el('line',{x1:histPx,y1:mt,x2:histPx,y2:H-mb,stroke:'#6b7280','stroke-width':'1','stroke-dasharray':'3,3'}));
-    svg.appendChild(el('text',{x:histPx-3,y:mt+9,'text-anchor':'end',fill:'#9ca3af','font-size':'8'},'← 2026'));
-    svg.appendChild(el('text',{x:histPx+3,y:mt+9,fill:'#9ca3af','font-size':'8'},'Forecast →'));
+  // 2026 "current year" marker
+  const nowPx = xPx(2026);
+  if (nowPx >= ml && nowPx <= W - mr) {
+    svg.appendChild(el('line', {x1:nowPx, y1:mt, x2:nowPx, y2:H-mb, stroke:'#fbbf24', 'stroke-width':'1.5', 'stroke-dasharray':'5,3'}));
+    svg.appendChild(el('text', {x:nowPx+3, y:mt+11, fill:'#fbbf24', 'font-size':'8'}, '2026 →'));
   }
 
-  // "Now" vertical marker (Apr 2026)
-  const nowPx = xPx(nowFrac);
-  svg.appendChild(el('line',{x1:nowPx,y1:mt,x2:nowPx,y2:H-mb,stroke:'#fbbf24','stroke-width':'1.5','stroke-dasharray':'5,3'}));
-  svg.appendChild(el('text',{x:nowPx+3,y:mt+19,fill:'#fbbf24','font-size':'8'},'Apr 2026'));
+  // Per-property groups
+  propData.forEach((pd, idx) => {
+    const { id, label, color, rows } = pd;
 
-  // Per-property piecewise-linear curves
-  items.forEach((it, idx) => {
-    const { color, name, model } = it;
-
-    // ── Property group (all paths + dots for this property) ────────────────
-    // Click the legend entry to toggle visibility.
     const propGroup = el('g');
+    propGroup.setAttribute('data-prop', id);
     svg.appendChild(propGroup);
 
-    // Build polyline points: start at (firstPt.y, -knk), then each (y+1, cum)
-    const polyPts = [{ frac: model.pts[0].y, cum: -model.knk }];
-    model.pts.forEach(p => {
-      if (p.y + 1 <= maxX + 0.01) polyPts.push({ frac: p.y + 1, cum: p.cum });
+    const actuals   = rows.filter(r => r.source === 'Actual');
+    const projected = rows.filter(r => r.source === 'Projected');
+
+    // Solid polyline — Actual beAll
+    if (actuals.length >= 2) {
+      const pts = actuals.map(r => xPx(r.year).toFixed(1)+','+yPx(r.beAll).toFixed(1)).join(' ');
+      propGroup.appendChild(el('polyline', {points:pts, stroke:color, 'stroke-width':'2.5', fill:'none', 'stroke-linejoin':'round'}));
+    }
+
+    // Actual point circles (filled)
+    actuals.forEach(r => {
+      const c = el('circle', {cx:xPx(r.year).toFixed(1), cy:yPx(r.beAll).toFixed(1), r:'3.5', fill:color, stroke:'#111827', 'stroke-width':'1.2'});
+      const pct = (r.progress * 100).toFixed(0);
+      c.addEventListener('mouseenter', e2 => showTooltip(e2,
+        `<b>${label} ${r.year}</b> (Actual)<br/>Break Even: ${fe(Math.round(r.beAll))}<br/>Opp. Cost (7%): ${fe(Math.round(r.oppCost))}<br/>Progress: ${pct}%`));
+      c.addEventListener('mousemove', moveTooltip);
+      c.addEventListener('mouseleave', hideTooltip);
+      propGroup.appendChild(c);
     });
 
-    // Split into solid (≤ histEndFrac) and dashed (> histEndFrac)
-    const solidPts = [], dashedPts = [];
-    polyPts.forEach(p => (p.frac <= histEndFrac + 1e-6 ? solidPts : dashedPts).push(p));
+    // Dashed polyline — last Actual point → all Projected beAll (connected, no gap)
+    const dashRows = actuals.length ? [actuals[actuals.length-1], ...projected] : projected;
+    if (dashRows.length >= 2) {
+      const pts = dashRows.map(r => xPx(r.year).toFixed(1)+','+yPx(r.beAll).toFixed(1)).join(' ');
+      propGroup.appendChild(el('polyline', {points:pts, stroke:color, 'stroke-width':'1.8', 'stroke-dasharray':'6,3', fill:'none', 'stroke-linejoin':'round'}));
+    }
 
-    // Connect solid → dashed with no gap
-    if (solidPts.length && dashedPts.length) {
-      const last = solidPts[solidPts.length - 1];
-      const next = dashedPts[0];
-      if (next.frac > histEndFrac) {
-        if (last.frac < histEndFrac) {
-          const t = (histEndFrac - last.frac) / (next.frac - last.frac);
-          const bp = { frac: histEndFrac, cum: last.cum + t * (next.cum - last.cum) };
-          solidPts.push(bp); dashedPts.unshift(bp);
-        } else {
-          dashedPts.unshift(last);
-        }
+    // Projected point circles (hollow)
+    projected.forEach(r => {
+      const c = el('circle', {cx:xPx(r.year).toFixed(1), cy:yPx(r.beAll).toFixed(1), r:'3', fill:'#111827', stroke:color, 'stroke-width':'1.5'});
+      const pct = (Math.min(1, r.progress) * 100).toFixed(0);
+      c.addEventListener('mouseenter', e2 => showTooltip(e2,
+        `<b>${label} ${r.year}</b> (Projected)<br/>Break Even: ${fe(Math.round(r.beAll))}<br/>Opp. Cost (7%): ${fe(Math.round(r.oppCost))}<br/>Progress: ${pct}%`));
+      c.addEventListener('mousemove', moveTooltip);
+      c.addEventListener('mouseleave', hideTooltip);
+      propGroup.appendChild(c);
+    });
+
+    // Thin dotted oppCost polyline — all rows
+    if (rows.length >= 2) {
+      const pts = rows.map(r => xPx(r.year).toFixed(1)+','+yPx(r.oppCost).toFixed(1)).join(' ');
+      const oLine = el('polyline', {points:pts, stroke:color, 'stroke-width':'1', 'stroke-dasharray':'2,4', fill:'none', opacity:'0.45'});
+      oLine.addEventListener('mouseenter', e2 => showTooltip(e2,
+        `<b>${label} — Opportunity Cost (7% p.a.)</b><br/>What total capital deployed would have grown to<br/>if invested in equities at 7% p.a. instead.`));
+      oLine.addEventListener('mousemove', moveTooltip);
+      oLine.addEventListener('mouseleave', hideTooltip);
+      propGroup.appendChild(oLine);
+    }
+
+    // Break-even crossing marker: interpolate between last row with beAll < 0 and first with beAll >= 0
+    let beCrossX = null;
+    for (let i = 0; i < rows.length - 1; i++) {
+      if (rows[i].beAll < 0 && rows[i+1].beAll >= 0) {
+        const t = -rows[i].beAll / (rows[i+1].beAll - rows[i].beAll);
+        beCrossX = rows[i].year + t * (rows[i+1].year - rows[i].year);
+        break;
       }
     }
-
-    const toPath = pts => pts.map((p,i) => (i===0?'M':'L')+xPx(p.frac).toFixed(2)+','+yPx(p.cum).toFixed(2)).join(' ');
-    if (solidPts.length >= 2)
-      propGroup.appendChild(el('path',{d:toPath(solidPts), stroke:color, 'stroke-width':'2.5', fill:'none'}));
-    if (dashedPts.length >= 2)
-      propGroup.appendChild(el('path',{d:toPath(dashedPts), stroke:color, 'stroke-width':'1.8', 'stroke-dasharray':'6,3', fill:'none'}));
-
-    // Break-even crossing dot
-    if (model.be != null && model.be <= maxX + 0.5) {
-      const beX = xPx(model.be);
-      const beDot = el('circle',{cx:beX,cy:zeroY,r:'5',fill:color,stroke:'#111827','stroke-width':'1.5'});
-      const beLabel = model.be <= histEndFrac ? `Broke even: <b>${formatFrac(model.be)}</b> ✓` : `Break-even: <b>${formatFrac(model.be)}</b>`;
-      beDot.addEventListener('mouseenter',e=>showTooltip(e,
-        `<b>${name}</b><br/>${beLabel}<br/>${capitalLabel}: ${fe(Math.round(model.knk))}`));
-      beDot.addEventListener('mousemove',moveTooltip);
-      beDot.addEventListener('mouseleave',hideTooltip);
-      propGroup.appendChild(beDot);
+    if (beCrossX === null && rows.length && rows[0].beAll >= 0) beCrossX = rows[0].year;
+    if (beCrossX !== null && xPx(beCrossX) >= ml && xPx(beCrossX) <= W - mr) {
+      const beYrLabel = beCrossX % 1 < 0.05 ? Math.round(beCrossX) : beCrossX.toFixed(1);
+      const bDot = el('circle', {cx:xPx(beCrossX).toFixed(1), cy:zeroY.toFixed(1), r:'5', fill:color, stroke:'#111827', 'stroke-width':'1.5'});
+      bDot.addEventListener('mouseenter', e2 => showTooltip(e2,
+        `<b>${label}</b><br/>Break-even: <b>${beYrLabel}</b><br/><span style="color:#34d399">✓ Cumulative CF crosses 0</span>`));
+      bDot.addEventListener('mousemove', moveTooltip);
+      bDot.addEventListener('mouseleave', hideTooltip);
+      propGroup.appendChild(bDot);
     }
 
-    // Now-position dot (Apr 2026)
-    const nowCum = beCumAtFrac(model, nowFrac);
-    const nowDot = el('circle',{cx:nowPx,cy:yPx(nowCum),r:'3.5',fill:color,stroke:'#111827','stroke-width':'1.2'});
-    const pct = Math.max(0, Math.min(100, 100 * (1 + nowCum / model.knk)));
-    nowDot.addEventListener('mouseenter',e=>showTooltip(e,
-      `<b>${name}</b><br/>Apr 2026: ${nowCum>=0?'+':''}${fe(Math.round(nowCum))} vs. break-even<br/>${capitalLabel}: ${fe(Math.round(model.knk))}<br/>Progress: ${pct.toFixed(0)}%`));
-    nowDot.addEventListener('mousemove',moveTooltip);
-    nowDot.addEventListener('mouseleave',hideTooltip);
-    propGroup.appendChild(nowDot);
-
-    // Start dot at purchase
-    propGroup.appendChild(el('circle',{cx:xPx(model.pts[0].y),cy:yPx(-model.knk),r:'3',fill:color,stroke:'#111827','stroke-width':'1',opacity:'0.7'}));
-
-    // Opportunity-cost line (Chart 2 only)
-    if (showOppCost) {
-      const K = purchaseYearOppK(it.id);
-      const t0 = model.pts[0].y;
-      const oppPts = [];
-      for (let yr = t0; yr <= maxX; yr += 0.5)
-        oppPts.push({ frac: yr, opp: K * (Math.pow(1.07, yr - t0) - 2) });
-      const oppPath = oppPts.map((p,i) => (i===0?'M':'L')+xPx(p.frac).toFixed(2)+','+yPx(p.opp).toFixed(2)).join(' ');
-      const oppLine = el('path',{d:oppPath,stroke:color,'stroke-width':'0.8','stroke-dasharray':'3,4',fill:'none',opacity:'0.45'});
-      const oppNow = K * (Math.pow(1.07, nowFrac - t0) - 2);
-      oppLine.addEventListener('mouseenter',e=>showTooltip(e,
-        `<b>${name} — 7% stock market alternative</b><br/>` +
-        `Capital: ${fe(Math.round(K))}<br/>` +
-        `At Apr 2026: ${oppNow >= 0 ? '+' : ''}${fe(Math.round(oppNow))} vs. capital`));
-      oppLine.addEventListener('mousemove',moveTooltip);
-      oppLine.addEventListener('mouseleave',hideTooltip);
-      propGroup.appendChild(oppLine);
-    }
-
-    // ── Legend entry (clickable — toggles this property's visibility) ──────
-    const legY = mt + 20 + idx * 26;
+    // Legend entry (clickable toggle)
+    const legY = mt + 18 + idx * 34;
     const legGroup = el('g');
     legGroup.style.cursor = 'pointer';
     legGroup.title = 'Click to show/hide';
     let hidden = false;
-    const legRect = el('rect',{x:W-mr+10,y:legY-9,width:14,height:10,fill:color,rx:'2'});
-    const ln1 = el('text',{x:W-mr+28,y:legY,fill:'#d1d5db','font-size':'10'});
-    ln1.textContent = name;
-    const ln2 = el('text',{x:W-mr+28,y:legY+11,fill:'#6b7280','font-size':'9'});
-    ln2.textContent = (model.be!=null&&model.be<=histEndFrac) ? 'Done ✓ '+formatFrac(model.be)
-      : (model.be!=null&&model.be<=maxX+0.5) ? formatFrac(model.be) : '>'+maxX;
-    legGroup.appendChild(legRect);
+    // solid swatch
+    legGroup.appendChild(el('line', {x1:W-mr+8, y1:legY-5, x2:W-mr+22, y2:legY-5, stroke:color, 'stroke-width':'2.5'}));
+    // dotted swatch (oppCost)
+    legGroup.appendChild(el('line', {x1:W-mr+8, y1:legY+3, x2:W-mr+22, y2:legY+3, stroke:color, 'stroke-width':'1', 'stroke-dasharray':'2,3', opacity:'0.5'}));
+    const ln1 = el('text', {x:W-mr+26, y:legY, fill:'#d1d5db', 'font-size':'10'});
+    ln1.textContent = label;
+    const beRow = rows.find(r => r.beAll >= 0);
+    const ln2 = el('text', {x:W-mr+26, y:legY+12, fill:'#6b7280', 'font-size':'9'});
+    ln2.textContent = beRow ? 'BE: '+beRow.year : 'BE: >2035';
     legGroup.appendChild(ln1);
     legGroup.appendChild(ln2);
     legGroup.addEventListener('click', () => {
       hidden = !hidden;
-      propGroup.style.display = hidden ? 'none' : '';
+      propGroup.style.opacity = hidden ? '0.1' : '1';
       legGroup.setAttribute('opacity', hidden ? '0.3' : '1');
     });
     svg.appendChild(legGroup);
@@ -1192,6 +948,7 @@ function makeBreakEvenChart({ items, W=900, H=380, ml=72, mr=148, mt=24, mb=38, 
 
   return svg;
 }
+
 
 // ─── TOOLTIP ────────────────────────────────────────────────────────────────
 const TT = document.getElementById('tooltip');
@@ -1218,23 +975,14 @@ function showRepairDetailTooltip(e, id, year) {
   const hdr = year ? `${name} ${year}` : name;
   showTooltip(e, `<b>Repair &amp; Maintenance — ${hdr} (invoices on file)</b><br/>${rows}<br/><hr style="border-color:#374151;margin:4px 0"/><b>Total invoiced: ${fe(total,2)}</b><br/><span style="color:#6b7280;font-size:10px">CSV accounting total may differ</span>`);
 }
-function showBERepairTooltip(e, id, ovf) {
-  const all = REPAIRS_DETAIL[id] || [];
-  const rows = all.map(t => `${t.desc} (${t.party}), ${t.date}: <b>${fe(t.amount,2)}</b>`).join('<br/>');
-  const gross = all.reduce((s,t)=>s+t.amount,0);
-  const name = id === '_portfolio' ? 'Portfolio' : id.charAt(0).toUpperCase()+id.slice(1);
-  let html = `<b>Repair &amp; Maintenance — ${name}</b>`;
-  if (rows) html += `<br/>${rows}<br/><hr style="border-color:#374151;margin:4px 0"/>Gross invoiced: ${fe(gross,2)}`;
-  if (ovf > 0) {
-    html += `<br/><span style="color:#34d399">− ${fe(ovf)} overfinancing credit (loan &gt; purchase price)</span>`;
-    html += `<br/><b>Net effective: ${fe(gross - ovf, 2)}</b>`;
-  } else {
-    if (rows) html += `<br/><b>Total: ${fe(gross,2)}</b>`;
-    else html += `<br/><span style="color:#6b7280">No repairs on record</span>`;
-  }
-  html += `<br/><span style="color:#6b7280;font-size:10px">CSV accounting total may differ</span>`;
-  showTooltip(e, html);
+function showFurTooltip_BE(e, id) {
+  const AT_FUR_NAMES = {berlin:'Berlin', eschweiler:'Eschweiler', huegelstr:'Hügelstr (EG+Mansarde)', ohmstr:'Ohmstraße', leipzig:'Leipzig'};
+  const items = AT_FUR_DETAIL[id] || [];
+  const rows = items.map(t => `${t.desc} (${t.party}), ${t.date}: <b>${fe(t.amount,2)}</b>`).join('<br/>');
+  const total = items.reduce((s,t) => s + t.amount, 0);
+  showTooltip(e, `<b>Initial Furnishing &amp; Renovation — ${AT_FUR_NAMES[id]||id}</b><br/>${rows}<hr style="border-color:#374151;margin:4px 0"/><b>Total: ${fe(total,2)}</b>`);
 }
+
 
 // ─── RENDER FUNCTIONS ────────────────────────────────────────────────────────
 function kpiCard(label, value, sub, color='#f9fafb', sm=false) {
@@ -1562,7 +1310,7 @@ function renderOverview() {
     <b>Cashflow</b> = Total income (Kaltmiete + NK) − Opex − Mortgage. NK treated as income offsetting operating costs.<br>
     <b>Total Return</b> = Cashflow + Tilgung. Tilgung reduces debt and builds equity — it's not an economic loss.<br>
     <b>DSCR</b> = Pre-Financing CF (NOI) / Total Mortgage. &gt; 1.0 means operating income covers debt service.<br>
-    <b>Break-Even charts</b> moved to the Break-Even tab. Source: <code>/financial_model/model_output/forward_cashflow.json</code>.<br>
+    <b>Break-Even Analysis</b> moved to the Break-Even tab. Source: Airtable &ldquo;Break-Even Analysis_Historical Annuals&rdquo; (base appOKVoE79fxV1WlI).<br>
     Grundsteuer &amp; DKB fees are quarterly amounts ÷ 3. Tax effects (AfA, Werbungskosten) not reflected here.`;
   sec.appendChild(fn);
 }
@@ -2024,269 +1772,143 @@ function renderMarketValue() {
   sec.appendChild(fn);
 }
 
-// ─── BREAK-EVEN HELPERS ──────────────────────────────────────────────────────
-// Find the fractional year when the property's cumulative CF+Tilgung
-// first exceeds what oppK invested in stocks at 7% p.a. would have returned.
-// tiltModel = BE_TILT_MODEL[id], oppK = capital to compare against, t0 = purchase year
-function findBeatsOppDate(tiltModel, oppK, t0) {
-  if (!tiltModel || !tiltModel.pts.length || !oppK) return null;
-  let prevFrac = tiltModel.pts[0].y;
-  let prevCum  = -tiltModel.knk;
-  let prevF    = prevCum; // opp = 0 at t0, so f = cum - opp = cum
-
-  for (const p of tiltModel.pts) {
-    const endFrac = p.y + 1;
-    const oppEnd  = oppK * (Math.pow(1.07, endFrac - t0) - 1);
-    const fEnd    = p.cum - oppEnd;
-
-    if (prevF < 0 && fEnd >= 0) {
-      // Binary search within this 1-year segment for the crossing
-      const STEPS = 48;
-      let pf = prevF, pFr = prevFrac;
-      for (let i = 1; i <= STEPS; i++) {
-        const fr  = prevFrac + i / STEPS * (endFrac - prevFrac);
-        const tl  = (fr - prevFrac) / (endFrac - prevFrac);
-        const cum = prevCum + tl * (p.cum - prevCum);   // linear interp
-        const opp = oppK * (Math.pow(1.07, fr - t0) - 1); // exponential
-        const f   = cum - opp;
-        if (f >= 0) {
-          // linear interp between (pFr, pf) and (fr, f)
-          return pFr + (-pf) / (f - pf) * (fr - pFr);
-        }
-        pf = f; pFr = fr;
-      }
-      return endFrac;
-    }
-    prevFrac = endFrac;
-    prevCum  = p.cum;
-    prevF    = fEnd;
-  }
-  return null; // never beats 7% within data range
-}
-
+// ─── BREAK-EVEN ──────────────────────────────────────────────────────────────
 function renderBreakEven() {
-  const sec = document.getElementById('break-even');
-  sec.innerHTML = ''; // clear for re-render
-  const NOW_FRAC = 2026 + 3/12;
+  const sec = document.getElementById('breakeven');
+  sec.innerHTML = '';
+
+  const PROP_ORDER  = ['berlin','eschweiler','huegelstr','ohmstr','leipzig'];
+  const PROP_LABELS = {
+    berlin:     'Berlin',
+    eschweiler: 'Eschweiler',
+    huegelstr:  'Hügelstr (EG+Mansarde)',
+    ohmstr:     'Ohmstraße',
+    leipzig:    'Leipzig',
+  };
   const PROP_COLORS = {
-    berlin:'#60a5fa', eschweiler:'#2dd4bf', huegelstr:'#f59e0b', ohmstr:'#f87171', leipzig:'#a78bfa'
+    berlin:     '#60a5fa',
+    eschweiler: '#f59e0b',
+    huegelstr:  '#34d399',
+    ohmstr:     '#c084fc',
+    leipzig:    '#fb923c',
   };
 
-  function cumRepairsFor(id) {
-    if (id === '_portfolio') {
-      return Object.keys(REPAIRS).reduce((s,k) => s + (REPAIRS[k]||[]).reduce((s2,r) => s2+(r.amt||0), 0), 0);
-    }
-    return (REPAIRS[id]||[]).reduce((s,r) => s+(r.amt||0), 0);
+  // Group AT_BE by property, sorted by year
+  const byProp = {};
+  PROP_ORDER.forEach(id => {
+    byProp[id] = AT_BE.filter(r => r.prop === id).sort((a,b) => a.year - b.year);
+  });
+
+  // First year where beAll >= 0
+  function getBEYear(id) {
+    for (const r of byProp[id]) if (r.beAll >= 0) return r.year;
+    return null;
+  }
+  // First year where beAll + oppCost > 0 (outperforms 7% alternative)
+  function getBeats7Year(id) {
+    for (const r of byProp[id]) if (r.beAll + r.oppCost > 0) return r.year;
+    return null;
+  }
+  // KNK total from KNK_DETAIL
+  function getKNKTotal(id) {
+    return (KNK_DETAIL[id] || []).reduce((s,t) => s + t.amount, 0);
+  }
+  // Initial furnishing total from AT_FUR_DETAIL
+  function getFurTotal(id) {
+    return (AT_FUR_DETAIL[id] || []).reduce((s,t) => s + t.amount, 0);
+  }
+  // Equity paid in — from first AT_BE record that has equityPaid field
+  function getEquityPaid(id) {
+    const r = byProp[id].find(r => r.equityPaid != null);
+    return r ? r.equityPaid : null;
+  }
+  // Most recent Actual progress value
+  function getCurrentProgress(id) {
+    const actuals = byProp[id].filter(r => r.source === 'Actual');
+    return actuals.length ? actuals[actuals.length-1].progress : null;
   }
 
-  function makeBeItems(model) {
-    return D.map(d => ({ id:d.id, name:d.name, color:PROP_COLORS[d.id], model:model[d.id] }));
-  }
+  // ── Chart card ──────────────────────────────────────────────────────────────
+  const propData = PROP_ORDER.map(id => ({
+    id,
+    label: PROP_LABELS[id],
+    color: PROP_COLORS[id],
+    rows:  byProp[id],
+  }));
 
-  // Purchase date → fractional year for each property (for duration calculation)
-  function purchFrac(id) {
-    const pd = MORTGAGE_DATA[id] && MORTGAGE_DATA[id].purchaseDate;
-    if (!pd) return null;
-    const [y, m] = pd.split('-').map(Number);
-    return y + (m - 1) / 12;
-  }
-  // Format duration between two fractional years as "X y + Y m"
-  function fracDur(f1, f2) {
-    if (f1 == null || f2 == null || f2 <= f1) return null;
-    const totalM = Math.round((f2 - f1) * 12);
-    const y = Math.floor(totalM / 12);
-    const m = totalM % 12;
-    return m > 0 ? `${y} y + ${m} m` : `${y} y`;
-  }
+  const chartCard = document.createElement('div');
+  chartCard.className = 'card';
+  chartCard.style.cssText = 'padding:16px 16px 8px;margin-bottom:12px';
+  const chartTitle = document.createElement('div');
+  chartTitle.className = 'card-label';
+  chartTitle.style.marginBottom = '8px';
+  chartTitle.textContent = 'Break-Even Progress — All Properties';
+  chartCard.appendChild(chartTitle);
+  chartCard.appendChild(makeBreakEvenLineChart({propData}));
+  sec.appendChild(chartCard);
 
-  // Compute cumulative Tilgung paid on a private loan up to fractional year `frac`.
-  // Used to undo the PRIV_LOANS adjustment for the progress bar (so bars don't change
-  // just because Tilgung reduces Op CF while KNK is netted to near-zero).
-  function privCumTilgung(privL, frac) {
-    if (!privL) return 0;
-    const r = privL.annualRate / 12;
-    const P = privL.amount * r / (1 - Math.pow(1 + r, -privL.months));
-    const mPaid = Math.min(privL.months, Math.max(0, Math.floor((frac - privL.startY) * 12)));
-    let bal = privL.amount, ct = 0;
-    for (let m = 0; m < mPaid; m++) { const ti = P - bal * r; ct += ti; bal -= ti; }
-    return ct;
-  }
+  // ── Summary table ────────────────────────────────────────────────────────────
+  const tblCard = document.createElement('div');
+  tblCard.className = 'card';
+  tblCard.style.cssText = 'padding:16px;margin-bottom:12px;overflow-x:auto';
 
-  // progressVsKNK=true → progress bar denominator is KNK (Chart 1)
-  // progressVsKNK=false → progress bar denominator is totalCapital (Chart 2)
-  function makeBeTable(beItems, model, progressVsKNK) {
-    const wrap = document.createElement('div');
-    wrap.style.overflowX = 'auto';
-    let html = '<table style="margin-top:8px"><thead><tr>'
-      +'<th class="left">Property</th>'
-      +'<th>Break-Even</th>'
-      +'<th>Beats 7% p.a.<br><span style="font-weight:400;color:#6b7280;font-size:9px">vs. stocks</span></th>'
-      +'<th>KNK</th>'
-      +'<th>Repair &amp; Maint.</th>'
-      +'<th>Equity Paid In</th>'
-      +'<th>Total Capital</th>'
-      +'<th>Cumul. Op CF<br><span style="font-weight:400;color:#6b7280">Apr 2026</span></th>'
-      +'<th>Progress</th>'
-      +'</tr></thead><tbody>';
+  let html = `<div class="card-label" style="margin-bottom:8px">Break-Even Summary</div>
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead><tr style="border-bottom:1px solid #374151">
+  <th style="text-align:left;padding:6px 8px;color:#9ca3af;font-weight:500">Property</th>
+  <th style="text-align:right;padding:6px 8px;color:#9ca3af;font-weight:500">Break-Even Year</th>
+  <th style="text-align:right;padding:6px 8px;color:#9ca3af;font-weight:500">Beats 7% Year</th>
+  <th style="text-align:right;padding:6px 8px;color:#9ca3af;font-weight:500">KNK Total ⓘ</th>
+  <th style="text-align:right;padding:6px 8px;color:#9ca3af;font-weight:500">Initial Furnishing ⓘ</th>
+  <th style="text-align:right;padding:6px 8px;color:#9ca3af;font-weight:500">Equity Paid In</th>
+  <th style="text-align:right;padding:6px 8px;color:#9ca3af;font-weight:500">Progress (2025 Actual)</th>
+</tr></thead><tbody>`;
 
-    beItems.forEach(d => {
-      const m = model[d.id];
-      const eq = EQUITY_PAID[d.id] || 0;
-      const knk = BE_MODEL[d.id].knk;
-      // Use BE_TOTAL_MODEL for all capital figures — already overfinancing-adjusted
-      const tc = BE_TOTAL_MODEL[d.id].totalCapital;
-      const netRepairs = tc - knk - eq;
-      const ovf = OVERFINANCING[d.id] || 0;
-      const privL = PRIV_LOANS[d.id];
-      const privBadge = privL
-        ? `<br><span style="font-size:9px;color:#a78bfa" title="Privatkredit (€${(privL.amount/1000).toFixed(0)}k) financed KNK — netted against own capital">(−€${(privL.amount/1000).toFixed(0)}k Privatkred.)</span>`
-        : '';
-      // grossReturn: cumulative position from BE_MODEL (includes repair costs, used for progress bar)
-      const grossReturn = beCumAtFrac(BE_MODEL[d.id], NOW_FRAC) + knk;
-      // pureOpCF: cumulative Op CF excl. repairs (rent − opex − Zinsen only, no capex)
-      const pureOpCF = grossReturn + cumRepairsAtFrac(d.id, NOW_FRAC);
-      // For progress bar: undo PRIV_LOANS adjustment so bars reflect pre-netting economic reality.
-      // PRIV_LOANS nets privL.amount off KNK and subtracts cumTilgung from Op CF.
-      // To restore: add back cumTilgung to numerator, add back privL.amount to denominator.
-      const privTi = privCumTilgung(privL, NOW_FRAC);
-      const progressGrossReturn = grossReturn + privTi;
-      const progressKNK = knk + (privL ? privL.amount : 0);
-      const progressBase = progressVsKNK ? progressKNK : tc;
-      const pct = progressBase > 0 ? Math.max(0, Math.min(100, 100 * progressGrossReturn / progressBase)) : 0;
-      const barPct = pct.toFixed(0);
-      const progBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
-        +`<div style="background:${pct>=100?'#34d399':'#60a5fa'};width:${barPct}%;height:8px;border-radius:4px"></div>`
-        +`</div><span style="font-size:9px;color:#9ca3af">${barPct}%</span>`;
-      // Break-even date + duration from purchase
-      const pf = purchFrac(d.id);
-      const beDateStr = m.be != null ? formatFrac(m.be) : null;
-      const beDurStr  = m.be != null ? fracDur(pf, m.be) : null;
-      const beStr = m.be != null
-        ? `<span style="color:${m.be<=NOW_FRAC?'#34d399':'#9ca3af'}">${beDateStr}${m.be<=NOW_FRAC?' ✓':''}</span>`
-          + (beDurStr ? `<br><span style="color:#4b5563;font-size:9px">${beDurStr}</span>` : '')
-        : `<span style="color:#9ca3af">&gt;2060</span>`;
-      const ovfBadge = ovf > 0
-        ? ` <span style="font-size:9px;color:#34d399">(−€${(ovf/1000).toFixed(0)}k OVF)</span>`
-        : '';
-      // "Beats 7%" = when cumulative Op CF exceeds what oppK at 7% p.a. would have returned
-      // oppK = net KNK + equity + purchase-year repairs (consistent with the chart opp-cost line)
-      const oppK = purchaseYearOppK(d.id);
-      const t0 = BE_MODEL[d.id].pts[0].y;
-      const beatsDate = findBeatsOppDate(BE_MODEL[d.id], oppK, t0);
-      const beatsDurStr = beatsDate != null ? fracDur(pf, beatsDate) : null;
-      const beatsStr = beatsDate != null
-        ? `<span style="color:${beatsDate<=NOW_FRAC?'#34d399':'#9ca3af'}">${formatFrac(beatsDate)}${beatsDate<=NOW_FRAC?' ✓':''}</span>`
-          + (beatsDurStr ? `<br><span style="color:#4b5563;font-size:9px">${beatsDurStr}</span>` : '')
-        : `<span style="color:#6b7280">&gt;2060</span>`;
-      html += `<tr>
-        <td class="left" style="color:${PROP_COLORS[d.id]}">${d.name}</td>
-        <td>${beStr}</td>
-        <td>${beatsStr}</td>
-        <td style="color:#f59e0b;cursor:help"
-            onmouseenter="showKNKDetailTooltip(event,'${d.id}')"
-            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(knk,2)}${privBadge}</td>
-        <td style="cursor:help" onmouseenter="showBERepairTooltip(event,'${d.id}',${ovf})"
-            onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(netRepairs,2)}${ovfBadge}</td>
-        <td style="color:#9ca3af">${eq>0?fe(eq):'—'}</td>
-        <td style="color:#fbbf24;font-weight:600">${fe(Math.round(tc))}</td>
-        <td style="color:${pureOpCF>=0?'#34d399':'#f87171'};font-weight:600">${fe(Math.round(pureOpCF))}</td>
-        <td style="min-width:100px">${progBar}</td>
-      </tr>`;
-    });
+  PROP_ORDER.forEach(id => {
+    const beYear   = getBEYear(id);
+    const beats7   = getBeats7Year(id);
+    const knkTotal = getKNKTotal(id);
+    const furTotal = getFurTotal(id);
+    const equity   = getEquityPaid(id);
+    const progress = getCurrentProgress(id);
+    const pct      = progress !== null ? Math.min(100, Math.max(0, progress * 100)) : null;
+    const pctStr   = pct !== null ? pct.toFixed(0)+'%' : '—';
+    const pctColor = pct !== null && pct >= 100 ? '#34d399' : pct !== null && pct >= 50 ? '#fbbf24' : '#f87171';
+    const showEq   = id === 'leipzig' || id === 'berlin';
+    const eqStr    = showEq && equity != null
+      ? `<span style="color:#f9fafb">${fe(Math.abs(equity))}</span>`
+      : `<span style="color:#6b7280">—</span>`;
 
-    // Portfolio row
-    const pm = model['_portfolio'];
-    const portEq = EQUITY_PAID['_portfolio'] || 0;
-    const portKNK = BE_MODEL['_portfolio'].knk;
-    const portTC = BE_TOTAL_MODEL['_portfolio'].totalCapital;
-    const portNetRepairs = portTC - portKNK - portEq;
-    const portGrossReturn = beCumAtFrac(BE_MODEL['_portfolio'], NOW_FRAC) + portKNK;
-    const portPureOpCF = portGrossReturn + cumRepairsAtFrac('_portfolio', NOW_FRAC);
-    // Undo PRIV_LOANS adjustment for portfolio progress bar (same logic as per-property)
-    const portPrivTi = Object.values(PRIV_LOANS).reduce((s, pl) => s + privCumTilgung(pl, NOW_FRAC), 0);
-    const portPrivAmt = Object.values(PRIV_LOANS).reduce((s, pl) => s + pl.amount, 0);
-    const portProgressGrossReturn = portGrossReturn + portPrivTi;
-    const portProgressKNK = portKNK + portPrivAmt;
-    const portProgressBase = progressVsKNK ? portProgressKNK : portTC;
-    const portPct = portProgressBase > 0 ? Math.max(0, Math.min(100, 100 * portProgressGrossReturn / portProgressBase)) : 0;
-    const portBar = `<div style="background:#374151;border-radius:4px;height:8px;width:100%;min-width:80px">`
-      +`<div style="background:${portPct>=100?'#34d399':'#60a5fa'};width:${portPct.toFixed(0)}%;height:8px;border-radius:4px"></div>`
-      +`</div><span style="font-size:9px;color:#9ca3af">${portPct.toFixed(0)}%</span>`;
-    const portBEStr = pm.be != null ? formatFrac(pm.be) : '>2060';
-    const portOppK = purchaseYearOppK('_portfolio');
-    const portT0 = BE_MODEL['_portfolio'].pts[0].y;
-    const portBeatsDate = findBeatsOppDate(BE_MODEL['_portfolio'], portOppK, portT0);
-    const portBeatsStr = portBeatsDate != null ? formatFrac(portBeatsDate) : '>2060';
-    html += `<tr class="total">
-      <td class="left">PORTFOLIO</td>
-      <td style="color:#9ca3af">${portBEStr}</td>
-      <td style="color:#9ca3af">${portBeatsStr}</td>
-      <td style="color:#f59e0b">${fe(Math.round(portKNK))}</td>
-      <td style="color:#9ca3af">${fe(Math.round(portNetRepairs))}</td>
-      <td style="color:#9ca3af">${fe(portEq)}</td>
-      <td style="color:#fbbf24;font-weight:600">${fe(Math.round(portTC))}</td>
-      <td style="color:${portPureOpCF>=0?'#34d399':'#f87171'};font-weight:600">${fe(Math.round(portPureOpCF))}</td>
-      <td style="min-width:100px">${portBar}</td>
-    </tr></tbody></table>`;
-    wrap.innerHTML = html;
-    return wrap;
-  }
+    html += `<tr style="border-bottom:1px solid #1f2937">
+  <td style="padding:8px;font-weight:500;color:#f9fafb">${PROP_LABELS[id]}</td>
+  <td style="text-align:right;padding:8px;color:${beYear ? '#34d399' : '#9ca3af'}">${beYear || '>2035'}</td>
+  <td style="text-align:right;padding:8px;color:${beats7 ? '#60a5fa' : '#9ca3af'}">${beats7 || '>2035'}</td>
+  <td style="text-align:right;padding:8px;cursor:pointer;color:#f9fafb;text-decoration:underline dotted"
+      onmouseenter="showKNKDetailTooltip(event,'${id}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(knkTotal)}</td>
+  <td style="text-align:right;padding:8px;cursor:pointer;color:#f9fafb;text-decoration:underline dotted"
+      onmouseenter="showFurTooltip_BE(event,'${id}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${fe(furTotal)}</td>
+  <td style="text-align:right;padding:8px">${eqStr}</td>
+  <td style="text-align:right;padding:8px;color:${pctColor};font-weight:500">${pctStr}</td>
+</tr>`;
+  });
 
-  // Compute shared X range across both models so the charts are directly comparable
-  const allItems = [...makeBeItems(BE_MODEL), ...makeBeItems(BE_TOTAL_MODEL)];
-  const sharedMinX = Math.floor(Math.min(...allItems.map(it => it.model.pts[0].y)));
-  const allBE = allItems.filter(it => it.model.be != null && it.model.be < 2060).map(it => it.model.be);
-  const sharedMaxBE = allBE.length ? Math.max(...allBE) : NOW_FRAC;
-  const sharedMaxX = Math.ceil(Math.max(sharedMaxBE, NOW_FRAC) + 1.5);
+  html += `</tbody></table>`;
+  tblCard.innerHTML = html;
+  sec.appendChild(tblCard);
 
-  // ── Chart 1: BE_MODEL — KNK vs. Op CF only ─────────────────────────────────
-  // Tilgung (equity) and asset generation cancel out exactly → excluded from both sides.
-  const c1 = document.createElement('div');
-  c1.className = 'card chart-wrap'; c1.style.marginBottom = '16px';
-  c1.innerHTML = '<div class="chart-title">Break-Even: KNK vs. Cumulative Op CF</div>'
-    +'<div class="chart-sub">Each line shows cumulative operating cash flow (rent + NK − Hausgeld − Grundsteuer − Zinsen − Rücklage − private-loan repayment, excl. mortgage Tilgung) minus Kaufnebenkosten. '
-    +'Tilgung is excluded: it builds equity, but that equity is offset by the corresponding asset value — the two cancel. '
-    +'Initial renovation/furnishing (fur) is included in Op CF for this chart. '
-    +'Crossing y = 0 (green line) = break-even on pure operating returns. '
-    +'Solid = historical actuals (DKB CSV + invoices through 2025), dashed = projected from 2026. Filled circle = break-even date.</div>';
-  const beItems1 = makeBeItems(BE_MODEL);
-  c1.appendChild(makeBreakEvenChart({items:beItems1, W:900, xMin:sharedMinX, xMax:sharedMaxX}));
-  c1.appendChild(makeBeTable(beItems1, BE_MODEL, true));
-  sec.appendChild(c1);
-
-  // ── Chart 2: BE_TOTAL_MODEL — Op CF vs. Total Capital Employed ───────
-  const c2 = document.createElement('div');
-  c2.className = 'card chart-wrap'; c2.style.marginBottom = '16px';
-  c2.innerHTML = '<div class="chart-title">Break-Even: Op CF vs. Total Capital Employed</div>'
-    +'<div class="chart-sub">Each line shows cumulative operating CF (excl. Tilgung and initial renovation) minus all capital deployed: '
-    +'Kaufnebenkosten + initial renovation/furnishing + initial equity. '
-    +'Chart starts at −(KNK + equity); renovation costs are added to the capital base as incurred. '
-    +'Dotted lines = 7% p.a. compound return on total capital deployed (same start date as property line). '
-    +'Solid = historical, dashed = projected. Filled circle = break-even date.</div>';
-  const beItems2 = makeBeItems(BE_TOTAL_MODEL);
-  c2.appendChild(makeBreakEvenChart({items:beItems2, W:900, xMin:sharedMinX, xMax:sharedMaxX, showOppCost:true, capitalLabel:'Capital Employed'}));
-  c2.appendChild(makeBeTable(beItems2, BE_TOTAL_MODEL, false));
-  sec.appendChild(c2);
-
-  // ── Footnotes / Assumptions ─────────────────────────────────────────────────
+  // ── Assumptions / footnote ───────────────────────────────────────────────────
   const fn = document.createElement('div');
-  fn.className = 'card';
-  fn.style.cssText = 'margin-bottom:16px;padding:16px 20px';
-  fn.innerHTML = `<div class="chart-title" style="font-size:12px;margin-bottom:8px">Calculation Assumptions</div>
-<div class="footnotes" style="border-top:none;padding-top:0;margin-top:0">
-<b>Data sources:</b> Actuals 2020–2025 from DKB bank statements (CSV) and invoice PDFs. Projections 2026 onwards per assumptions below.<br>
-<b>Op CF components (both charts):</b> Kaltmiete + NK Vorauszahlung − Hausgeld − Grundsteuer − Zinsen (mortgage interest) − Privatkredit interest − Privatkredit repayment − Rücklage (10 €/m²/yr). Mortgage Tilgung excluded (builds equity ↔ offsets asset value, net zero).<br>
-<b>Chart 1 — KNK:</b> Op CF includes initial renovation/furnishing (fur) as an operating outflow. Starting deficit = Kaufnebenkosten (net of any private loan financing the KNK).<br>
-<b>Chart 2 — Total Capital:</b> Initial renovation/furnishing is reclassified as capital deployed (not Op CF). Starting deficit = KNK + initial equity paid in; renovation costs added to capital base as incurred. Dotted opp-cost lines start at the same point as the property line (−total capital).<br>
-<b>KNK netting:</b> Eschweiler KNK is shown net of the DSL Bank Privatkredit (€13,000 @ 3.24% p.a., 120 months, Jan 2021–Dec 2030) that financed it — own capital deployed was €102.49. Privatkredit repayment is counted as Op CF cost (does not build property equity).<br>
-<b>Rent projections (2026+):</b> +2.0%/yr per property (Kaltmiete + NK).<br>
-<b>Cost projections (2026+):</b> Hausgeld +2.0%/yr; Other operating costs +2.0%/yr.<br>
-<b>Mortgage interest:</b> Property-specific fixed rates. Eschweiler (Volksbank) fixed through 2035. Frankfurt properties (Hügelstr, Ohmstr) refinanced at lower prevailing rate from 2026. Berlin (DKB) per loan schedule.<br>
-<b>Rücklage (maintenance reserve):</b> 10 €/m²/yr ongoing for all properties. Initial renovation (fur) is a one-time cost, separate from ongoing maintenance.<br>
-<b>Vacancy:</b> 3% for Eschweiler (small city), 0% for all other properties.
-</div>`;
+  fn.className = 'footnote';
+  fn.innerHTML = `<b>Source:</b> All values from Airtable base appOKVoE79fxV1WlI, table "Break-Even Analysis_Historical Annuals". No calculations performed outside Airtable.<br>
+<b>Break Even_All:</b> Cumulative net cash position including all revenues, operating costs, mortgage interest, KNK, and initial furnishing. Negative = still in deficit. Breaks even when it first reaches ≥ 0.<br>
+<b>Opportunity Costs (7% p.a.):</b> What the total capital deployed would have grown to if invested in equities at 7% p.a. compound from the purchase date. "Beats 7%" = first year where <code>Break Even_All + Opportunity Costs &gt; 0</code>.<br>
+<b>Solid line</b> = Actual years (DKB CSV + invoice PDFs). <b>Dashed line</b> = Projections from 2026 onward: Rent +2%/yr, Hausgeld +2%/yr, refi at current rate; vacancy 3% Eschweiler, 0% all others; €10/m²/yr Rücklage.<br>
+<b>Dotted line</b> (faded) = Opportunity cost track per property (7% p.a. on total capital deployed).<br>
+<b>Equity Paid In</b> shown only for Leipzig (−€7,000) and Berlin (−€16,000); these are the two properties with additional own-equity above the mortgage. Other properties: own equity is netted into the total capital base within Airtable.<br>
+<b>Progress</b> = Airtable "Progress" field for the most recent Actual year (2025). Values below 0 = further from break-even than at purchase; 0–1 = en route; 1 = break-even reached.`;
   sec.appendChild(fn);
 }
+
 
 // ─── TAB SWITCHING ───────────────────────────────────────────────────────────
 function showTab(id) {
