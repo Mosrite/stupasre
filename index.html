@@ -1002,7 +1002,7 @@ function renderOverview() {
   r1Label.textContent='Absolute figures (€ / month)';
   sec.appendChild(r1Label);
   const r1 = document.createElement('div');
-  r1.className='grid'; r1.style.cssText='grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:12px';
+  r1.className='grid'; r1.style.cssText='grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:12px';
   r1.innerHTML = [
     kpiCard('Monthly Revenue',       fe(P.km),   `€\u202f${f(P.km*12)} NK p.a.`),
     kpiCard('Monthly Cashflow',      fe(P.cf),   'All income minus all costs', vc(P.cf)),
