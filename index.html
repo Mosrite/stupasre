@@ -312,14 +312,14 @@ const TURNOVER = {
 
 // Original loan amounts (from Kreditauszahlung entries in DKB CSVs) and cumulative Tilgung paid to Apr 2026.
 const MORTGAGE_DATA = {
-  berlin:    {loanAmt:298000, tilgungPaid:11045.59,  purchaseDate:'2024-07-12'},
-  eschweiler:{loanAmt:89000,  tilgungPaid:9585,       purchaseDate:'2021-01-01',
+  berlin:    {loanAmt:298000, tilgungPaid:11045.59,  purchaseDate:'2024-07-12', zinsbindung:'30.07.2034'},
+  eschweiler:{loanAmt:89000,  tilgungPaid:9585,       purchaseDate:'2021-01-01', zinsbindung:'30.12.2035',
               zi:107.21,      ti:161.27},
               // Volksbank Immobiliar only. zi/ti/tilgungPaid used for mortgage tab and KNK break-even (DSL private loan excluded).
               // Remaining balance: 89k − 9,585 = €79,415 (derived from Zinsen 107.21 / 0.135% monthly rate).
-  huegelstr: {loanAmt:420000, tilgungPaid:25238.59,  purchaseDate:'2023-06-30'},
-  ohmstr:    {loanAmt:400000, tilgungPaid:20369.06,  purchaseDate:'2023-09-08'},
-  leipzig:   {loanAmt:123000, tilgungPaid:6033.66,   purchaseDate:'2023-11-01'},
+  huegelstr: {loanAmt:420000, tilgungPaid:25238.59,  purchaseDate:'2023-06-30', zinsbindung:'30.05.2033'},
+  ohmstr:    {loanAmt:400000, tilgungPaid:20369.06,  purchaseDate:'2023-09-08', zinsbindung:'30.09.2033'},
+  leipzig:   {loanAmt:123000, tilgungPaid:6033.66,   purchaseDate:'2023-11-01', zinsbindung:'30.07.2033'},
 };
 
 // Per-transaction KNK breakdown for hover tooltips.
