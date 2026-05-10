@@ -1005,6 +1005,7 @@ function renderOverview() {
   r1.className='grid'; r1.style.cssText='grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:12px';
   r1.innerHTML = [
     kpiCard('Monthly Revenue',       fe(P.km),   `€\u202f${f(P.km*12)} NK p.a.`),
+    kpiCard('CF before Financing',   fe(P.gp),   'Revenue − Opex, excl. all loans', vc(P.gp)),
     kpiCard('Monthly Cashflow',      fe(P.cf),   'All income minus all costs', vc(P.cf)),
     kpiCard('Total Economic Return', fe(P.tr),   `Cashflow + €\u202f${f(P.ti)} equity`, vc(P.tr)),
     kpiCard('Total Zinsen / mo',     fe(P.zi),   'Interest payments',  '#f87171', true),
