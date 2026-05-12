@@ -375,17 +375,21 @@ const KNK_DETAIL = {
 // Source of truth: Airtable "Market Value Snapshots" (base appOKVoE79fxV1WlI, table tbleVuDQhI1BnNZ9H)
 // DO NOT edit manually. Updated quarterly by the "market-value-update" scheduled task,
 // which reads all records from Airtable and rewrites this block.
-// Each entry: {id, date, pricePerSqm, discount, value}
-//   pricePerSqm = avg €/m² asking price for comparable listings in the postal code
-//   discount    = asking→transaction gap applied (%)
-//   value       = pricePerSqm × (1 − discount/100) × floor_area_m²  (pre-computed)
-// Last updated: 2026-05-12 (Q2 2026 — IS24 Schätzwert back-calculated)
+// Each entry: {id, date, pricePerSqm, askingGap, vermietungsAbschlag, heatingFactor, energyClass, stadtteil, value}
+//   pricePerSqm         = avg €/m² asking price for comparable listings in the Stadtteil (IS24 Schätzwert back-calculated)
+//   askingGap           = asking→transaction discount (%)
+//   vermietungsAbschlag = tenanted-property discount vs owner-occupied market (%)
+//   heatingFactor       = heating system adjustment (0 = Erdgas/standard; negative = Heizöl or non-compliant)
+//   energyClass         = GEG/EnEV energy class (informational; not yet applied as separate factor)
+//   stadtteil           = micro-location used for IS24 comparable search
+//   value               = sqm × pricePerSqm × (1−askingGap/100) × (1−vermietungsAbschlag/100) × (1+heatingFactor/100)
+// Last updated: 2026-05-12 (Q2 2026 — IS24 Schätzwert back-calculated; Vermietungsabschlag added per property)
 const MARKET_SNAPSHOTS = [
-  {id:'berlin',     date:'2026-05-12', pricePerSqm:5320, discount:8, value:274086},
-  {id:'eschweiler', date:'2026-05-12', pricePerSqm:2040, discount:8, value:76954},
-  {id:'huegelstr',  date:'2026-05-12', pricePerSqm:5040, discount:8, value:519322},
-  {id:'ohmstr',     date:'2026-05-12', pricePerSqm:6910, discount:8, value:476790},
-  {id:'leipzig',    date:'2026-05-12', pricePerSqm:3020, discount:8, value:157583},
+  {id:'berlin',     date:'2026-05-12', pricePerSqm:5320, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Weißensee',   value:219269},
+  {id:'eschweiler', date:'2026-05-12', pricePerSqm:2040, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'D', stadtteil:'Innenstadt',  value:65406},
+  {id:'huegelstr',  date:'2026-05-12', pricePerSqm:5040, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Dornbusch',   value:415457},
+  {id:'ohmstr',     date:'2026-05-12', pricePerSqm:6910, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'C', stadtteil:'Bockenheim',  value:381432},
+  {id:'leipzig',    date:'2026-05-12', pricePerSqm:3020, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'E', stadtteil:'Zentrum-West', value:133433},
 ];
 
 // Forward projection rates (%/yr) — applied from the latest snapshot date onward
