@@ -1819,42 +1819,20 @@ function renderMarketValue() {
   tCard.innerHTML += html;
   sec.appendChild(tCard);
 
-  // ── Update form ──────────────────────────────────────────────────────────────
+  // ── Update note ───────────────────────────────────────────────────────────────
   const formCard = document.createElement('div');
   formCard.className='card'; formCard.style.marginBottom='16px';
   formCard.innerHTML=`
-    <div class="chart-title" style="margin-bottom:6px">📥 Record New Market Snapshot</div>
-    <div class="chart-sub" style="margin-bottom:12px">
-      On Immoscout: search comparable listings in each property's postal code → note the average asking price per m².
-      Enter below, save, and the chart updates automatically. Doing this quarterly builds a meaningful history.
+    <div class="chart-title" style="margin-bottom:6px">📥 Snapshots managed via Airtable</div>
+    <div style="font-size:12px;color:#d1d5db;line-height:1.6">
+      Snapshots are stored in Airtable (<b style="color:#60a5fa">Market Value Snapshots</b> table)
+      and written into this dashboard by the <b style="color:#a78bfa">market-value-update</b> scheduled task.
+      The task runs every quarter — it pulls the latest values from Immoscout, saves them to Airtable,
+      and rewrites the <code style="color:#fbbf24">MARKET_SNAPSHOTS</code> constant in this file.
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:10px">
-      <div style="display:flex;flex-direction:column;gap:3px">
-        <label style="font-size:10px;color:#9ca3af">Snapshot Date</label>
-        <input id="mkt-date" type="date" value="${new Date().toISOString().substring(0,10)}"
-          style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:130px">
-      </div>
-      <div style="display:flex;flex-direction:column;gap:3px">
-        <label style="font-size:10px;color:#fbbf24">Discount %</label>
-        <input id="mkt-discount" type="number" step="0.5" value="${discount}"
-          style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:75px">
-      </div>
-      ${CVS.map((c,i) => `
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:${c.color}">${c.name} €/m²</label>
-          <input id="mkt-sqm-${c.id}" type="number" step="10" placeholder="${c.last?.pricePerSqm||''}"
-            style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:105px">
-        </div>
-      `).join('')}
-      <button onclick="saveMktSnapshot()"
-        style="background:#3b82f6;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;margin-top:auto">
-        Save Snapshot
-      </button>
-    </div>
-    <div id="mkt-feedback" style="font-size:11px;color:#34d399;min-height:16px"></div>
-    <div style="font-size:10px;color:#6b7280;margin-top:4px">
-      User snapshots: <span id="mkt-count">${userSnaps.length}</span> saved
-      (+ ${IS24_SEED.length} seed values from IS24 Schätzwert May 2026)
+    <div style="margin-top:10px;font-size:11px;color:#6b7280">
+      ${MARKET_SNAPSHOTS.length} snapshot(s) loaded.
+      Last: ${lastDate || '—'}.
     </div>`;
   sec.appendChild(formCard);
 
