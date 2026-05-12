@@ -1880,15 +1880,16 @@ function renderMarketValue() {
   const fn = document.createElement('div');
   fn.className='footnotes';
   fn.innerHTML=`
-    <b>Method:</b> IS24 Schätzwert back-calculated to average asking €/m² by Stadtteil (micro-location), then multiplied by floor area and discounted in two stages:
-    (1) <b>Asking gap</b> (~8%): difference between listed and transaction prices in Germany's current market.
-    (2) <b>Vermietungsabschlag</b> (15–20%): tenanted properties sell at a discount vs owner-occupied because buyers forgo the owner-occupier premium.
-    Frankfurt + Berlin: 20%; Leipzig + Eschweiler: 15% (more investor-dominated buyer base in smaller markets).<br>
-    <b>Heating factor:</b> Additional adjustment for heating system compliance risk under GEG 2024. Currently 0% for all properties (all Erdgas).<br>
-    <b>Energy class</b> (from Energieausweise): Berlin E · Eschweiler D · Hügelstr. E · Ohmstr. C · Leipzig E. Informational only; IS24 AVM already partially prices this in.<br>
-    <b>Data source:</b> Snapshots stored in Airtable (Market Value Snapshots table) and embedded here by the quarterly scheduled task.
-    Q2 2026 values are back-calculated from IS24 Schätzwert.<br>
-    <b>Forward projection:</b> Compound growth from the latest snapshot at the rate you set above. Illustrative only.`;
+    <b>Method:</b> IS24 Schätzwert (Automated Valuation Model) is used directly as the estimated market value per property.
+    IS24's AVM draws on comparable transaction and listing data for the specific Stadtteil, incorporating location, building age, condition, and energy efficiency.
+    The €/m² (asking) and gap% fields are back-calculated from the IS24 value for reference and cross-checking — they are not the primary input.<br>
+    <b>Vermietungsabschlag</b> (tenanted discount, stored as metadata): 20% for Frankfurt/Berlin, 15% for Leipzig/Eschweiler.
+    Not applied to the stated value because IS24's AVM already reflects the mix of investor and owner-occupier transactions in each market.
+    This can be reconsidered once we have multiple quarters of data to compare against actual transaction prices.<br>
+    <b>Energy class</b> (from Energieausweise): Berlin E · Eschweiler D · Hügelstr. E · Ohmstr. C · Leipzig E. Incorporated by IS24; stored here for reference.<br>
+    <b>Heating</b>: All 5 properties run on Erdgas central heating. Heating factor = 0% for all.<br>
+    <b>Data source:</b> Snapshots stored in Airtable (Market Value Snapshots table) and embedded here by the quarterly scheduled task.<br>
+    <b>Forward projection:</b> Compound growth from the latest snapshot at the rate set above. Illustrative only.`;
   sec.appendChild(fn);
 }
 
