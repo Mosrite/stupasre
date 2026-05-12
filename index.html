@@ -1861,33 +1861,12 @@ function renderMarketValue() {
   fn.className='footnotes';
   fn.innerHTML=`
     <b>Method:</b> Average asking price (€/m²) for comparable listed properties in the postal code, multiplied by (1 − discount%) × floor area.
-    The discount represents the typical gap between listing price and actual transaction price in the current German market (historically 5–10%).<br>
+    The discount (typically 5–10% in Germany) represents the asking→transaction gap. Recorded per snapshot so it can vary over time.<br>
     <b>Implied Rate/yr:</b> Annualized CAGR from purchase price to the latest snapshot. Negative = market corrected since purchase.<br>
-    <b>Seed data:</b> Initial €/m² values are back-calculated from IS24 Schätzwert estimates (May 2026) assuming an 8% discount,
-    so they reproduce the IS24-shown values. You can override these by saving new snapshots.<br>
+    <b>Data source:</b> All snapshots are stored in Airtable (Market Value Snapshots table) and embedded here by the quarterly scheduled task.
+    Q2 2026 seed values are back-calculated from IS24 Schätzwert at 8% discount.<br>
     <b>Forward projection:</b> Compound growth from the latest snapshot at the rate you set above. Illustrative only.`;
   sec.appendChild(fn);
-}
-
-// ── Global helpers called from onclick ───────────────────────────────────────
-function saveMktSnapshot() {
-  const date = document.getElementById('mkt-date')?.value;
-  const disc = parseFloat(document.getElementById('mkt-discount')?.value);
-  if (!date) return;
-  if (!isNaN(disc)) localStorage.setItem('re_mkt_discount', disc);
-
-  const existing = JSON.parse(localStorage.getItem('re_mkt_snaps') || '[]');
-  const newSnaps = [];
-  D.forEach(d => {
-    const sqmEl = document.getElementById(`mkt-sqm-${d.id}`);
-    const val   = parseFloat(sqmEl?.value);
-    if (!isNaN(val) && val > 0) newSnaps.push({id:d.id, date, pricePerSqm:val});
-  });
-  if (!newSnaps.length) { document.getElementById('mkt-feedback').textContent='⚠ Enter at least one €/m² value.'; return; }
-  localStorage.setItem('re_mkt_snaps', JSON.stringify([...existing, ...newSnaps]));
-  document.getElementById('mkt-feedback').innerHTML =
-    `✓ Saved ${newSnaps.length} value(s) for ${date}.&ensp;<a href="#" onclick="document.getElementById('market-value').innerHTML='';renderMarketValue();return false;" style="color:#60a5fa">Refresh tab</a>`;
-  document.getElementById('mkt-count').textContent = existing.length + newSnaps.length;
 }
 
 function saveFwdRates() {
