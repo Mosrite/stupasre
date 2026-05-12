@@ -1704,9 +1704,8 @@ function renderMarketValue() {
       <div>
         <span style="color:#60a5fa;font-weight:700">📊 Market Value Method:</span>
         Average asking price (€/m²) for comparable listings in each postal code,
-        discounted by <b style="color:#fbbf24">${discount}%</b> (asking → transaction gap),
-        multiplied by each property's floor area.
-        Update whenever you check listings on Immoscout — quarterly is sufficient.
+        discounted by the asking→transaction gap, multiplied by each property's floor area.
+        Snapshots recorded quarterly and stored in Airtable.
       </div>
       <div style="color:#9ca3af;font-size:10px;white-space:nowrap">Last snapshot: ${lastDate || '—'}</div>
     </div>
@@ -1714,7 +1713,7 @@ function renderMarketValue() {
       ${CVS.map(c => `<span>
         <b style="color:${c.color}">${c.name}</b>
         <span style="color:#60a5fa">€${f(c.last?.pricePerSqm||0)}/m²</span>
-        <span style="color:#9ca3af">× (1−${discount}%) × ${c.size}m²</span>
+        <span style="color:#9ca3af">× (1−${c.last?.discount||8}%) × ${c.size}m²</span>
         = <span style="font-weight:600;color:#f9fafb">€${f(c.cv)}</span>
       </span>`).join('')}
     </div>`;
