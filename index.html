@@ -1826,12 +1826,11 @@ function renderMarketValue() {
   const totalEq  = totalCV - totalRem;
   const total31  = CVS.reduce((s,c) => s + Math.round(c.cv * Math.pow(1+c.forwardRate/100, 2031-c.lastFrac)), 0);
   html+=`<tr class="total">
-    <td class="left">PORTFOLIO</td><td>—</td><td style="color:#9ca3af">—</td>
-    <td>${fe(totalPP)}</td><td>—</td><td>—</td>
+    <td class="left">PORTFOLIO</td><td>—</td><td>—</td><td>—</td>
+    <td>${fe(totalPP)}</td><td>—</td><td>—</td><td>—</td>
     <td style="color:#60a5fa;font-weight:600">${fe(Math.round(totalCV))}</td>
     <td style="color:${vc(totalGn)}">${fe(Math.round(totalGn))}</td>
     <td style="color:${vc(totalGn/totalPP*100)};font-weight:600">${fp(totalGn/totalPP*100,1)}</td>
-    <td>—</td>
     <td style="color:#f87171">${fe(Math.round(totalRem))}</td>
     <td style="color:#34d399;font-weight:600">${fe(Math.round(totalEq))}</td>
     <td style="color:#818cf8">${fe(total31)}</td>
