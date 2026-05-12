@@ -383,13 +383,13 @@ const KNK_DETAIL = {
 //   energyClass         = GEG/EnEV energy class (informational; not yet applied as separate factor)
 //   stadtteil           = micro-location used for IS24 comparable search
 //   value               = sqm × pricePerSqm × (1−askingGap/100) × (1−vermietungsAbschlag/100) × (1+heatingFactor/100)
-// Last updated: 2026-05-12 (Q2 2026 — IS24 Schätzwert back-calculated; Vermietungsabschlag added per property)
+// Last updated: 2026-05-12 (Q2 2026 — IS24 Schätzwert values; Vermietungsabschlag stored as context, not deducted)
 const MARKET_SNAPSHOTS = [
-  {id:'berlin',     date:'2026-05-12', pricePerSqm:5320, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Weißensee',   value:219269},
-  {id:'eschweiler', date:'2026-05-12', pricePerSqm:2040, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'D', stadtteil:'Innenstadt',  value:65406},
-  {id:'huegelstr',  date:'2026-05-12', pricePerSqm:5040, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Dornbusch',   value:415457},
-  {id:'ohmstr',     date:'2026-05-12', pricePerSqm:6910, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'C', stadtteil:'Bockenheim',  value:381432},
-  {id:'leipzig',    date:'2026-05-12', pricePerSqm:3020, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'E', stadtteil:'Zentrum-West', value:133433},
+  {id:'berlin',     date:'2026-05-12', pricePerSqm:5320, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Weißensee',    value:274086},
+  {id:'eschweiler', date:'2026-05-12', pricePerSqm:2040, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'D', stadtteil:'Innenstadt',   value:76954},
+  {id:'huegelstr',  date:'2026-05-12', pricePerSqm:5040, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Dornbusch',    value:519322},
+  {id:'ohmstr',     date:'2026-05-12', pricePerSqm:6910, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'C', stadtteil:'Bockenheim',   value:476790},
+  {id:'leipzig',    date:'2026-05-12', pricePerSqm:3020, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'E', stadtteil:'Zentrum-West',  value:157583},
 ];
 
 // Forward projection rates (%/yr) — applied from the latest snapshot date onward
