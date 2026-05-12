@@ -564,11 +564,11 @@ function makeLineChart({ series, W=900, H=260, ml=72, mr=130, mt=20, mb=36, unit
     svg.appendChild(el('text', {x:px,y:H-mb+12,'text-anchor':'middle',fill:'#9ca3af','font-size':'9'}, x));
   }
 
-  // "Now" marker (April 2026)
-  const NOW_X = 2026 + 3/12;
+  // "Now" marker (May 2026)
+  const NOW_X = 2026 + 4/12;
   const nowPx = xPx(NOW_X);
   svg.appendChild(el('line', {x1:nowPx,y1:mt,x2:nowPx,y2:H-mb,stroke:'#fbbf24','stroke-width':'1.5','stroke-dasharray':'5,3'}));
-  svg.appendChild(el('text', {x:nowPx+3,y:mt+9,fill:'#fbbf24','font-size':'8'}, 'Apr 2026'));
+  svg.appendChild(el('text', {x:nowPx+3,y:mt+9,fill:'#fbbf24','font-size':'8'}, 'May 2026'));
 
   // Draw each series
   series.forEach(s => {
