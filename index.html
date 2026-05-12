@@ -1693,7 +1693,7 @@ function renderMarketValue() {
   r1.className='grid g4'; r1.style.marginBottom='12px';
   r1.innerHTML = [
     kpiCard('Total Purchase Cost', fe(totalPP),                         'Sum of all purchase prices',               '#f9fafb'),
-    kpiCard('Est. Market Value',   fe(Math.round(totalCV)),             'Listing €/m² × (1−discount) × sqm',       '#60a5fa', true),
+    kpiCard('Est. Market Value',   fe(Math.round(totalCV)),             'IS24 €/m² × (1−gap) × (1−Abschlag) × sqm', '#60a5fa', true),
     kpiCard('Unrealised Gain/Loss',fe(Math.round(totalGn)),             fp(totalGn/totalPP*100,1)+' vs cost',       vc(totalGn), true),
     kpiCard('Real Equity (est.)',  fe(Math.round(totalCV-totalRem)),    'Est. Value − remaining debt',              '#34d399', true),
   ].join('');
