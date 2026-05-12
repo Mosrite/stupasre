@@ -371,15 +371,21 @@ const KNK_DETAIL = {
   ],
 };
 
-// Market value data: seed snapshots derived from IS24 Schätzwert 2026-05-12 (8% asking→transaction discount baked in)
-// pricePerSqm = IS24_value / ((1 - 0.08) × size), rounded to nearest 50
-// Users add new snapshots via the form in the Market Value tab (stored in localStorage)
-const IS24_SEED = [
-  {id:'berlin',     date:'2026-05-12', pricePerSqm:5320},  // IS24: €274k / (0.92×56m²) = 5,319
-  {id:'eschweiler', date:'2026-05-12', pricePerSqm:2040},  // IS24: €77k  / (0.92×41m²)
-  {id:'huegelstr',  date:'2026-05-12', pricePerSqm:5040},  // IS24: €519k / (0.92×112m²) = 5,036
-  {id:'ohmstr',     date:'2026-05-12', pricePerSqm:6910},  // IS24: €477k / (0.92×75m²)  = 6,913
-  {id:'leipzig',    date:'2026-05-12', pricePerSqm:3020},  // IS24: €157k / (0.92×56.5m²)
+// ── MARKET SNAPSHOTS ─────────────────────────────────────────────────────────
+// Source of truth: Airtable "Market Value Snapshots" (base appOKVoE79fxV1WlI, table tbleVuDQhI1BnNZ9H)
+// DO NOT edit manually. Updated quarterly by the "market-value-update" scheduled task,
+// which reads all records from Airtable and rewrites this block.
+// Each entry: {id, date, pricePerSqm, discount, value}
+//   pricePerSqm = avg €/m² asking price for comparable listings in the postal code
+//   discount    = asking→transaction gap applied (%)
+//   value       = pricePerSqm × (1 − discount/100) × floor_area_m²  (pre-computed)
+// Last updated: 2026-05-12 (Q2 2026 — IS24 Schätzwert back-calculated)
+const MARKET_SNAPSHOTS = [
+  {id:'berlin',     date:'2026-05-12', pricePerSqm:5320, discount:8, value:274086},
+  {id:'eschweiler', date:'2026-05-12', pricePerSqm:2040, discount:8, value:76954},
+  {id:'huegelstr',  date:'2026-05-12', pricePerSqm:5040, discount:8, value:519322},
+  {id:'ohmstr',     date:'2026-05-12', pricePerSqm:6910, discount:8, value:476790},
+  {id:'leipzig',    date:'2026-05-12', pricePerSqm:3020, discount:8, value:157583},
 ];
 
 // Forward projection rates (%/yr) — applied from the latest snapshot date onward
