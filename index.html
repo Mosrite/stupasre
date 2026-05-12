@@ -1879,11 +1879,14 @@ function renderMarketValue() {
   const fn = document.createElement('div');
   fn.className='footnotes';
   fn.innerHTML=`
-    <b>Method:</b> Average asking price (€/m²) for comparable listed properties in the postal code, multiplied by (1 − discount%) × floor area.
-    The discount (typically 5–10% in Germany) represents the asking→transaction gap. Recorded per snapshot so it can vary over time.<br>
-    <b>Implied Rate/yr:</b> Annualized CAGR from purchase price to the latest snapshot. Negative = market corrected since purchase.<br>
-    <b>Data source:</b> All snapshots are stored in Airtable (Market Value Snapshots table) and embedded here by the quarterly scheduled task.
-    Q2 2026 seed values are back-calculated from IS24 Schätzwert at 8% discount.<br>
+    <b>Method:</b> IS24 Schätzwert back-calculated to average asking €/m² by Stadtteil (micro-location), then multiplied by floor area and discounted in two stages:
+    (1) <b>Asking gap</b> (~8%): difference between listed and transaction prices in Germany's current market.
+    (2) <b>Vermietungsabschlag</b> (15–20%): tenanted properties sell at a discount vs owner-occupied because buyers forgo the owner-occupier premium.
+    Frankfurt + Berlin: 20%; Leipzig + Eschweiler: 15% (more investor-dominated buyer base in smaller markets).<br>
+    <b>Heating factor:</b> Additional adjustment for heating system compliance risk under GEG 2024. Currently 0% for all properties (all Erdgas).<br>
+    <b>Energy class</b> (from Energieausweise): Berlin E · Eschweiler D · Hügelstr. E · Ohmstr. C · Leipzig E. Informational only; IS24 AVM already partially prices this in.<br>
+    <b>Data source:</b> Snapshots stored in Airtable (Market Value Snapshots table) and embedded here by the quarterly scheduled task.
+    Q2 2026 values are back-calculated from IS24 Schätzwert.<br>
     <b>Forward projection:</b> Compound growth from the latest snapshot at the rate you set above. Illustrative only.`;
   sec.appendChild(fn);
 }
