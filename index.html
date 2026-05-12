@@ -1805,7 +1805,7 @@ function renderMarketValue() {
     const gap   = s ? (s.askingGap ?? s.discount ?? 8) : 8;
     const absch = s ? (s.vermietungsAbschlag ?? 0) : 0;
     const klasse = s?.energyClass ?? '—';
-    const klasseColor = {A:'+':'#34d399','B':'#6ee7b7','C':'#a7f3d0','D':'#fbbf24','E':'#fb923c','F':'#f87171','G':'#ef4444','H':'#dc2626'}[klasse] || '#9ca3af';
+    const klasseColor = {'A+':'#34d399','A':'#6ee7b7','B':'#a7f3d0','C':'#fde68a','D':'#fbbf24','E':'#fb923c','F':'#f87171','G':'#ef4444','H':'#dc2626'}[klasse] || '#9ca3af';
     html+=`<tr>
       <td class="left">${c.name}</td>
       <td style="color:#9ca3af">${c.size}m²</td>
