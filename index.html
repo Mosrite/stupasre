@@ -1707,19 +1707,29 @@ function renderMarketValue() {
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
       <div>
         <span style="color:#60a5fa;font-weight:700">📊 Market Value Method:</span>
-        Average asking price (€/m²) for comparable listings in each postal code,
-        discounted by the asking→transaction gap, multiplied by each property's floor area.
-        Snapshots recorded quarterly and stored in Airtable.
+        IS24 Schätzwert back-calculated to €/m² by Stadtteil, then adjusted for
+        asking→transaction gap, Vermietungsabschlag (tenanted discount), and heating system.
+        Snapshots recorded quarterly in Airtable.
+        Formula: <code style="color:#fbbf24">sqm × €/m² × (1−gap%) × (1−Abschlag%) × (1+heating%)</code>
       </div>
       <div style="color:#9ca3af;font-size:10px;white-space:nowrap">Last snapshot: ${lastDate || '—'}</div>
     </div>
     <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:12px">
-      ${CVS.map(c => `<span>
-        <b style="color:${c.color}">${c.name}</b>
-        <span style="color:#60a5fa">€${f(c.last?.pricePerSqm||0)}/m²</span>
-        <span style="color:#9ca3af">× (1−${c.last?.discount||8}%) × ${c.size}m²</span>
-        = <span style="font-weight:600;color:#f9fafb">€${f(c.cv)}</span>
-      </span>`).join('')}
+      ${CVS.map(c => {
+        const s = c.last;
+        if (!s) return `<span><b style="color:${c.color}">${c.name}</b> <span style="color:#9ca3af">no snapshot</span></span>`;
+        const gap   = s.askingGap   ?? s.discount ?? 8;
+        const absch = s.vermietungsAbschlag ?? 0;
+        const heat  = s.heatingFactor ?? 0;
+        const heatStr = heat !== 0 ? ` × (1${heat>0?'+':''}${heat}%)` : '';
+        return `<span>
+          <b style="color:${c.color}">${c.name}</b>
+          <span style="color:#9ca3af;font-size:10px">${s.stadtteil||''} · ${s.energyClass||'?'}</span><br>
+          <span style="color:#60a5fa">${c.size}m² × €${f(s.pricePerSqm)}/m²</span>
+          <span style="color:#9ca3af">× (1−${gap}%) × (1−${absch}%)${heatStr}</span>
+          = <span style="font-weight:600;color:#f9fafb">€${f(c.cv)}</span>
+        </span>`;
+      }).join('')}
     </div>`;
   sec.appendChild(banner);
 
