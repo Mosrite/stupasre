@@ -1638,159 +1638,295 @@ function renderMortgages() {
 // ─── MARKET VALUE TAB ────────────────────────────────────────────────────────
 function renderMarketValue() {
   const sec = document.getElementById('market-value');
+  sec.innerHTML = '';
+  const NOW_FRAC = 2026 + 4/12; // May 2026
+  const propColors = ['#60a5fa','#34d399','#f97316','#a78bfa','#f87171'];
 
-  const NOW_FRAC = 2026 + 3/12; // April 2026
+  // Load persisted data
+  const discount    = parseFloat(localStorage.getItem('re_mkt_discount') || '8');
+  let userSnaps     = [];
+  try { userSnaps = JSON.parse(localStorage.getItem('re_mkt_snaps') || '[]'); } catch(e) {}
+  const userRates   = JSON.parse(localStorage.getItem('re_mkt_fwdrates') || 'null') || {};
+  const fwdRates    = {...FORWARD_RATES, ...userRates};
 
-  function getValueAtYear(d, year) {
-    const md = MORTGAGE_DATA[d.id];
-    const mv = MARKET_DATA[d.id];
-    const py = parseInt(md.purchaseDate.substring(0,4));
-    const pm = parseInt(md.purchaseDate.substring(5,7));
-    const purchaseFrac = py + (pm-1)/12;
-    if (year < purchaseFrac) return null;
-    return d.pp * Math.pow(1 + mv.annualPct/100, year - purchaseFrac);
+  const allSnaps = [...IS24_SEED, ...userSnaps];
+
+  function dateToFrac(dateStr) {
+    const [y,m,d] = dateStr.split('-').map(Number);
+    return y + (m-1)/12 + (d-1)/365;
+  }
+  function computeValue(propId, pricePerSqm) {
+    const d = D.find(x => x.id === propId);
+    return d ? Math.round(pricePerSqm * (1 - discount/100) * d.size) : 0;
+  }
+  function getSnapsForProp(propId) {
+    return allSnaps
+      .filter(s => s.id === propId)
+      .sort((a,b) => a.date.localeCompare(b.date))
+      .map(s => ({...s, value: computeValue(propId, s.pricePerSqm)}));
   }
 
-  const currentVals = D.map(d => {
-    const cv = getValueAtYear(d, NOW_FRAC);
-    return { ...d,
-      currentVal: cv,
-      gainAmt: cv - d.pp,
-      gainPct: (cv - d.pp) / d.pp * 100,
-      rate: MARKET_DATA[d.id].annualPct,
-      note: MARKET_DATA[d.id].note,
-    };
+  // Build current values per property
+  const CVS = D.map((d, i) => {
+    const md    = MORTGAGE_DATA[d.id];
+    const snaps = getSnapsForProp(d.id);
+    const last  = snaps[snaps.length - 1];
+    const cv    = last ? last.value : d.pp;
+    const gainAmt = cv - d.pp;
+    const gainPct = gainAmt / d.pp * 100;
+    const purchFrac = parseInt(md.purchaseDate.substring(0,4)) + (parseInt(md.purchaseDate.substring(5,7))-1)/12;
+    const lastFrac  = last ? dateToFrac(last.date) : NOW_FRAC;
+    const yrs       = Math.max(0.01, lastFrac - purchFrac);
+    const implRate  = (Math.pow(cv / d.pp, 1/yrs) - 1) * 100;
+    return { ...d, cv, gainAmt, gainPct, implRate,
+             snaps, last, lastFrac, purchFrac,
+             forwardRate: fwdRates[d.id], color: propColors[i] };
   });
 
-  const totalPP         = D.reduce((s,d) => s + d.pp, 0);
-  const totalCurrentVal = currentVals.reduce((s,d) => s + d.currentVal, 0);
-  const totalGain       = totalCurrentVal - totalPP;
-  const totalRemaining  = D.reduce((s,d) => s + MORTGAGE_DATA[d.id].loanAmt - MORTGAGE_DATA[d.id].tilgungPaid, 0);
+  const totalPP  = D.reduce((s,d) => s + d.pp, 0);
+  const totalCV  = CVS.reduce((s,c) => s + c.cv, 0);
+  const totalGn  = totalCV - totalPP;
+  const totalRem = D.reduce((s,d) => s + MORTGAGE_DATA[d.id].loanAmt - MORTGAGE_DATA[d.id].tilgungPaid, 0);
 
-  // KPI row
+  // ── KPI row ──────────────────────────────────────────────────────────────────
   const r1 = document.createElement('div');
   r1.className='grid g4'; r1.style.marginBottom='12px';
   r1.innerHTML = [
-    kpiCard('Total Purchase Cost', fe(totalPP), 'Sum of all purchase prices', '#f9fafb'),
-    kpiCard('Est. Current Value', fe(Math.round(totalCurrentVal)), 'April 2026 (model)', '#60a5fa', true),
-    kpiCard('Est. Unrealised Gain', fe(Math.round(totalGain)), fp(totalGain/totalPP*100,1)+' vs cost', vc(totalGain), true),
-    kpiCard('Est. Real Equity', fe(Math.round(totalCurrentVal-totalRemaining)), 'Value − remaining debt', '#34d399', true),
+    kpiCard('Total Purchase Cost', fe(totalPP),                         'Sum of all purchase prices',               '#f9fafb'),
+    kpiCard('Est. Market Value',   fe(Math.round(totalCV)),             'Listing €/m² × (1−discount) × sqm',       '#60a5fa', true),
+    kpiCard('Unrealised Gain/Loss',fe(Math.round(totalGn)),             fp(totalGn/totalPP*100,1)+' vs cost',       vc(totalGn), true),
+    kpiCard('Real Equity (est.)',  fe(Math.round(totalCV-totalRem)),    'Est. Value − remaining debt',              '#34d399', true),
   ].join('');
   sec.appendChild(r1);
 
-  // Assumptions banner
-  const assump = document.createElement('div');
-  assump.style.cssText='background:#1c2535;border:1px solid #fbbf24;border-radius:8px;padding:12px;margin-bottom:16px;font-size:11px;color:#d1d5db';
-  assump.innerHTML='<span style="color:#fbbf24;font-weight:700">⚠ Model projections — not appraisals.</span> '
-    +'Appreciation rates are assumptions based on market context. Actual values depend on market conditions, property condition, and local demand.<br>'
-    +'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:14px">'
-    +currentVals.map(d=>`<span><b style="color:#d1d5db">${d.name}</b>: <span style="color:#a78bfa">${d.rate}%/yr</span> — ${d.note}</span>`).join('')
-    +'</div>';
-  sec.appendChild(assump);
+  // ── Methodology banner ───────────────────────────────────────────────────────
+  const banner = document.createElement('div');
+  banner.style.cssText='background:#1c2535;border:1px solid #374151;border-radius:8px;padding:12px;margin-bottom:16px;font-size:11px;color:#d1d5db';
+  const lastDate = CVS.reduce((acc, c) => c.last?.date > acc ? c.last.date : acc, '');
+  banner.innerHTML = `
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+      <div>
+        <span style="color:#60a5fa;font-weight:700">📊 Market Value Method:</span>
+        Average asking price (€/m²) for comparable listings in each postal code,
+        discounted by <b style="color:#fbbf24">${discount}%</b> (asking → transaction gap),
+        multiplied by each property's floor area.
+        Update whenever you check listings on Immoscout — quarterly is sufficient.
+      </div>
+      <div style="color:#9ca3af;font-size:10px;white-space:nowrap">Last snapshot: ${lastDate || '—'}</div>
+    </div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:12px">
+      ${CVS.map(c => `<span>
+        <b style="color:${c.color}">${c.name}</b>
+        <span style="color:#60a5fa">€${f(c.last?.pricePerSqm||0)}/m²</span>
+        <span style="color:#9ca3af">× (1−${discount}%) × ${c.size}m²</span>
+        = <span style="font-weight:600;color:#f9fafb">€${f(c.cv)}</span>
+      </span>`).join('')}
+    </div>`;
+  sec.appendChild(banner);
 
-  // Line chart
-  const lcCard = document.createElement('div');
-  lcCard.className='card chart-wrap'; lcCard.style.marginBottom='16px';
-  lcCard.innerHTML='<div class="chart-title">Property Value Development — Purchase to 2031 (€)</div>'
-    +'<div class="chart-sub">Solid = estimated historical appreciation. Dashed = projected. Yellow line = April 2026. Hover data points for values.</div>';
-
+  // ── Line chart ───────────────────────────────────────────────────────────────
   const YEAR_MIN = 2020, YEAR_MAX = 2031;
-  const propColors = ['#60a5fa','#34d399','#f97316','#a78bfa','#f87171'];
 
-  const series = D.map((d,i) => ({
-    name: d.name, color: propColors[i],
-    points: (() => {
-      const pts = [];
-      for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
-        const v = getValueAtYear(d, y);
-        if (v !== null) pts.push({x:y, y:Math.round(v), projected: y >= 2026});
+  function getPropValAt(c, yFrac) {
+    if (yFrac < c.purchFrac) return 0;
+    if (yFrac >= c.lastFrac)
+      return c.cv * Math.pow(1 + c.forwardRate/100, yFrac - c.lastFrac);
+    // Historical interpolation between purchase price and snapshots
+    const pts = [{frac:c.purchFrac, value:c.pp}, ...c.snaps.map(s=>({frac:dateToFrac(s.date), value:s.value}))];
+    pts.sort((a,b) => a.frac - b.frac);
+    for (let k = 0; k < pts.length-1; k++) {
+      if (yFrac >= pts[k].frac && yFrac <= pts[k+1].frac) {
+        const t = (yFrac - pts[k].frac) / (pts[k+1].frac - pts[k].frac);
+        return pts[k].value + t*(pts[k+1].value - pts[k].value);
       }
-      return pts;
-    })(),
-  }));
-
-  // Portfolio total series
-  const portPoints = [];
-  for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
-    const tot = D.reduce((s,d) => { const v=getValueAtYear(d,y); return v!==null?s+v:s; }, 0);
-    if (tot > 0) portPoints.push({x:y, y:Math.round(tot), projected: y >= 2026});
+    }
+    return pts[pts.length-1].value;
   }
-  series.push({name:'Portfolio', color:'#f9fafb', thick:true, points:portPoints});
 
-  lcCard.appendChild(makeLineChart({series, W:940, H:280, ml:72, mr:100}));
-  { const leg = document.createElement('div'); leg.className='legend';
-    [...D.map((d,i)=>({name:d.name,color:propColors[i]})), {name:'Portfolio',color:'#f9fafb'}]
-      .forEach(s => { const div=document.createElement('div'); div.className='leg-item';
-        div.innerHTML=`<div class="leg-dot" style="background:${s.color}"></div>${s.name}`;
-        leg.appendChild(div); });
-    lcCard.appendChild(leg); }
-  sec.appendChild(lcCard);
-
-  // Value table
-  const tCard = document.createElement('div');
-  tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
-  tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Market Value Estimates</div>';
-  let html = `<table><thead><tr>
-    <th class="left">Property</th>
-    <th>Purchase Date</th>
-    <th>Purchase Price</th>
-    <th>Rate/yr</th>
-    <th>Est. Value Apr 2026</th>
-    <th>Gain € (unrealised)</th>
-    <th>Gain %</th>
-    <th>Remaining Debt</th>
-    <th>Est. Real Equity</th>
-    <th>Est. Value 2031</th>
-    <th>2031 Gain €</th>
-  </tr></thead><tbody>`;
-
-  currentVals.forEach(d => {
-    const md = MORTGAGE_DATA[d.id];
-    const remaining  = md.loanAmt - md.tilgungPaid;
-    const realEquity = d.currentVal - remaining;
-    const val2031    = getValueAtYear(d, 2031);
-    const gain2031   = val2031 - d.pp;
-    html += `<tr>
-      <td class="left">${d.name}</td>
-      <td style="color:#9ca3af">${md.purchaseDate}</td>
-      <td>${fe(d.pp)}</td>
-      <td style="color:#a78bfa">${fp(d.rate,1)}</td>
-      <td style="color:#60a5fa;font-weight:600">${fe(Math.round(d.currentVal))}</td>
-      <td style="color:${vc(d.gainAmt)}">${fe(Math.round(d.gainAmt))}</td>
-      <td style="color:${vc(d.gainPct)};font-weight:600">${fp(d.gainPct,1)}</td>
-      <td style="color:#f87171">${fe(Math.round(remaining))}</td>
-      <td style="color:#34d399;font-weight:600">${fe(Math.round(realEquity))}</td>
-      <td style="color:#818cf8">${fe(Math.round(val2031))}</td>
-      <td style="color:${vc(gain2031)}">${fe(Math.round(gain2031))}</td>
-    </tr>`;
+  const series = CVS.map(c => {
+    const pts = [];
+    // Purchase price anchor
+    pts.push({x: c.purchFrac, y: c.pp, projected: false});
+    // IS24/user snapshots
+    c.snaps.forEach(s => { if (dateToFrac(s.date) > c.purchFrac) pts.push({x: dateToFrac(s.date), y: s.value, projected: false}); });
+    // Forward projection in half-year steps
+    for (let y = c.lastFrac + 0.5; y <= YEAR_MAX + 0.1; y += 0.5)
+      pts.push({x: Math.min(y, YEAR_MAX), y: Math.round(c.cv * Math.pow(1+c.forwardRate/100, Math.min(y,YEAR_MAX)-c.lastFrac)), projected: true});
+    return {name:c.name, color:c.color, points:pts};
   });
 
-  const totalRealEquity = totalCurrentVal - totalRemaining;
-  const totalVal2031    = D.reduce((s,d)=>s+getValueAtYear(d,2031),0);
-  const totalGain2031   = totalVal2031 - totalPP;
-  html += `<tr class="total">
-    <td class="left">PORTFOLIO</td>
-    <td style="color:#9ca3af">—</td>
-    <td>${fe(totalPP)}</td>
-    <td style="color:#9ca3af">—</td>
-    <td style="color:#60a5fa;font-weight:600">${fe(Math.round(totalCurrentVal))}</td>
-    <td style="color:${vc(totalGain)}">${fe(Math.round(totalGain))}</td>
-    <td style="color:${vc(totalGain/totalPP*100)};font-weight:600">${fp(totalGain/totalPP*100,1)}</td>
-    <td style="color:#f87171">${fe(Math.round(totalRemaining))}</td>
-    <td style="color:#34d399;font-weight:600">${fe(Math.round(totalRealEquity))}</td>
-    <td style="color:#818cf8">${fe(Math.round(totalVal2031))}</td>
-    <td style="color:${vc(totalGain2031)}">${fe(Math.round(totalGain2031))}</td>
+  // Portfolio total
+  const portPts = [];
+  for (let yI = 0; yI <= (YEAR_MAX-YEAR_MIN)*2; yI++) {
+    const yF = YEAR_MIN + yI*0.5;
+    let tot = 0, hasAny = false;
+    CVS.forEach(c => { if (yF >= c.purchFrac) { tot += getPropValAt(c,yF); hasAny=true; } });
+    if (hasAny) portPts.push({x:yF, y:Math.round(tot), projected: yF > Math.max(...CVS.map(c=>c.lastFrac))});
+  }
+  series.push({name:'Portfolio', color:'#f9fafb', thick:true, points:portPts});
+
+  const lcCard = document.createElement('div');
+  lcCard.className='card chart-wrap'; lcCard.style.marginBottom='16px';
+  lcCard.innerHTML='<div class="chart-title">Property Value — Market Data Snapshots + Forward Projection (€)</div>'
+    +'<div class="chart-sub">Dots = market snapshots (actual observed price). Solid line = historical. Dashed = forward projection. Hover for values.</div>';
+  lcCard.appendChild(makeLineChart({series, W:940, H:280, ml:72, mr:100}));
+  const leg = document.createElement('div'); leg.className='legend';
+  [...CVS.map(c=>({name:c.name,color:c.color})), {name:'Portfolio',color:'#f9fafb'}]
+    .forEach(s => { const div=document.createElement('div'); div.className='leg-item';
+      div.innerHTML=`<div class="leg-dot" style="background:${s.color}"></div>${s.name}`; leg.appendChild(div); });
+  lcCard.appendChild(leg);
+  sec.appendChild(lcCard);
+
+  // ── Value table ──────────────────────────────────────────────────────────────
+  const tCard = document.createElement('div');
+  tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
+  tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Current Values &amp; Equity</div>';
+  let html=`<table><thead><tr>
+    <th class="left">Property</th><th>Size</th><th>Purchased</th><th>Purchase Price</th>
+    <th>€/m² (listing)</th><th>Discount</th><th>Est. Value</th>
+    <th>Gain vs Purchase</th><th>Gain %</th><th>Impl. Rate/yr</th>
+    <th>Remaining Debt</th><th>Real Equity</th><th>Proj. 2031</th>
+  </tr></thead><tbody>`;
+  CVS.forEach(c => {
+    const md  = MORTGAGE_DATA[c.id];
+    const rem = md.loanAmt - md.tilgungPaid;
+    const eq  = c.cv - rem;
+    const v31 = Math.round(c.cv * Math.pow(1+c.forwardRate/100, 2031-c.lastFrac));
+    html+=`<tr>
+      <td class="left">${c.name}</td>
+      <td style="color:#9ca3af">${c.size}m²</td>
+      <td style="color:#9ca3af">${md.purchaseDate}</td>
+      <td>${fe(c.pp)}</td>
+      <td style="color:#a78bfa">${fe(c.last?.pricePerSqm||0)}/m²</td>
+      <td style="color:#9ca3af">${discount}%</td>
+      <td style="color:#60a5fa;font-weight:600">${fe(c.cv)}</td>
+      <td style="color:${vc(c.gainAmt)}">${fe(Math.round(c.gainAmt))}</td>
+      <td style="color:${vc(c.gainPct)};font-weight:600">${fp(c.gainPct,1)}</td>
+      <td style="color:#a78bfa">${fp(c.implRate,1)}/yr</td>
+      <td style="color:#f87171">${fe(Math.round(rem))}</td>
+      <td style="color:#34d399;font-weight:600">${fe(Math.round(eq))}</td>
+      <td style="color:#818cf8">${fe(v31)} <span style="color:#6b7280;font-size:9px">(+${fp(c.forwardRate,1)}/yr)</span></td>
+    </tr>`;
+  });
+  const totalEq  = totalCV - totalRem;
+  const total31  = CVS.reduce((s,c) => s + Math.round(c.cv * Math.pow(1+c.forwardRate/100, 2031-c.lastFrac)), 0);
+  html+=`<tr class="total">
+    <td class="left">PORTFOLIO</td><td>—</td><td style="color:#9ca3af">—</td>
+    <td>${fe(totalPP)}</td><td>—</td><td>—</td>
+    <td style="color:#60a5fa;font-weight:600">${fe(Math.round(totalCV))}</td>
+    <td style="color:${vc(totalGn)}">${fe(Math.round(totalGn))}</td>
+    <td style="color:${vc(totalGn/totalPP*100)};font-weight:600">${fp(totalGn/totalPP*100,1)}</td>
+    <td>—</td>
+    <td style="color:#f87171">${fe(Math.round(totalRem))}</td>
+    <td style="color:#34d399;font-weight:600">${fe(Math.round(totalEq))}</td>
+    <td style="color:#818cf8">${fe(total31)}</td>
   </tr></tbody></table>`;
   tCard.innerHTML += html;
   sec.appendChild(tCard);
 
+  // ── Update form ──────────────────────────────────────────────────────────────
+  const formCard = document.createElement('div');
+  formCard.className='card'; formCard.style.marginBottom='16px';
+  formCard.innerHTML=`
+    <div class="chart-title" style="margin-bottom:6px">📥 Record New Market Snapshot</div>
+    <div class="chart-sub" style="margin-bottom:12px">
+      On Immoscout: search comparable listings in each property's postal code → note the average asking price per m².
+      Enter below, save, and the chart updates automatically. Doing this quarterly builds a meaningful history.
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:10px">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <label style="font-size:10px;color:#9ca3af">Snapshot Date</label>
+        <input id="mkt-date" type="date" value="${new Date().toISOString().substring(0,10)}"
+          style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:130px">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <label style="font-size:10px;color:#fbbf24">Discount %</label>
+        <input id="mkt-discount" type="number" step="0.5" value="${discount}"
+          style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:75px">
+      </div>
+      ${CVS.map((c,i) => `
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:10px;color:${c.color}">${c.name} €/m²</label>
+          <input id="mkt-sqm-${c.id}" type="number" step="10" placeholder="${c.last?.pricePerSqm||''}"
+            style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:105px">
+        </div>
+      `).join('')}
+      <button onclick="saveMktSnapshot()"
+        style="background:#3b82f6;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;margin-top:auto">
+        Save Snapshot
+      </button>
+    </div>
+    <div id="mkt-feedback" style="font-size:11px;color:#34d399;min-height:16px"></div>
+    <div style="font-size:10px;color:#6b7280;margin-top:4px">
+      User snapshots: <span id="mkt-count">${userSnaps.length}</span> saved
+      (+ ${IS24_SEED.length} seed values from IS24 Schätzwert May 2026)
+    </div>`;
+  sec.appendChild(formCard);
+
+  // ── Forward rate editor ──────────────────────────────────────────────────────
+  const rateCard = document.createElement('div');
+  rateCard.className='card'; rateCard.style.marginBottom='16px';
+  rateCard.innerHTML=`
+    <div class="chart-title" style="margin-bottom:6px">⚙️ Forward Projection Rates</div>
+    <div class="chart-sub" style="margin-bottom:10px">Applies only to the dashed future line, starting from the latest snapshot. Has no effect on current or historical values.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+      ${CVS.map(c => `
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <label style="font-size:10px;color:${c.color}">${c.name} %/yr</label>
+          <input id="fwd-${c.id}" type="number" step="0.1" value="${c.forwardRate}"
+            style="background:#1c2535;color:#f9fafb;border:1px solid #374151;border-radius:6px;padding:6px 10px;font-size:12px;width:80px">
+        </div>
+      `).join('')}
+      <button onclick="saveFwdRates()"
+        style="background:#7c3aed;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;margin-top:auto">
+        Apply &amp; Refresh
+      </button>
+    </div>`;
+  sec.appendChild(rateCard);
+
   const fn = document.createElement('div');
   fn.className='footnotes';
-  fn.innerHTML = `
-    <b>Est. Real Equity</b> = Estimated current value − remaining mortgage balance. Pre-tax estimate of what you'd net if you sold today (before transaction costs).<br>
-    <b>Appreciation Assumptions:</b> Berlin 1.0%/yr (post-2024 correction), Frankfurt 1.5%/yr (stabilizing), Eschweiler 0.5%/yr (stable small city), Leipzig 2.0%/yr (moderate growth).<br>
-    All projections use continuous compound growth from the purchase date at the assumed annual rate. They are illustrative — not market appraisals.`;
+  fn.innerHTML=`
+    <b>Method:</b> Average asking price (€/m²) for comparable listed properties in the postal code, multiplied by (1 − discount%) × floor area.
+    The discount represents the typical gap between listing price and actual transaction price in the current German market (historically 5–10%).<br>
+    <b>Implied Rate/yr:</b> Annualized CAGR from purchase price to the latest snapshot. Negative = market corrected since purchase.<br>
+    <b>Seed data:</b> Initial €/m² values are back-calculated from IS24 Schätzwert estimates (May 2026) assuming an 8% discount,
+    so they reproduce the IS24-shown values. You can override these by saving new snapshots.<br>
+    <b>Forward projection:</b> Compound growth from the latest snapshot at the rate you set above. Illustrative only.`;
   sec.appendChild(fn);
+}
+
+// ── Global helpers called from onclick ───────────────────────────────────────
+function saveMktSnapshot() {
+  const date = document.getElementById('mkt-date')?.value;
+  const disc = parseFloat(document.getElementById('mkt-discount')?.value);
+  if (!date) return;
+  if (!isNaN(disc)) localStorage.setItem('re_mkt_discount', disc);
+
+  const existing = JSON.parse(localStorage.getItem('re_mkt_snaps') || '[]');
+  const newSnaps = [];
+  D.forEach(d => {
+    const sqmEl = document.getElementById(`mkt-sqm-${d.id}`);
+    const val   = parseFloat(sqmEl?.value);
+    if (!isNaN(val) && val > 0) newSnaps.push({id:d.id, date, pricePerSqm:val});
+  });
+  if (!newSnaps.length) { document.getElementById('mkt-feedback').textContent='⚠ Enter at least one €/m² value.'; return; }
+  localStorage.setItem('re_mkt_snaps', JSON.stringify([...existing, ...newSnaps]));
+  document.getElementById('mkt-feedback').innerHTML =
+    `✓ Saved ${newSnaps.length} value(s) for ${date}.&ensp;<a href="#" onclick="document.getElementById('market-value').innerHTML='';renderMarketValue();return false;" style="color:#60a5fa">Refresh tab</a>`;
+  document.getElementById('mkt-count').textContent = existing.length + newSnaps.length;
+}
+
+function saveFwdRates() {
+  const rates = JSON.parse(localStorage.getItem('re_mkt_fwdrates') || '{}');
+  D.forEach(d => {
+    const el = document.getElementById(`fwd-${d.id}`);
+    const v  = parseFloat(el?.value);
+    if (!isNaN(v)) rates[d.id] = v;
+  });
+  localStorage.setItem('re_mkt_fwdrates', JSON.stringify(rates));
+  document.getElementById('market-value').innerHTML = '';
+  renderMarketValue();
 }
 
 // ─── BREAK-EVEN ──────────────────────────────────────────────────────────────
