@@ -1648,28 +1648,18 @@ function renderMarketValue() {
   const NOW_FRAC = 2026 + 4/12; // May 2026
   const propColors = ['#60a5fa','#34d399','#f97316','#a78bfa','#f87171'];
 
-  // Load persisted data
-  const discount    = parseFloat(localStorage.getItem('re_mkt_discount') || '8');
-  let userSnaps     = [];
-  try { userSnaps = JSON.parse(localStorage.getItem('re_mkt_snaps') || '[]'); } catch(e) {}
-  const userRates   = JSON.parse(localStorage.getItem('re_mkt_fwdrates') || 'null') || {};
-  const fwdRates    = {...FORWARD_RATES, ...userRates};
-
-  const allSnaps = [...IS24_SEED, ...userSnaps];
+  // Forward rates: defaults overridable via the rate editor below (localStorage)
+  const userRates = JSON.parse(localStorage.getItem('re_mkt_fwdrates') || 'null') || {};
+  const fwdRates  = {...FORWARD_RATES, ...userRates};
 
   function dateToFrac(dateStr) {
     const [y,m,d] = dateStr.split('-').map(Number);
     return y + (m-1)/12 + (d-1)/365;
   }
-  function computeValue(propId, pricePerSqm) {
-    const d = D.find(x => x.id === propId);
-    return d ? Math.round(pricePerSqm * (1 - discount/100) * d.size) : 0;
-  }
   function getSnapsForProp(propId) {
-    return allSnaps
+    return MARKET_SNAPSHOTS
       .filter(s => s.id === propId)
-      .sort((a,b) => a.date.localeCompare(b.date))
-      .map(s => ({...s, value: computeValue(propId, s.pricePerSqm)}));
+      .sort((a,b) => a.date.localeCompare(b.date));
   }
 
   // Build current values per property
