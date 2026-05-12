@@ -1791,27 +1791,33 @@ function renderMarketValue() {
   tCard.className='card'; tCard.style.overflowX='auto'; tCard.style.marginBottom='16px';
   tCard.innerHTML='<div class="chart-title" style="margin-bottom:10px">Current Values &amp; Equity</div>';
   let html=`<table><thead><tr>
-    <th class="left">Property</th><th>Size</th><th>Purchased</th><th>Purchase Price</th>
-    <th>€/m² (listing)</th><th>Discount</th><th>Est. Value</th>
-    <th>Gain vs Purchase</th><th>Gain %</th><th>Impl. Rate/yr</th>
+    <th class="left">Property</th><th>Size</th><th>Stadtteil</th><th>Klasse</th>
+    <th>Purchase Price</th><th>€/m² (IS24)</th><th>Gap %</th><th>Abschlag %</th>
+    <th>Est. Value</th><th>Gain vs Purchase</th><th>Gain %</th>
     <th>Remaining Debt</th><th>Real Equity</th><th>Proj. 2031</th>
   </tr></thead><tbody>`;
   CVS.forEach(c => {
-    const md  = MORTGAGE_DATA[c.id];
-    const rem = md.loanAmt - md.tilgungPaid;
-    const eq  = c.cv - rem;
-    const v31 = Math.round(c.cv * Math.pow(1+c.forwardRate/100, 2031-c.lastFrac));
+    const md    = MORTGAGE_DATA[c.id];
+    const rem   = md.loanAmt - md.tilgungPaid;
+    const eq    = c.cv - rem;
+    const v31   = Math.round(c.cv * Math.pow(1+c.forwardRate/100, 2031-c.lastFrac));
+    const s     = c.last;
+    const gap   = s ? (s.askingGap ?? s.discount ?? 8) : 8;
+    const absch = s ? (s.vermietungsAbschlag ?? 0) : 0;
+    const klasse = s?.energyClass ?? '—';
+    const klasseColor = {A:'+':'#34d399','B':'#6ee7b7','C':'#a7f3d0','D':'#fbbf24','E':'#fb923c','F':'#f87171','G':'#ef4444','H':'#dc2626'}[klasse] || '#9ca3af';
     html+=`<tr>
       <td class="left">${c.name}</td>
       <td style="color:#9ca3af">${c.size}m²</td>
-      <td style="color:#9ca3af">${md.purchaseDate}</td>
+      <td style="color:#9ca3af;font-size:10px">${s?.stadtteil||'—'}</td>
+      <td style="color:${klasseColor};font-weight:700">${klasse}</td>
       <td>${fe(c.pp)}</td>
-      <td style="color:#a78bfa">${fe(c.last?.pricePerSqm||0)}/m²</td>
-      <td style="color:#9ca3af">${discount}%</td>
+      <td style="color:#a78bfa">${s ? fe(s.pricePerSqm) : '—'}/m²</td>
+      <td style="color:#9ca3af">${gap}%</td>
+      <td style="color:#fbbf24">${absch}%</td>
       <td style="color:#60a5fa;font-weight:600">${fe(c.cv)}</td>
       <td style="color:${vc(c.gainAmt)}">${fe(Math.round(c.gainAmt))}</td>
       <td style="color:${vc(c.gainPct)};font-weight:600">${fp(c.gainPct,1)}</td>
-      <td style="color:#a78bfa">${fp(c.implRate,1)}/yr</td>
       <td style="color:#f87171">${fe(Math.round(rem))}</td>
       <td style="color:#34d399;font-weight:600">${fe(Math.round(eq))}</td>
       <td style="color:#818cf8">${fe(v31)} <span style="color:#6b7280;font-size:9px">(+${fp(c.forwardRate,1)}/yr)</span></td>
