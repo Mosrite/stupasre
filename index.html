@@ -1879,13 +1879,13 @@ function renderMarketValue() {
   const fn = document.createElement('div');
   fn.className='footnotes';
   fn.innerHTML=`
-    <b>Method:</b> IS24 Schätzwert (Automated Valuation Model) is used directly as the estimated market value per property.
-    IS24's AVM draws on comparable transaction and listing data for the specific Stadtteil, incorporating location, building age, condition, and energy efficiency.
-    The €/m² (asking) and gap% fields are back-calculated from the IS24 value for reference and cross-checking — they are not the primary input.<br>
+    <b>Method:</b> Immowelt Stadtteil average Wohnung asking price (€/m²) × (1 − 8% asking-to-transaction gap) × floor area.
+    Source pages are fetched autonomously each quarter — no manual input required.
+    The 8% gap converts asking price to estimated transaction value based on typical German market conditions.<br>
     <b>Vermietungsabschlag</b> (tenanted discount, stored as metadata): 20% for Frankfurt/Berlin, 15% for Leipzig/Eschweiler.
-    Not applied to the stated value because IS24's AVM already reflects the mix of investor and owner-occupier transactions in each market.
-    This can be reconsidered once we have multiple quarters of data to compare against actual transaction prices.<br>
-    <b>Energy class</b> (from Energieausweise): Berlin E · Eschweiler D · Hügelstr. E · Ohmstr. C · Leipzig E. Incorporated by IS24; stored here for reference.<br>
+    Stored for reference; not applied to the stated value — the estimate reflects the unencumbered market price for comparability.
+    Can be applied manually when evaluating a sale scenario.<br>
+    <b>Energy class</b> (from Energieausweise): Berlin E · Eschweiler D · Hügelstr. E · Ohmstr. C · Leipzig E. Stored for reference.<br>
     <b>Heating</b>: All 5 properties run on Erdgas central heating. Heating factor = 0% for all.<br>
     <b>Data source:</b> Snapshots stored in Airtable (Market Value Snapshots table) and embedded here by the quarterly scheduled task.<br>
     <b>Forward projection:</b> Compound growth from the latest snapshot at the rate set above. Illustrative only.`;
