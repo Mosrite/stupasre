@@ -1707,11 +1707,10 @@ function renderMarketValue() {
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
       <div>
         <span style="color:#60a5fa;font-weight:700">📊 Market Value Method:</span>
-        IS24 Schätzwert (AVM) used directly — it already incorporates location, building age,
-        condition, energy class, and comparable transaction data by Stadtteil.
-        The €/m² and gap% fields are back-calculated from IS24 for reference; values match IS24 ±10k.
-        Snapshots recorded quarterly in Airtable.
-        Formula: <code style="color:#fbbf24">IS24 Schätzwert ≈ sqm × €/m² × (1−gap%)</code>
+        Immowelt Stadtteil average Wohnung €/m² (asking price) × (1 − 8% asking-to-transaction gap) × floor area.
+        Source: Immowelt Stadtteil price pages, updated monthly by Immowelt.
+        Snapshots fetched autonomously by the quarterly scheduled task and recorded in Airtable.
+        Formula: <code style="color:#fbbf24">value = pricePerSqm × 0.92 × sqm</code>
       </div>
       <div style="color:#9ca3af;font-size:10px;white-space:nowrap">Last snapshot: ${lastDate || '—'}</div>
     </div>
