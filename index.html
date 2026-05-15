@@ -1846,7 +1846,7 @@ function renderMarketValue() {
     <div style="font-size:12px;color:#d1d5db;line-height:1.6">
       Snapshots are stored in Airtable (<b style="color:#60a5fa">Market Value Snapshots</b> table)
       and written into this dashboard by the <b style="color:#a78bfa">market-value-update</b> scheduled task.
-      The task runs every quarter — it pulls the latest values from Immoscout, saves them to Airtable,
+      The task runs every quarter — it fetches Immowelt Stadtteil price pages, saves the values to Airtable,
       and rewrites the <code style="color:#fbbf24">MARKET_SNAPSHOTS</code> constant in this file.
     </div>
     <div style="margin-top:10px;font-size:11px;color:#6b7280">
