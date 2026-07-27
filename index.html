@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Portfolio Dashboard · June 2026</title>
+<title>Portfolio Dashboard · July 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#111827;color:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;padding:24px}
@@ -62,7 +62,7 @@ svg text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 </head>
 <body>
 <h1>Portfolio Dashboard</h1>
-<p class="subtitle">5 properties · June 2026 · Based on actual payments · All figures EUR/month</p>
+<p class="subtitle">5 properties · July 2026 · Based on actual payments · All figures EUR/month</p>
 
 <div class="tabs">
   <button class="tab active" onclick="showTab('overview')">Portfolio Overview</button>
@@ -101,14 +101,14 @@ const RAW = [
     ],
   },
   { id:'eschweiler', name:'Eschweiler', addr:'Gartenstraße', pp:86000, origLoan:89000, bj:1995, tn:1,
-    km:419.18, nk:130.82, hg:208.00, gs:22.66, ox:3.50, zi:124.79, ti:270.69, note:'',
+    km:427.56, nk:130.82, hg:208.00, gs:22.66, ox:3.50, zi:124.79, ti:270.69, note:'',
     avgRepair:62.99,   // 3779.34 / 5 / 12
     grossRentalYield:5.32, netRentalYield:3.03, roe:29.14,  // Source: Notion KPIs & Metrics (2025 Actual)
     knk:13102.49, knkConfirmed:13102.49, knkPartial:false,
     // ALL CONFIRMED: Notar (Förl & Winnen 05.02.2021) €1,369.09 + GrESt (FA Aachen-Kreis 12.01.2021) €5,494 + GB1 (AG Eschweiler 21.01.2021) €389 + GB2 (AG Eschweiler 16.03.2021) €291 + Makler (phi Immobilien 08.02.2021) €3,070.20 + Beratung immostanding (Rech.Nr. 2094 28.12.2020) €1,760 + Beratung immostanding (Rech.Nr. 2093 02.11.2020) €729.20.
     size:41,     // m² per immostanding Exposé
     tenants:[
-      {name:'Pascal Speer', km:419.18, nk:130.82},
+      {name:'Pascal Speer', km:427.56, nk:130.82},
     ],
     opexDetail:[
       {label:'DKB Kontoführung', value:3.50, hint:'Quarterly ÷ 3'},
@@ -157,7 +157,7 @@ const RAW = [
     ],
   },
   { id:'leipzig', name:'Leipzig', addr:'Magdeburger Str. 7', pp:130000, origLoan:123000, bj:1910, tn:3,
-    km:823.10, nk:240.00, hg:353.00, gs:9.94, ox:6.33, zi:405.91, ti:227.54,
+    km:829.32, nk:240.00, hg:353.00, gs:9.94, ox:6.33, zi:405.91, ti:227.54,
     avgRepair:154.53,  // 5563.10 / 3 / 12
     grossRentalYield:7.46, netRentalYield:5.23, roe:11.78,  // Source: Notion KPIs & Metrics (2025 Actual)
     knk:9795.25, knkConfirmed:9795.25, knkPartial:false,
@@ -167,7 +167,7 @@ const RAW = [
     tenants:[
       {name:'Mohrez Albarshini', km:323.00, nk:110.00},
       {name:'Youshaa Sarheel',   km:189.00, nk:45.00},
-      {name:'Minh Hieu Bui',     km:311.10, nk:85.00},
+      {name:'Minh Hieu Bui',     km:317.32, nk:85.00},
     ],
     opexDetail:[
       {label:'DKB Kontoführung', value:6.33, hint:'2 accounts, Quarterly ÷ 3'},
@@ -311,16 +311,18 @@ const TURNOVER = {
   ]},
 };
 
-// Original loan amounts (from Kreditauszahlung entries in DKB CSVs) and cumulative Tilgung paid to June 2026.
+// Original loan amounts (from Kreditauszahlung entries in DKB CSVs) and cumulative Tilgung paid to July 2026.
+// rate = contracted fixed nominal interest rate (% p.a.) from Airtable Mortgages (base appOKVoE79fxV1WlI,
+// table tblzPfCilCWqcnvNS, field fldZ3CQuic5n4cf0s). Used for the Anschlussfinanzierung balance projection.
 const MORTGAGE_DATA = {
-  berlin:    {loanAmt:298000, tilgungPaid:12639.73,  purchaseDate:'2024-07-12', zinsbindung:'30.07.2034'},
-  eschweiler:{loanAmt:89000,  tilgungPaid:10069.44,  purchaseDate:'2021-01-01', zinsbindung:'30.12.2035',
+  berlin:    {loanAmt:298000, tilgungPaid:13171.11,  purchaseDate:'2024-07-12', zinsbindung:'30.07.2034', rate:4.06},
+  eschweiler:{loanAmt:89000,  tilgungPaid:10230.92,  purchaseDate:'2021-01-01', zinsbindung:'30.12.2035', rate:1.62,
               zi:107.00,      ti:161.48},
               // Volksbank Immobiliar only. zi/ti/tilgungPaid used for mortgage tab and KNK break-even (DSL private loan excluded).
-              // Remaining balance: 89k − 9,746.48 = €79,253.52.
-  huegelstr: {loanAmt:420000, tilgungPaid:27648.61,  purchaseDate:'2023-06-30', zinsbindung:'30.05.2033'},
-  ohmstr:    {loanAmt:400000, tilgungPaid:22594.52,  purchaseDate:'2023-09-08', zinsbindung:'30.09.2033'},
-  leipzig:   {loanAmt:123000, tilgungPaid:6716.28,   purchaseDate:'2023-11-01', zinsbindung:'30.07.2033'},
+              // Remaining balance: 89k − 10,230.92 = €78,769.08.
+  huegelstr: {loanAmt:420000, tilgungPaid:28451.95,  purchaseDate:'2023-06-30', zinsbindung:'30.05.2033', rate:4.03},
+  ohmstr:    {loanAmt:400000, tilgungPaid:23336.34,  purchaseDate:'2023-09-08', zinsbindung:'30.09.2033', rate:4.28},
+  leipzig:   {loanAmt:123000, tilgungPaid:6943.82,   purchaseDate:'2023-11-01', zinsbindung:'30.07.2033', rate:4.18},
 };
 
 // Per-transaction KNK breakdown for hover tooltips.
@@ -402,6 +404,66 @@ const FORWARD_RATES = {
   ohmstr:     2.5,
   leipzig:    2.0,
 };
+
+// ─── EQUITY IRR (levered, cash-flow based) ──────────────────────────────────
+// Annual operating cashflows from financial_model/historical/*.md (actuals, invoice-based repairs).
+// FCFE model:  t0 = −(KNK + Eigenanteil Kaufpreis);  each year = OpCF(excl. Tilgung) + Tilgung;
+//              terminal (valuation date) = Market Value − Remaining Debt (origLoan − Tilgung paid).
+// Furniture & initial renovation are already inside OpCF. Eschweiler excluded (financed above
+// purchase price → no/negative initial equity → IRR undefined). Verified against irr_calc.py
+// and reconciled to the RoE equity base (KNK + Eigenanteil) for all four properties.
+const IRR_ANNUALS = {
+  berlin:   {purch:'2024-07-12', knk:22597.40, eq:16000, op:{2024:-6634.61,2025:4480.78,2026:612.15},               ti:{2024:-2500.19,2025:-6175.60,2026:-2114.79}},
+  huegelstr:{purch:'2023-06-30', knk:44082.98, eq:0,     op:{2023:-24080.87,2024:10104.85,2025:9343.38,2026:1880.64}, ti:{2023:-4235.42,2024:-8730.78,2025:-9096.29,2026:-3176.10}},
+  ohmstr:   {purch:'2023-09-08', knk:29633.61, eq:0,     op:{2023:-6463.86,2024:3057.41,2025:1569.77,2026:1265.45},   ti:{2023:-1335.72,2024:-8217.20,2025:-8575.87,2026:-2941.02}},
+  leipzig:  {purch:'2023-11-01', knk:9795.25,  eq:7000,  op:{2023:-4920.36,2024:2909.98,2025:2742.39,2026:904.37},    ti:{2023:-410.71,2024:-2525.18,2025:-2632.78,2026:-902.29}},
+};
+const IRR_VAL_DATE  = new Date('2026-05-15'); // MARKET_SNAPSHOTS date
+const IRR_DATA_ASOF = new Date('2026-04-14'); // 2026 partial-year op cf cutoff
+const irrMktValue = id => { const m = MARKET_SNAPSHOTS.find(x=>x.id===id); return m ? m.value : null; };
+
+function buildIrrFlows(id) {
+  const a = IRR_ANNUALS[id]; if (!a) return null;
+  const purch = new Date(a.purch);
+  const flows = [[purch, -(a.knk + a.eq)]];
+  const py = purch.getFullYear();
+  Object.keys(a.op).map(Number).sort((x,y)=>x-y).forEach(y => {
+    const fcfe = a.op[y] + (a.ti[y] || 0);
+    if (y === py)        flows[0][1] += fcfe;             // fold purchase-year op cf into t0 bucket
+    else if (y === 2026) flows.push([IRR_DATA_ASOF, fcfe]);
+    else                 flows.push([new Date(y,11,31), fcfe]);
+  });
+  const md = MORTGAGE_DATA[id];
+  const remaining = md.loanAmt - md.tilgungPaid;
+  flows.push([IRR_VAL_DATE, irrMktValue(id) - remaining]); // terminal equity value
+  return flows;
+}
+function irrXnpv(rate, flows) {
+  const d0 = flows[0][0];
+  return flows.reduce((s,[d,cf]) => s + cf / Math.pow(1+rate, (d-d0)/(365*864e5)), 0);
+}
+function irrXirr(flows) {
+  if (!flows) return null;
+  let pos=false, neg=false;
+  flows.forEach(([,cf]) => { if (cf>0) pos=true; if (cf<0) neg=true; });
+  if (!pos || !neg) return null;                          // no sign change → undefined
+  let lo=-0.9999, hi=10, flo=irrXnpv(lo,flows), fhi=irrXnpv(hi,flows);
+  if (flo*fhi > 0) return null;
+  for (let i=0;i<200;i++){
+    const mid=(lo+hi)/2, fm=irrXnpv(mid,flows);
+    if (Math.abs(fm) < 1e-6) return mid;
+    if (flo*fm < 0){ hi=mid; fhi=fm; } else { lo=mid; flo=fm; }
+  }
+  return (lo+hi)/2;
+}
+const IRR_BY_ID = {};
+['berlin','huegelstr','ohmstr','leipzig'].forEach(id => { IRR_BY_ID[id] = irrXirr(buildIrrFlows(id)); });
+IRR_BY_ID['eschweiler'] = null;
+const _allIrrFlows = [];
+['berlin','huegelstr','ohmstr','leipzig'].forEach(id => { const f=buildIrrFlows(id); if (f) f.forEach(x=>_allIrrFlows.push(x)); });
+_allIrrFlows.sort((a,b)=>a[0]-b[0]);
+const PORTFOLIO_IRR = irrXirr(_allIrrFlows);
+const firr = v => (v===null||v===undefined||isNaN(v)) ? 'n/a' : fp(v*100);
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const f  = (v,d=0) => v===null||v===undefined ? '—'
@@ -1043,11 +1105,12 @@ function renderOverview() {
   r2Label.textContent='Return metrics (portfolio weighted avg)';
   sec.appendChild(r2Label);
   const r2 = document.createElement('div');
-  r2.className='grid'; r2.style.cssText='grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px';
+  r2.className='grid'; r2.style.cssText='grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px';
   r2.innerHTML = [
     kpiCard('Gross Rental Yield', fp(P.grossRentalYieldPct), 'Kaltmiete × 12 / Kaufpreis', vc(P.grossRentalYieldPct)),
     kpiCard('Net Rental Yield',   fp(P.netRentalYieldPct),   '(Warmmiete − costs) × 12 / (Kaufpreis + KNK)', vc(P.netRentalYieldPct)),
     kpiCard('Return on Equity',   fp(P.roePct),              'NOI after interest / (Equity + KNK)', vc(P.roePct)),
+    kpiCard('Equity IRR',         firr(PORTFOLIO_IRR),       'Levered, cash-flow based · ex Eschweiler', vc(PORTFOLIO_IRR)),
   ].join('');
   sec.appendChild(r2);
 
@@ -1335,6 +1398,7 @@ function renderOverview() {
     <b>Gross Rental Yield</b> = (Kaltmiete × 12) / Kaufpreis. Sourced from Notion KPIs &amp; Metrics (2025 Actual). Financing and operating costs excluded.<br>
     <b>Net Rental Yield</b> = ((Warmmiete − Hausgeld − Grundsteuer − Ø monthly repair) × 12) / (Kaufpreis + KNK). Sourced from Notion KPIs &amp; Metrics (2025 Actual).<br>
     <b>Return on Equity</b> = (NOI after mortgage interest) / (Equity invested + KNK). Equity = Kaufpreis − original loan. Eschweiler special treatment: DSL Privatkredit is a consumer loan — both Zinsen &amp; Tilgung reduce the numerator; KNK is netted against DSL loan in the denominator. Sourced from Notion KPIs &amp; Metrics (2025 Actual).<br>
+    <b>Equity IRR</b> = levered internal rate of return on the equity actually invested, using actual annual cashflows since purchase. Initial outlay = KNK + Eigenanteil Kaufpreis (t0). Yearly flow = operating cashflow incl. Tilgung and repairs (from bank data, financial_model/historical). Terminal value = current Market Value (Market Value tab) − remaining debt. Highly sensitive to the market-value estimate, which uses a conservative Vermietungsabschlag — for short holds the IRR is dominated by that estimate. <b>Berlin</b> shows n/a because its conservative market value is currently below the remaining loan (negative equity, no sign change). <b>Eschweiler</b> is excluded: it was financed above the purchase price, so there is no positive initial equity and IRR is undefined. Portfolio IRR is the combined cash-flow XIRR of the four properties with defined equity.<br>
     Maintenance reserves used (€/m²/yr): Berlin €5.0, Eschweiler €5.5, Hügelstr. €5.5, Ohmstr. €4.5, Leipzig €5.0.<br>
     <b>Cashflow</b> = Total income (Kaltmiete + NK) − Opex − Mortgage. NK treated as income offsetting operating costs.<br>
     <b>Total Return</b> = Cashflow + Tilgung. Tilgung reduces debt and builds equity — it's not an economic loss.<br>
@@ -1434,6 +1498,7 @@ function renderPropDetail(id) {
     ['Gross Rental Yield',    fp(d.grossRentalYieldPct), d.pp?`Kaltmiete × 12 / € ${f(d.pp)}`:'', '#34d399'],
     ['Net Rental Yield',      fp(d.netRentalYieldPct),   '(Warmmiete − costs) × 12 / (pp + KNK)', '#34d399'],
     ['Return on Equity',      fp(d.roePct),              'NOI after interest / equity invested',   vc(d.roePct)],
+    ['Equity IRR',            firr(IRR_BY_ID[d.id]),     'Levered XIRR since purchase · terminal = market value − debt', vc(IRR_BY_ID[d.id])],
     ['DSCR',                  d.dscr.toFixed(2)+'×',     '> 1.0 = rent covers mortgage',           d.dscr>=1?'#34d399':'#f87171'],
     ['Price / Rent Ratio',    d.ptr?d.ptr.toFixed(1)+' yrs':'—','Years of rent = purchase price','#9ca3af'],
   ];
@@ -1633,6 +1698,92 @@ function renderMortgages() {
 
   tCard.innerHTML += html;
   sec.appendChild(tCard);
+
+  // ─── Anschlussfinanzierung — Zinsbindungs-Stresstest ──────────────────────
+  const refiCard = document.createElement('div');
+  refiCard.className='card'; refiCard.style.cssText='overflow-x:auto;margin-bottom:16px';
+  refiCard.innerHTML =
+      '<div class="chart-title" style="margin-bottom:2px">Anschlussfinanzierung — Zinsbindungs-Stresstest</div>'
+    + '<div class="chart-sub" style="margin-bottom:10px">Restschuld wird mit der heutigen Annuität bis zum Zinsbindungsende fortgeschrieben. '
+    + 'Neue volle Bankrate = neue Zinsen (zum eingegebenen Anschlusszins auf die dann verbleibende Restschuld) + heutige Tilgung €/Monat. Als % der heutigen Kaltmiete.</div>'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">'
+    +   '<label style="color:#9ca3af;font-size:12px">Anschlusszins</label>'
+    +   '<input id="refiRate" type="number" min="0" max="12" step="0.1" value="4.0" '
+    +      'style="width:78px;background:#111827;border:1px solid #374151;border-radius:6px;color:#f9fafb;padding:5px 8px;font-family:monospace;font-size:13px">'
+    +   '<span style="color:#9ca3af;font-size:12px">% p.a.</span>'
+    +   '<div style="display:flex;gap:6px;margin-left:4px">'
+    +     [3.0,3.5,4.0,4.5,5.0].map(v=>'<button type="button" class="refiPreset" data-v="'+v+'" '
+    +        'style="background:#1f2937;border:1px solid #374151;border-radius:6px;color:#d1d5db;padding:4px 9px;font-size:12px;cursor:pointer">'+v.toFixed(1)+'</button>').join('')
+    +   '</div>'
+    + '</div>'
+    + '<div id="refiTableWrap"></div>';
+  sec.appendChild(refiCard);
+
+  function refiMonthsUntil(dmy){                 // 'DD.MM.YYYY' → whole months from today (≥0)
+    const [d,m,y]=dmy.split('.').map(Number);
+    const end=new Date(y,m-1,d), now=new Date();
+    let mo=(end.getFullYear()-now.getFullYear())*12+(end.getMonth()-now.getMonth());
+    if(end.getDate()<now.getDate()) mo-=1;
+    return Math.max(0,mo);
+  }
+  function refiProject(balance, payment, monthlyRate, months){
+    let b=balance;
+    for(let i=0;i<months;i++){ const interest=b*monthlyRate; b-=(payment-interest); if(b<=0){b=0;break;} }
+    return b;
+  }
+  function renderRefi(){
+    const rate=Math.max(0, parseFloat(document.getElementById('refiRate').value)||0);
+    const colP = p => p>=100?'#f87171':p>=85?'#fbbf24':'#34d399';
+    const rows=mortKpis.filter(m=>m.zinsbindung).map(m=>{
+      const months=refiMonthsUntil(m.zinsbindung);
+      // current monthly rate = contracted fixed rate (Airtable) / 12; fallback to implied rate
+      const curMonthlyRate = (m.rate!=null ? m.rate/100/12 : (m.remaining>0 ? m.mZi/m.remaining : 0));
+      const balExp=refiProject(m.remaining, m.mZi+m.mTi, curMonthlyRate, months);
+      const newInt=balExp*(rate/100)/12;
+      const newRate=newInt+m.mTi;                 // volle Bankrate
+      const curPay=m.mZi+m.mTi;
+      return {...m, months, balExp, newInt, newRate, curPay,
+        pctKm: m.km? newRate/m.km*100:null, curPctKm: m.km? curPay/m.km*100:null, delta:newRate-curPay};
+    });
+    let h='<table><thead><tr>'
+      +'<th class="left">Property</th><th>Zinsbindung bis</th><th>Jahre</th>'
+      +'<th>Restschuld b. Auslauf</th><th>Neue Zinsen/mo</th><th>+ Tilgung/mo</th>'
+      +'<th>= Neue Bankrate/mo</th><th>Heute/mo</th><th>Δ €/mo</th>'
+      +'<th>% Kaltmiete heute→neu</th></tr></thead><tbody>';
+    let sBal=0,sNew=0,sCur=0,sKm=0;
+    rows.forEach(r=>{
+      sBal+=r.balExp; sNew+=r.newRate; sCur+=r.curPay; sKm+=(r.km||0);
+      h+='<tr>'
+        +'<td class="left">'+r.name+'</td>'
+        +'<td style="color:#fbbf24">'+r.zinsbindung+'</td>'
+        +'<td style="color:#9ca3af">'+(r.months/12).toFixed(1)+'</td>'
+        +'<td style="color:#f87171">'+fe(Math.round(r.balExp))+'</td>'
+        +'<td style="color:#f87171">'+fe(r.newInt,0)+'</td>'
+        +'<td style="color:#c084fc">'+fe(r.mTi,0)+'</td>'
+        +'<td style="color:#fca5a5;font-weight:600">'+fe(r.newRate,0)+'</td>'
+        +'<td style="color:#9ca3af">'+fe(r.curPay,0)+'</td>'
+        +'<td style="color:'+(r.delta>0?'#f87171':'#34d399')+'">'+(r.delta>0?'+':'')+fe(r.delta,0)+'</td>'
+        +'<td style="font-weight:600"><span style="color:#6b7280">'+(r.curPctKm!==null?fp(r.curPctKm,0):'—')+'</span> → <span style="color:'+colP(r.pctKm||0)+'">'+(r.pctKm!==null?fp(r.pctKm,0):'—')+'</span></td>'
+        +'</tr>';
+    });
+    const pNew=sKm? sNew/sKm*100:0, pCur=sKm? sCur/sKm*100:0;
+    h+='<tr class="total"><td class="left">PORTFOLIO</td><td>—</td><td>—</td>'
+      +'<td style="color:#f87171">'+fe(Math.round(sBal))+'</td><td>—</td><td>—</td>'
+      +'<td style="color:#fca5a5;font-weight:600">'+fe(sNew,0)+'</td>'
+      +'<td style="color:#9ca3af">'+fe(sCur,0)+'</td>'
+      +'<td style="color:'+((sNew-sCur)>0?'#f87171':'#34d399')+'">'+((sNew-sCur)>0?'+':'')+fe(sNew-sCur,0)+'</td>'
+      +'<td style="font-weight:600"><span style="color:#6b7280">'+fp(pCur,0)+'</span> → <span style="color:'+colP(pNew)+'">'+fp(pNew,0)+'</span></td>'
+      +'</tr></tbody></table>'
+      +'<div style="color:#6b7280;font-size:10px;margin-top:8px">Farbe der neuen Bankrate: grün &lt; 85% · gelb 85–100% · rot &gt; 100% der Kaltmiete. '
+      +'Eschweiler = nur Volksbank-Immobiliardarlehen (DSL-Privatkredit läuft separat bis Dez 2030 aus, nicht enthalten). '
+      +'Vereinfachung: heutige Tilgung €/Monat bleibt konstant; keine Sondertilgung, keine Miet-/Zinsänderung bis Auslauf unterstellt.</div>';
+    document.getElementById('refiTableWrap').innerHTML=h;
+  }
+  document.getElementById('refiRate').addEventListener('input', renderRefi);
+  refiCard.querySelectorAll('.refiPreset').forEach(b=>b.addEventListener('click',()=>{
+    document.getElementById('refiRate').value=parseFloat(b.dataset.v).toFixed(1); renderRefi();
+  }));
+  renderRefi();
 
   const fn = document.createElement('div');
   fn.className='footnotes';
