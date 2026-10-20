@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Portfolio Dashboard · September 2026</title>
+<title>Portfolio Dashboard · October 2026</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#111827;color:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;padding:24px}
@@ -62,7 +62,7 @@ svg text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 </head>
 <body>
 <h1>Portfolio Dashboard</h1>
-<p class="subtitle">5 properties · September 2026 · Based on actual payments · All figures EUR/month</p>
+<p class="subtitle">5 properties · October 2026 · Based on actual payments · All figures EUR/month</p>
 
 <div class="tabs">
   <button class="tab active" onclick="showTab('overview')">Portfolio Overview</button>
@@ -119,7 +119,7 @@ const RAW = [
     ],
   },
   { id:'huegelstr', name:'Hügelstr.', addr:'Hügelstr. 162, Frankfurt', pp:420000, origLoan:420000, bj:1959, tn:5,
-    km:2413.92, nk:580.00, hg:590.00, gs:27.06, ox:57.49, zi:1307.16, ti:803.34,
+    km:2422.66, nk:580.00, hg:590.00, gs:27.06, ox:55.49, zi:1307.16, ti:803.34,
     avgRepair:734.79,  // (26327.36 + 0 + 124.95) / 3 / 12
     grossRentalYield:6.80, netRentalYield:5.24, roe:13.48,  // Source: Notion KPIs & Metrics (2025 Actual)
     knk:44082.98, knkConfirmed:44082.98, knkPartial:false,
@@ -130,11 +130,11 @@ const RAW = [
       {name:'Franziska Trinkl',  km:520.00, nk:110.00},
       {name:'Maren Stephan',     km:557.00, nk:115.00},
       {name:'Chuyihang Wang',    km:416.16, nk:160.00},
-      {name:'Yohana Reda',       km:436.97, nk:90.00},
+      {name:'Mattias Luber',     km:445.71, nk:90.00},
       {name:'Jannis Wolter',     km:483.79, nk:105.00},
     ],
     opexDetail:[
-      {label:'Mansarde Strom',    value:24.00, hint:'Stadtwerke Flensburg'},
+      {label:'Mansarde Strom',    value:22.00, hint:'LichtBlick'},
       {label:'Mansarde Internet', value:29.99, hint:'Freenet'},
       {label:'DKB Kontoführung',  value:3.50,  hint:'Quarterly ÷ 3'},
     ],
@@ -157,7 +157,7 @@ const RAW = [
     ],
   },
   { id:'leipzig', name:'Leipzig', addr:'Magdeburger Str. 7', pp:130000, origLoan:123000, bj:1910, tn:3,
-    km:829.32, nk:240.00, hg:353.00, gs:9.94, ox:6.33, zi:405.91, ti:227.54,
+    km:829.32, nk:240.00, hg:376.00, gs:9.94, ox:6.33, zi:405.91, ti:227.54,
     avgRepair:154.53,  // 5563.10 / 3 / 12
     grossRentalYield:7.46, netRentalYield:5.23, roe:11.78,  // Source: Notion KPIs & Metrics (2025 Actual)
     knk:9795.25, knkConfirmed:9795.25, knkPartial:false,
@@ -311,18 +311,18 @@ const TURNOVER = {
   ]},
 };
 
-// Original loan amounts (from Kreditauszahlung entries in DKB CSVs) and cumulative Tilgung paid to September 2026.
+// Original loan amounts (from Kreditauszahlung entries in DKB CSVs) and cumulative Tilgung paid to October 2026.
 // rate = contracted fixed nominal interest rate (% p.a.) from Airtable Mortgages (base appOKVoE79fxV1WlI,
 // table tblzPfCilCWqcnvNS, field fldZ3CQuic5n4cf0s). Used for the Anschlussfinanzierung balance projection.
 const MORTGAGE_DATA = {
-  berlin:    {loanAmt:298000, tilgungPaid:14233.87,  purchaseDate:'2024-07-12', zinsbindung:'30.07.2034', rate:4.06},
-  eschweiler:{loanAmt:89000,  tilgungPaid:10553.88,  purchaseDate:'2021-01-01', zinsbindung:'30.12.2035', rate:1.62,
+  berlin:    {loanAmt:298000, tilgungPaid:14765.25,  purchaseDate:'2024-07-12', zinsbindung:'30.07.2034', rate:4.06},
+  eschweiler:{loanAmt:89000,  tilgungPaid:10715.36,  purchaseDate:'2021-01-01', zinsbindung:'30.12.2035', rate:1.62,
               zi:107.00,      ti:161.48},
               // Volksbank Immobiliar only. zi/ti/tilgungPaid used for mortgage tab and KNK break-even (DSL private loan excluded).
-              // Remaining balance: 89k − 10,230.92 = €78,769.08.
-  huegelstr: {loanAmt:420000, tilgungPaid:30058.63,  purchaseDate:'2023-06-30', zinsbindung:'30.05.2033', rate:4.03},
-  ohmstr:    {loanAmt:400000, tilgungPaid:24819.98,  purchaseDate:'2023-09-08', zinsbindung:'30.09.2033', rate:4.28},
-  leipzig:   {loanAmt:123000, tilgungPaid:7398.90,   purchaseDate:'2023-11-01', zinsbindung:'30.07.2033', rate:4.18},
+              // Remaining balance: 89k − 10,715.36 = €78,284.64.
+  huegelstr: {loanAmt:420000, tilgungPaid:30861.97,  purchaseDate:'2023-06-30', zinsbindung:'30.05.2033', rate:4.03},
+  ohmstr:    {loanAmt:400000, tilgungPaid:25561.80,  purchaseDate:'2023-09-08', zinsbindung:'30.09.2033', rate:4.28},
+  leipzig:   {loanAmt:123000, tilgungPaid:7626.44,   purchaseDate:'2023-11-01', zinsbindung:'30.07.2033', rate:4.18},
 };
 
 // Per-transaction KNK breakdown for hover tooltips.
