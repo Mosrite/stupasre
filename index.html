@@ -386,7 +386,7 @@ const KNK_DETAIL = {
 //   energyClass         = GEG/EnEV energy class (informational; not applied as separate factor)
 //   stadtteil           = Immowelt Stadtteil used as price source
 //   value               = sqm × pricePerSqm × (1−askingGap/100)
-// Last updated: 2026-08-01 (Q3 2026 — Immowelt Stadtteil Wohnung €/m² averages)
+// Last updated: 2026-11-01 (Q4 2026 — Immowelt Stadtteil Wohnung €/m² averages)
 const MARKET_SNAPSHOTS = [
   // Q2 2026
   {id:'berlin',     date:'2026-05-15', pricePerSqm:4609, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Pankow',      value:237456},
@@ -400,6 +400,12 @@ const MARKET_SNAPSHOTS = [
   {id:'huegelstr',  date:'2026-08-01', pricePerSqm:5840, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Dornbusch',   value:601754},
   {id:'ohmstr',     date:'2026-08-01', pricePerSqm:6378, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'C', stadtteil:'Bockenheim',  value:440082},
   {id:'leipzig',    date:'2026-08-01', pricePerSqm:2736, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'E', stadtteil:'Gohlis-Süd',  value:142217},
+  // Q4 2026
+  {id:'berlin',     date:'2026-11-01', pricePerSqm:4695, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Pankow',      value:241886},
+  {id:'eschweiler', date:'2026-11-01', pricePerSqm:2507, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'D', stadtteil:'Eschweiler',  value:94564},
+  {id:'huegelstr',  date:'2026-11-01', pricePerSqm:5911, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'E', stadtteil:'Dornbusch',   value:609069},
+  {id:'ohmstr',     date:'2026-11-01', pricePerSqm:6430, askingGap:8, vermietungsAbschlag:20, heatingFactor:0, energyClass:'C', stadtteil:'Bockenheim',  value:443670},
+  {id:'leipzig',    date:'2026-11-01', pricePerSqm:2717, askingGap:8, vermietungsAbschlag:15, heatingFactor:0, energyClass:'E', stadtteil:'Gohlis-Süd',  value:141230},
 ];
 
 // Forward projection rates (%/yr) — applied from the latest snapshot date onward
